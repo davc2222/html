@@ -1,0 +1,51 @@
+header {
+    background: linear-gradient(135deg, #ff4d6d, #ff758f);
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+header .logo a {
+    color: white;
+    font-size: 28px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+header .links a {
+    color: white;
+    margin: 0 10px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+header .links a.active {
+    text-decoration: underline;
+}
+
+header .auth button {
+    padding: 8px 15px;
+    margin-left: 10px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background: #fff;
+    color: #ff4d6d;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+header .auth button:hover {
+    background: #ff4d6d;
+    color: white;
+}
+
+@media(max-width:600px) {
+    header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+}

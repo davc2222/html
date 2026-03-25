@@ -1,0 +1,6 @@
+# אפשר גישה לכל תמונות
+<FilesMatch "\.(jpg|jpeg|png|gif|webp|svg)$">
+    Require all granted
+</FilesMatch>
+
+# מניעת גישה ישירה לכל קובצי PHP בתיקיות פנימיות
