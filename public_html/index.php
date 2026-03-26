@@ -12,7 +12,9 @@ $menu = [
     'contact' => 'צור קשר'
 ];
 
-$allowed = array_keys($menu);
+//$allowed = array_keys($menu);
+
+$allowed = ['home', 'search', 'how', 'contact', 'login', 'register'];
 if (!in_array($page, $allowed)) {
     $page = 'home';
 }

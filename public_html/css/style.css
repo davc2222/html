@@ -85,7 +85,7 @@ header {
     border-radius: 12px;
     cursor: pointer;
     font-weight: bold;
-    font-size: 16px;
+    font-size: 19px;
     transition: 0.25s ease;
 }
 
@@ -211,13 +211,14 @@ header {
 
 
 /* =======================================================
-   🔍 SEARCH PAGE
+   4) SEARCH PAGE - דף חיפוש
+   search.php
 ======================================================= */
 
 .search-container {
     max-width: 1150px;
     margin: 35px auto;
-    padding: 0 20px 30px;
+    padding: 0 20px;
 }
 
 .search-container h2 {
@@ -268,8 +269,6 @@ header {
     background: #d91f4f;
 }
 
-/* תוצאות */
-
 .results {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -316,6 +315,7 @@ header {
     background: #ff4d6d;
     color: white;
     border-radius: 10px;
+    text-decoration: none;
     font-weight: bold;
     transition: 0.25s ease;
 }
@@ -335,23 +335,6 @@ header {
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
 }
 
-/* מובייל */
-
-@media (max-width: 600px) {
-    .search-form {
-        flex-direction: column;
-    }
-
-    .search-form select,
-    .search-form button {
-        width: 100%;
-        min-width: 0;
-    }
-
-    .results {
-        grid-template-columns: 1fr;
-    }
-}
 
 /* =======================================================
    5) PROFILE PAGE - דף פרופיל
@@ -486,4 +469,25 @@ footer {
     .home-demo-hero h1 {
         font-size: 32px;
     }
+}
+
+
+/* ===== AUTH BUTTONS ===== */
+
+.auth a.auth-btn {
+    display: inline-block;
+    background: #d8d8d8;
+    color: #444;
+    text-decoration: none;
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 19px;
+    transition: 0.25s ease;
+}
+
+.auth a.auth-btn:hover,
+.auth a.auth-btn.active {
+    background: #c9c9c9;
+    color: #333;
 }

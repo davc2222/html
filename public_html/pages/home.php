@@ -154,7 +154,7 @@
 
         <div class="home-demo-actions">
             <a href="?page=search" class="home-demo-btn home-demo-btn-primary">התחל לחפש</a>
-            <a href="#" class="home-demo-btn home-demo-btn-secondary">הרשמה מהירה</a>
+            <a href="?page=register" class="home-demo-btn home-demo-btn-secondary">הרשמה מהירה</a>
         </div>
     </section>
 
