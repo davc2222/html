@@ -1,5 +1,11 @@
+ <!-- register.php-->
+
 <?php
-require_once __DIR__ . '/../config/config.php';
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+require_once __DIR__ . '/config/config.php';
 
 $genders = [];
 $zones = [];
@@ -22,8 +28,7 @@ $error = $_GET['error'] ?? '';
 $success = $_GET['success'] ?? '';
 ?>
 
-
-<div class="register-page">
+<section class="register-page">
     <div class="register-box">
         <h1>הרשמה ל־LoveMatch</h1>
         <p class="subtitle">צור פרופיל חדש בכמה צעדים פשוטים</p>
@@ -31,10 +36,15 @@ $success = $_GET['success'] ?? '';
         <?php if ($error !== ''): ?>
             <div class="message-box error">
                 <?php
-                if ($error === 'doubleEmail') echo 'האימייל כבר קיים במערכת';
-                elseif ($error === 'doubleName') echo 'שם המשתמש כבר קיים במערכת';
-                elseif ($error === 'missing') echo 'יש למלא את כל השדות';
-                else echo 'אירעה שגיאה בהרשמה';
+                if ($error === 'doubleEmail') {
+                    echo 'האימייל כבר קיים במערכת';
+                } elseif ($error === 'doubleName') {
+                    echo 'שם המשתמש כבר קיים במערכת';
+                } elseif ($error === 'missing') {
+                    echo 'יש למלא את כל השדות';
+                } else {
+                    echo 'אירעה שגיאה בהרשמה';
+                }
                 ?>
             </div>
         <?php endif; ?>
@@ -43,17 +53,19 @@ $success = $_GET['success'] ?? '';
             <div class="message-box success">ההרשמה בוצעה בהצלחה</div>
         <?php endif; ?>
 
-       <div class="form-group">
-    <label for="Name">שם משתמש</label>
-    <input type="text" name="Name" id="Name" required>
-    <div class="error-text" id="name-error"></div>
-</div>
+        <form class="register-form" method="POST" action="/register_action.php">
+            <div class="form-group">
+                <label for="Name">שם משתמש</label>
+                <input type="text" name="Name" id="Name" required>
+                <div class="error-text" id="name-error"></div>
+            </div>
 
-    <div class="form-group">
-    <label for="Name">שם משתמש</label>
-    <input type="text" name="Name" id="Name" required>
-    <div class="error-text" id="name-error"></div>
-</div>
+            <div class="form-group">
+                <label for="Email">אימייל</label>
+                <input type="email" name="Email" id="Email" required>
+                <div class="error-text" id="email-error"></div>
+            </div>
+
             <div class="form-group">
                 <label for="Pass">סיסמה</label>
                 <input type="password" name="Pass" id="Pass" required>
@@ -118,15 +130,16 @@ $success = $_GET['success'] ?? '';
             </div>
 
             <div class="submit-wrap">
-    <button type="submit" id="register-btn" disabled>צור חשבון</button>
-</div>
+                <button type="submit" id="register-btn" disabled>צור חשבון</button>
+            </div>
         </form>
 
         <div class="back-home">
-            <a href="/?page=home">חזרה לדף הבית</a>
+            <a href="?page=home">חזרה לדף הבית</a>
         </div>
     </div>
-</div>
+</section>
+
 <script>
 const nameInput = document.getElementById("Name");
 const emailInput = document.getElementById("Email");
@@ -211,6 +224,11 @@ nameInput.addEventListener("input", function () {
                 nameValid = true;
             }
             checkFormValidity();
+        })
+        .catch(() => {
+            showError(nameError, nameInput, "שגיאה בבדיקת שם משתמש");
+            nameValid = false;
+            checkFormValidity();
         });
     }, 400);
 });
@@ -249,181 +267,18 @@ emailInput.addEventListener("input", function () {
                 emailValid = true;
             }
             checkFormValidity();
+        })
+        .catch(() => {
+            showError(emailError, emailInput, "שגיאה בבדיקת אימייל");
+            emailValid = false;
+            checkFormValidity();
         });
     }, 400);
 });
 
-/* בדיקה גם כשמשנים שדות אחרים */
+/* בדיקות על שדות נוספים */
 document.querySelectorAll(".register-form input, .register-form select").forEach(el => {
     el.addEventListener("input", checkFormValidity);
     el.addEventListener("change", checkFormValidity);
 });
 </script>
-</body>
-</html>
-
-
-
-
-<style>
-        .register-page {
-            padding: 40px 20px 60px;
-            background: #efefef;
-            min-height: calc(100vh - 95px);
-        }
-
-        .register-box {
-            max-width: 950px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 24px;
-            padding: 35px 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
-        }
-
-        .register-box h1 {
-            text-align: center;
-            color: #d91f4f;
-            font-size: 40px;
-            margin-bottom: 10px;
-        }
-
-        .register-box p.subtitle {
-            text-align: center;
-            color: #666;
-            font-size: 18px;
-            margin-bottom: 28px;
-        }
-
-        .message-box {
-            max-width: 700px;
-            margin: 0 auto 22px;
-            padding: 14px 18px;
-            border-radius: 14px;
-            text-align: center;
-            font-size: 17px;
-            font-weight: bold;
-        }
-
-        .message-box.error {
-            background: #ffe2e7;
-            color: #b3153e;
-            border: 1px solid #f3b4c3;
-        }
-
-        .message-box.success {
-            background: #e4f7e9;
-            color: #1f7a39;
-            border: 1px solid #b8e4c4;
-        }
-
-        .register-form {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 18px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group.full {
-            grid-column: 1 / -1;
-        }
-
-        .register-form label {
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: #444;
-            font-size: 16px;
-        }
-
-        .register-form input,
-        .register-form select {
-            padding: 14px 16px;
-            border: 1px solid #ddd;
-            border-radius: 12px;
-            font-size: 16px;
-            background: #fafafa;
-        }
-
-        .register-form input:focus,
-        .register-form select:focus {
-            outline: none;
-            border-color: #ff4d6d;
-            box-shadow: 0 0 0 3px rgba(255,77,109,0.12);
-        }
-
-        .submit-wrap {
-            grid-column: 1 / -1;
-            display: flex;
-            justify-content: center;
-            margin-top: 10px;
-        }
-
-        .submit-wrap button {
-            background: #ff4d6d;
-            color: white;
-            border: none;
-            border-radius: 14px;
-            padding: 14px 28px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.25s ease;
-        }
-
-        .submit-wrap button:hover {
-            background: #d91f4f;
-        }
-
-        .back-home {
-            text-align: center;
-            margin-top: 24px;
-        }
-
-        .back-home a {
-            color: #d91f4f;
-            font-weight: bold;
-            text-decoration: none;
-        }
-
-        @media (max-width: 700px) {
-            .register-form {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* שגיאות */
-.error-text {
-    color: #d91f4f;
-    font-size: 14px;
-    margin-top: 6px;
-    min-height: 18px;
-    opacity: 0;
-    transform: translateY(-4px);
-    transition: all 0.25s ease;
-}
-
-.error-text.show {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.input-error {
-    border: 2px solid #d91f4f !important;
-    transition: all 0.25s ease;
-}
-
-.input-ok {
-    border: 2px solid #28a745 !important;
-    transition: all 0.25s ease;
-}
-
-.submit-wrap button:disabled {
-    background: #cfcfcf;
-    color: #777;
-    cursor: not-allowed;
-}
-    </style>

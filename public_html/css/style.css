@@ -13,6 +13,12 @@
     padding: 0;
 }
 
+html,
+body {
+    width: 100%;
+    min-height: 100%;
+}
+
 body {
     font-family: Arial, sans-serif;
     direction: rtl;
@@ -28,76 +34,112 @@ main {
     min-height: 500px;
 }
 
+.page-shell {
+    max-width: 1150px;
+    margin: 35px auto;
+    padding: 0 20px;
+}
+
 
 /* =======================================================
    2) HEADER - הדר עליון
+   חשוב: ב-header.php צריך:
+   <header class="site-header">
 ======================================================= */
 
-header {
+.site-header {
     background: linear-gradient(135deg, #ff4d6d, #ff6f8f);
-    min-height: 95px;
+    min-height: 88px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 0 34px;
+    padding: 0 28px;
     box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+    gap: 18px;
+}
+
+/* אזור לוגו */
+.logo {
+    flex: 1;
+    text-align: right;
 }
 
 .logo a {
     color: white;
-    font-size: 34px;
+    font-size: 31px;
     font-weight: bold;
+    text-decoration: none;
 }
 
+/* אזור תפריט */
 .links {
+    flex: 1;
     display: flex;
-    gap: 24px;
+    justify-content: center;
     align-items: center;
+    gap: 14px;
     flex-wrap: wrap;
 }
 
 .links a {
     color: white;
     font-weight: bold;
-    font-size: 20px;
-    padding: 10px 14px;
-    border-radius: 12px;
-    transition: 0.25s ease;
+    font-size: 17px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease;
 }
 
-.links a:hover,
+.links a:hover {
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
 .links a.active {
-    background: rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.35);
     color: #fff;
 }
 
+/* אזור כפתורים */
 .auth {
+    flex: 1;
     display: flex;
-    gap: 12px;
+    justify-content: flex-start;
     align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
-.auth button {
-    background: #d8d8d8;
-    color: #444;
-    border: none;
-    padding: 12px 18px;
-    border-radius: 12px;
-    cursor: pointer;
+/* חשוב: הלינקים של התחברות/הרשמה חייבים להיות class="auth-btn" */
+.auth-btn {
+    display: inline-block;
+    background: #dcdcdc;
+    color: #444 !important;
+    padding: 9px 13px;
+    border-radius: 10px;
+    font-size: 15px;
     font-weight: bold;
-    font-size: 19px;
-    transition: 0.25s ease;
+    text-decoration: none !important;
+    transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease;
 }
 
-.auth button:hover {
+.auth-btn:hover,
+.auth-btn.active {
     background: #c9c9c9;
-    color: #333;
+    color: #333 !important;
+    transform: translateY(-1px);
+}
+
+.welcome-user {
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
 }
 
 
 /* =======================================================
    3) HOME PAGE - דף הבית
-   home.php
 ======================================================= */
 
 .home-demo-wrap {
@@ -140,7 +182,6 @@ header {
 
 .home-demo-btn {
     display: inline-block;
-    text-decoration: none;
     padding: 14px 22px;
     border-radius: 14px;
     font-weight: bold;
@@ -160,7 +201,7 @@ header {
 .home-demo-btn-secondary {
     background: transparent;
     color: #fff;
-    border: 2px solid rgba(255, 255, 255, 0.8);
+    border: 2px solid rgba(255, 255, 255, 0.85);
 }
 
 .home-demo-btn-secondary:hover {
@@ -212,13 +253,12 @@ header {
 
 /* =======================================================
    4) SEARCH PAGE - דף חיפוש
-   search.php
 ======================================================= */
 
 .search-container {
     max-width: 1150px;
     margin: 35px auto;
-    padding: 0 20px;
+    padding: 0 20px 30px;
 }
 
 .search-container h2 {
@@ -228,6 +268,7 @@ header {
     margin-bottom: 24px;
 }
 
+/* תיבת חיפוש */
 .search-form {
     display: flex;
     gap: 16px;
@@ -241,17 +282,22 @@ header {
     margin-bottom: 30px;
 }
 
+.search-form input,
 .search-form select,
 .search-form button {
-    padding: 15px 18px;
+    padding: 14px 18px;
     border-radius: 12px;
     border: 1px solid #ddd;
-    font-size: 19px;
+    font-size: 18px;
     min-width: 190px;
 }
 
+.search-form input,
 .search-form select {
     background: #fafafa;
+}
+
+.search-form select {
     cursor: pointer;
 }
 
@@ -269,6 +315,7 @@ header {
     background: #d91f4f;
 }
 
+/* תוצאות */
 .results {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -294,6 +341,7 @@ header {
     width: 100%;
     height: 230px;
     object-fit: cover;
+    display: block;
 }
 
 .card h3 {
@@ -315,7 +363,6 @@ header {
     background: #ff4d6d;
     color: white;
     border-radius: 10px;
-    text-decoration: none;
     font-weight: bold;
     transition: 0.25s ease;
 }
@@ -337,8 +384,163 @@ header {
 
 
 /* =======================================================
-   5) PROFILE PAGE - דף פרופיל
-   profile.php
+   5) REGISTER PAGE - דף הרשמה
+======================================================= */
+
+.register-page {
+    padding: 40px 20px 60px;
+    background: #efefef;
+    min-height: calc(100vh - 88px);
+}
+
+.register-box {
+    max-width: 950px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 24px;
+    padding: 35px 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+
+.register-box h1 {
+    text-align: center;
+    color: #d91f4f;
+    font-size: 40px;
+    margin-bottom: 10px;
+}
+
+.register-box p.subtitle {
+    text-align: center;
+    color: #666;
+    font-size: 18px;
+    margin-bottom: 28px;
+}
+
+.message-box {
+    max-width: 700px;
+    margin: 0 auto 22px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    text-align: center;
+    font-size: 17px;
+    font-weight: bold;
+}
+
+.message-box.error {
+    background: #ffe2e7;
+    color: #b3153e;
+    border: 1px solid #f3b4c3;
+}
+
+.message-box.success {
+    background: #e4f7e9;
+    color: #1f7a39;
+    border: 1px solid #b8e4c4;
+}
+
+.register-form {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group.full {
+    grid-column: 1 / -1;
+}
+
+.register-form label {
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #444;
+    font-size: 16px;
+}
+
+.register-form input,
+.register-form select {
+    padding: 14px 16px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    font-size: 16px;
+    background: #fafafa;
+}
+
+.register-form input:focus,
+.register-form select:focus {
+    outline: none;
+    border-color: #ff4d6d;
+    box-shadow: 0 0 0 3px rgba(255, 77, 109, 0.12);
+}
+
+.submit-wrap {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.submit-wrap button {
+    background: #ff4d6d;
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 14px 28px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.25s ease;
+}
+
+.submit-wrap button:hover {
+    background: #d91f4f;
+}
+
+.submit-wrap button:disabled {
+    background: #cfcfcf;
+    color: #777;
+    cursor: not-allowed;
+}
+
+.back-home {
+    text-align: center;
+    margin-top: 24px;
+}
+
+.back-home a {
+    color: #d91f4f;
+    font-weight: bold;
+}
+
+.error-text {
+    color: #d91f4f;
+    font-size: 14px;
+    margin-top: 6px;
+    min-height: 18px;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: all 0.25s ease;
+}
+
+.error-text.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.input-error {
+    border: 2px solid #d91f4f !important;
+}
+
+.input-ok {
+    border: 2px solid #28a745 !important;
+}
+
+
+/* =======================================================
+   6) PROFILE PAGE - דף פרופיל
 ======================================================= */
 
 .profile-page {
@@ -373,7 +575,7 @@ header {
 
 
 /* =======================================================
-   6) FOOTER - תחתית
+   7) FOOTER - תחתית
 ======================================================= */
 
 footer {
@@ -385,27 +587,46 @@ footer {
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
 }
 
+.footer-links {
+    margin-bottom: 10px;
+}
+
+.footer-links a {
+    color: #d91f4f;
+    font-weight: bold;
+    font-size: 16px;
+    transition: 0.25s ease;
+}
+
+.footer-links a:hover {
+    color: #b9153f;
+}
+
 
 /* =======================================================
-   7) RESPONSIVE - מובייל/טאבלט
+   8) RESPONSIVE - מובייל/טאבלט
 ======================================================= */
 
 @media (max-width: 950px) {
-    header {
-        min-height: auto;
-        padding: 18px;
+    .site-header {
         flex-direction: column;
-        gap: 14px;
+        gap: 10px;
+        padding: 15px;
+    }
+
+    .logo,
+    .links,
+    .auth {
+        width: 100%;
         text-align: center;
+        justify-content: center;
     }
 
     .links {
-        justify-content: center;
-        gap: 12px;
+        flex-wrap: wrap;
     }
 
     .auth {
-        justify-content: center;
         flex-wrap: wrap;
     }
 
@@ -422,25 +643,32 @@ footer {
     }
 }
 
-@media (max-width: 600px) {
-    .links a {
-        font-size: 18px;
-        padding: 8px 10px;
+@media (max-width: 700px) {
+    .register-form {
+        grid-template-columns: 1fr;
     }
+}
 
+@media (max-width: 600px) {
     .logo a {
         font-size: 28px;
     }
 
-    .auth button {
+    .links a {
         font-size: 16px;
-        padding: 10px 14px;
+        padding: 8px 10px;
+    }
+
+    .auth-btn {
+        font-size: 15px;
+        padding: 9px 13px;
     }
 
     .search-form {
         flex-direction: column;
     }
 
+    .search-form input,
     .search-form select,
     .search-form button {
         width: 100%;
@@ -469,25 +697,4 @@ footer {
     .home-demo-hero h1 {
         font-size: 32px;
     }
-}
-
-
-/* ===== AUTH BUTTONS ===== */
-
-.auth a.auth-btn {
-    display: inline-block;
-    background: #d8d8d8;
-    color: #444;
-    text-decoration: none;
-    padding: 12px 18px;
-    border-radius: 12px;
-    font-weight: bold;
-    font-size: 19px;
-    transition: 0.25s ease;
-}
-
-.auth a.auth-btn:hover,
-.auth a.auth-btn.active {
-    background: #c9c9c9;
-    color: #333;
 }

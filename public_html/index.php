@@ -1,27 +1,30 @@
+ <!-- index.php-->
+
 <?php
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+
 $page = $_GET['page'] ?? 'home';
 
 $menu = [
-    'home'    => 'בית',
-    'search'  => 'חיפוש',
-    'how'     => 'איך זה עובד',
-    'contact' => 'צור קשר'
+    'home'     => 'בית',
+    'search'   => 'חיפוש',
+    'messages' => 'הודעות',
+    'views'    => 'צפיות'
 ];
 
 //$allowed = array_keys($menu);
 
-$allowed = ['home', 'search', 'how', 'contact', 'login', 'register'];
+$allowed = ['home', 'search', 'messages', 'views', 'contact', 'login', 'register'];
 if (!in_array($page, $allowed)) {
     $page = 'home';
 }
 
 include __DIR__ . "/includes/header.php";
 
-$page_file = __DIR__ . "/pages/$page.php";
+$page_file = __DIR__ . "/$page.php";
 if (file_exists($page_file)) {
     include $page_file;
 } else {

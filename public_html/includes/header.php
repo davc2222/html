@@ -1,3 +1,5 @@
+    <!-- header.php-->
+
 <?php
 // הגנה למקרה שמישהו פותח header ישירות
 $page = $page ?? '';
@@ -11,12 +13,12 @@ $menu = $menu ?? [];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- CSS ראשי -->
-    <link rel="stylesheet" href="/css/style.css?v=10">
+    <link rel="stylesheet" href="/css/style.css?v=125">
 </head>
 
 <body>
 
-<header>
+<header class="site-header">
     <!-- לוגו -->
     <div class="logo">
         <a href="?page=home">LoveMatch</a>
