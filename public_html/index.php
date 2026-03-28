@@ -13,8 +13,7 @@ $menu = [
     'search' => 'חיפוש',
     'messages' => 'הודעות',
     'views' => 'צפיות',
-    'login' => 'התחברות',
-    'verify_notice' => 'אימות מייל'
+  
 ];
 
 //$allowed = array_keys($menu);

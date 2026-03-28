@@ -53,7 +53,9 @@
 $status = $_GET['status'] ?? '';
 ?>
 
-<section class="verify-notice-page">
+<main class="page-shell">
+    <section class="verify-notice-page">
+        <div class="verify-notice-box">
     <div class="verify-notice-box">
         <?php if ($status === 'verified'): ?>
             <h1>האימייל אומת בהצלחה</h1>
