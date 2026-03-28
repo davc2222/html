@@ -1,9 +1,13 @@
     <!-- header.php-->
 
 <?php
-// הגנה למקרה שמישהו פותח header ישירות
-$page = $page ?? '';
-$menu = $menu ?? [];
+session_start();
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+$page = $_GET['page'] ?? 'home';
 ?>
 <!DOCTYPE html>
 <html lang="he" dir="rtl">

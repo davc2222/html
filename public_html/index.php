@@ -9,15 +9,17 @@ error_reporting(E_ALL);
 $page = $_GET['page'] ?? 'home';
 
 $menu = [
-    'home'     => 'בית',
-    'search'   => 'חיפוש',
+    'home' => 'בית',
+    'search' => 'חיפוש',
     'messages' => 'הודעות',
-    'views'    => 'צפיות'
+    'views' => 'צפיות',
+    'login' => 'התחברות',
+    'verify_notice' => 'אימות מייל'
 ];
 
 //$allowed = array_keys($menu);
 
-$allowed = ['home', 'search', 'messages', 'views', 'contact', 'login', 'register'];
+$allowed = ['home', 'search', 'messages', 'views', 'contact', 'login', 'register','verify_notice'];
 if (!in_array($page, $allowed)) {
     $page = 'home';
 }

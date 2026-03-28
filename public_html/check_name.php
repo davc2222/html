@@ -1,11 +1,24 @@
 <?php
-require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/config/config.php';
 
-$name = $_POST['name'] ?? '';
+header('Content-Type: application/json; charset=utf-8');
 
-$stmt = $pdo->prepare("SELECT 1 FROM users_profile WHERE Name = :name LIMIT 1");
+$name = trim($_POST['name'] ?? '');
+
+if ($name === '') {
+    echo json_encode(['exists' => false]);
+    exit;
+}
+
+$stmt = $pdo->prepare("
+    SELECT 1 
+    FROM users_profile 
+    WHERE Name = :name 
+    LIMIT 1
+");
+
 $stmt->execute([':name' => $name]);
 
 echo json_encode([
-    'exists' => $stmt->fetch() ? true : false
+    'exists' => (bool)$stmt->fetchColumn()
 ]);

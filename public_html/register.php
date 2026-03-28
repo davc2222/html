@@ -1,5 +1,29 @@
- <!-- register.php-->
+<!-- register.php-->
+<style>
+.password-wrapper {
+    position: relative;
+}
 
+.password-wrapper input {
+    width: 100%;
+    box-sizing: border-box;
+    padding-left: 44px;
+}
+
+.toggle-pass {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 0;
+    line-height: 1;
+}
+
+</style>
 <?php
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -66,10 +90,16 @@ $success = $_GET['success'] ?? '';
                 <div class="error-text" id="email-error"></div>
             </div>
 
-            <div class="form-group">
-                <label for="Pass">סיסמה</label>
-                <input type="password" name="Pass" id="Pass" required>
-            </div>
+        <div class="form-group password-group">
+    <label for="Pass">סיסמה</label>
+
+    <div class="password-wrapper">
+        <input type="password" name="Pass" id="Pass" required autocomplete="new-password">
+        <button type="button" class="toggle-pass" id="togglePass">👁</button>
+    </div>
+
+    <div class="error-text" id="pass-error"></div>
+</div>
 
             <div class="form-group">
                 <label for="DOB">תאריך לידה</label>
@@ -144,12 +174,13 @@ $success = $_GET['success'] ?? '';
 const nameInput = document.getElementById("Name");
 const emailInput = document.getElementById("Email");
 const registerBtn = document.getElementById("register-btn");
-
+const passInput = document.getElementById("Pass");
 const nameError = document.getElementById("name-error");
 const emailError = document.getElementById("email-error");
-
+const passError = document.getElementById("pass-error");
 let nameValid = false;
 let emailValid = false;
+let passValid = false;
 
 function showError(element, input, message) {
     element.innerText = message;
@@ -175,16 +206,17 @@ function checkFormValidity() {
         }
     });
 
-    registerBtn.disabled = !(allFilled && nameValid && emailValid);
+   registerBtn.disabled = !(allFilled && nameValid && emailValid && passValid);
 }
 
+/* בדיקת שם משתמש */
 /* בדיקת שם משתמש */
 let nameTimeout;
 nameInput.addEventListener("input", function () {
     clearTimeout(nameTimeout);
 
     const name = this.value.trim();
-    const englishOnly = /^[A-Za-z]+$/;
+    const englishOnly = /^[A-Za-z0-9]+$/;
 
     nameValid = false;
     checkFormValidity();
@@ -197,12 +229,12 @@ nameInput.addEventListener("input", function () {
     }
 
     if (!englishOnly.test(name)) {
-        showError(nameError, this, "רק אותיות באנגלית");
+        showError(nameError, this, "רק אנגלית ומספרים");
         return;
     }
 
-    if (name.length > 10) {
-        showError(nameError, this, "עד 10 תווים בלבד");
+    if (name.length > 15) {
+        showError(nameError, this, "עד 15 תווים בלבד");
         return;
     }
 
@@ -216,7 +248,10 @@ nameInput.addEventListener("input", function () {
         })
         .then(res => res.json())
         .then(data => {
-            if (data.exists) {
+            if (data.valid === false) {
+                showError(nameError, nameInput, "רק אנגלית ומספרים, עד 15 תווים");
+                nameValid = false;
+            } else if (data.exists) {
                 showError(nameError, nameInput, "שם המשתמש תפוס");
                 nameValid = false;
             } else {
@@ -239,6 +274,8 @@ emailInput.addEventListener("input", function () {
     clearTimeout(emailTimeout);
 
     const email = this.value.trim();
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     emailValid = false;
     checkFormValidity();
 
@@ -246,6 +283,11 @@ emailInput.addEventListener("input", function () {
         emailError.innerText = "";
         emailError.classList.remove("show");
         this.classList.remove("input-error", "input-ok");
+        return;
+    }
+
+    if (!emailPattern.test(email)) {
+        showError(emailError, this, "פורמט אימייל לא תקין");
         return;
     }
 
@@ -276,9 +318,47 @@ emailInput.addEventListener("input", function () {
     }, 400);
 });
 
+/* בדיקת סיסמה */
+passInput.addEventListener("input", function () {
+    const pass = this.value.trim();
+    const passPattern = /^(?=.*[A-Za-z])(?=.*[0-9])[A-Za-z0-9]{4,}$/;
+
+    passValid = false;
+    checkFormValidity();
+
+    if (pass === "") {
+        passError.innerText = "";
+        passError.classList.remove("show");
+        this.classList.remove("input-error", "input-ok");
+        return;
+    }
+
+    if (!passPattern.test(pass)) {
+        showError(passError, this, "לפחות 4 תווים, אנגלית ומספרים");
+        return;
+    }
+
+    clearError(passError, this);
+    passValid = true;
+    checkFormValidity();
+});
 /* בדיקות על שדות נוספים */
 document.querySelectorAll(".register-form input, .register-form select").forEach(el => {
     el.addEventListener("input", checkFormValidity);
     el.addEventListener("change", checkFormValidity);
 });
+
+
+const togglePass = document.getElementById("togglePass");
+
+togglePass.addEventListener("click", function () {
+    if (passInput.type === "password") {
+        passInput.type = "text";
+        togglePass.textContent = "🙈";
+    } else {
+        passInput.type = "password";
+        togglePass.textContent = "👁";
+    }
+});
 </script>
+(END)
