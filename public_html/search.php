@@ -4,96 +4,81 @@ error_reporting(E_ALL);
 
 require_once __DIR__ . '/config/config.php';
 
-/* =======================================================
-   הגדרות - תשנה כאן רק לפי המסד שלך
-======================================================= */
-
-$mainTable      = 'users_profile';   // לדוגמה: cards / members / profiles
-$fieldId        = 'Id';                // לדוגמה: Card_id
-$fieldName      = 'Name';              // לדוגמה: NickName
-$fieldAge       = 'Age';               // לדוגמה: Age
-$fieldGenderId  = 'Gender_id';         // אצלך כנראה Gender_id
-$fieldZoneId    = 'Zone_id';           // אצלך כנראה Zone_id
-$fieldImage     = 'Image';             // לדוגמה: MainPic
-$fieldCity      = 'Place_Str';              // לדוגמה: City_Str
-
-/* =======================================================
-   שליפת מגדרים
-======================================================= */
-
 $genders = [];
+$zones   = [];
+
 try {
     $stmtGender = $pdo->query("
         SELECT Gender_id, Gender_Str
         FROM gender
         ORDER BY Gender_id ASC
     ");
-    $genders = $stmtGender->fetchAll();
+    $genders = $stmtGender->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     $genders = [];
 }
 
-/* =======================================================
-   שליפת אזורים
-======================================================= */
-
-$zones = [];
 try {
     $stmtZone = $pdo->query("
         SELECT Zone_id, Zone_Str
         FROM zone
         ORDER BY Zone_id ASC
     ");
-    $zones = $stmtZone->fetchAll();
+    $zones = $stmtZone->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     $zones = [];
 }
 
-/* =======================================================
-   קבלת נתוני טופס
-======================================================= */
-
 $gender_id = $_GET['gender_id'] ?? '';
-$age_range = $_GET['age_range'] ?? '';
+$age_min   = $_GET['age_min'] ?? '';
+$age_max   = $_GET['age_max'] ?? '';
 $zone_id   = $_GET['zone_id'] ?? '';
 
 $results = [];
-$search_done = ($gender_id !== '' || $age_range !== '' || $zone_id !== '');
+$search_done = ($gender_id !== '' || $age_min !== '' || $age_max !== '' || $zone_id !== '');
 
-/* =======================================================
-   חיפוש
-======================================================= */
+if ($age_min !== '' && $age_max !== '' && (int)$age_min > (int)$age_max) {
+    $tmp = $age_min;
+    $age_min = $age_max;
+    $age_max = $tmp;
+}
 
 if ($search_done) {
-    $sql = "SELECT * FROM {$mainTable} WHERE 1=1";
+    $sql = "
+        SELECT *,
+               TIMESTAMPDIFF(YEAR, DOB, CURDATE()) AS calc_age
+        FROM users_profile
+        WHERE email_verified = 1
+          AND DOB IS NOT NULL
+    ";
+
     $params = [];
 
     if ($gender_id !== '') {
-        $sql .= " AND {$fieldGenderId} = :gender_id";
+        $sql .= " AND Gender_Id = :gender_id";
         $params[':gender_id'] = (int)$gender_id;
     }
 
-    if ($age_range !== '') {
-        [$min_age, $max_age] = explode('-', $age_range);
-        $sql .= " AND {$fieldAge} BETWEEN :min_age AND :max_age";
-        $params[':min_age'] = (int)$min_age;
-        $params[':max_age'] = (int)$max_age;
+    if ($age_min !== '') {
+        $sql .= " AND TIMESTAMPDIFF(YEAR, DOB, CURDATE()) >= :age_min";
+        $params[':age_min'] = (int)$age_min;
+    }
+
+    if ($age_max !== '') {
+        $sql .= " AND TIMESTAMPDIFF(YEAR, DOB, CURDATE()) <= :age_max";
+        $params[':age_max'] = (int)$age_max;
     }
 
     if ($zone_id !== '') {
-        $sql .= " AND {$fieldZoneId} = :zone_id";
+        $sql .= " AND Zone_Id = :zone_id";
         $params[':zone_id'] = (int)$zone_id;
     }
 
-    $sql .= " ORDER BY {$fieldId} ASC";
+    $sql .= " ORDER BY Id DESC";
 
-    try {
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($params);
-        $results = $stmt->fetchAll();
-    } catch (PDOException $e) {
-        echo "<div class='search-container'><div class='no-results'>שגיאה בחיפוש: " . htmlspecialchars($e->getMessage()) . "</div></div>";
-    }
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 ?>
 
@@ -103,7 +88,6 @@ if ($search_done) {
     <form class="search-form" method="GET" action="">
         <input type="hidden" name="page" value="search">
 
-        <!-- מין -->
         <select name="gender_id">
             <option value="">בחר מין</option>
             <?php foreach ($genders as $gender): ?>
@@ -113,24 +97,28 @@ if ($search_done) {
             <?php endforeach; ?>
         </select>
 
-        <!-- גילאים -->
-        <select name="age_range">
-            <option value="">בחר טווח גילאים</option>
-            <?php for ($start = 18; $start <= 80; $start += 5): ?>
-                <?php
-                $end = $start + 4;
-                if ($end > 80) {
-                    $end = 80;
-                }
-                $rangeValue = $start . '-' . $end;
-                ?>
-                <option value="<?= $rangeValue ?>" <?= ($age_range === $rangeValue) ? 'selected' : '' ?>>
-                    <?= $start ?> - <?= $end ?>
-                </option>
-            <?php endfor; ?>
-        </select>
+        <div class="age-range-wrap">
+            <select name="age_min">
+                <option value="">מגיל</option>
+                <?php for ($i = 18; $i <= 90; $i++): ?>
+                    <option value="<?= $i ?>" <?= ((string)$age_min === (string)$i) ? 'selected' : '' ?>>
+                        <?= $i ?>
+                    </option>
+                <?php endfor; ?>
+            </select>
 
-        <!-- אזור -->
+            <span class="age-range-sep">עד</span>
+
+            <select name="age_max">
+                <option value="">עד גיל</option>
+                <?php for ($i = 18; $i <= 90; $i++): ?>
+                    <option value="<?= $i ?>" <?= ((string)$age_max === (string)$i) ? 'selected' : '' ?>>
+                        <?= $i ?>
+                    </option>
+                <?php endfor; ?>
+            </select>
+        </div>
+
         <select name="zone_id">
             <option value="">בחר אזור</option>
             <?php foreach ($zones as $zone): ?>
@@ -143,9 +131,9 @@ if ($search_done) {
         <button type="submit">חפש</button>
     </form>
 
-    <div class="results">
+    <div class="results-list">
         <?php if (!$search_done): ?>
-            <div class="no-results">בחר מין, טווח גילאים ואזור לחיפוש</div>
+            <div class="no-results">בחר מין, גיל ואזור לחיפוש</div>
 
         <?php elseif (count($results) === 0): ?>
             <div class="no-results">לא נמצאו תוצאות מתאימות</div>
@@ -153,26 +141,34 @@ if ($search_done) {
         <?php else: ?>
             <?php foreach ($results as $row): ?>
                 <?php
-                $img  = !empty($row[$fieldImage]) ? $row[$fieldImage] : 'no_photo.jpg';
-                $name = $row[$fieldName] ?? 'ללא שם';
-                $age  = $row[$fieldAge] ?? '-';
-                $city = $row[$fieldCity] ?? '';
-                $id   = $row[$fieldId] ?? '';
+                $name = $row['Name'] ?? 'ללא שם';
+                $age  = $row['calc_age'] ?? '-';
+                $city = $row['Place_Str'] ?? '';
+                $id   = $row['Id'] ?? '';
                 ?>
-                <div class="card">
-                    <img class="profile-img" src="/images/<?= htmlspecialchars($img) ?>" alt="<?= htmlspecialchars($name) ?>">
+                <article class="search-result-card">
+                    <div class="search-result-image">
+                        <img src="/images/no_photo.jpg" alt="<?= htmlspecialchars($name) ?>">
+                    </div>
 
-                    <h3><?= htmlspecialchars($name) ?></h3>
-                    <p>גיל: <?= htmlspecialchars($age) ?></p>
+                    <div class="search-result-content">
+                        <h3><?= htmlspecialchars($name) ?></h3>
 
-                    <?php if ($city !== ''): ?>
-                        <p><?= htmlspecialchars($city) ?></p>
-                    <?php endif; ?>
+                        <div class="search-result-meta">
+                            <span>גיל: <?= htmlspecialchars($age) ?></span>
 
-                    <a class="profile-btn" href="/profile.php?id=<?= urlencode($id) ?>">
-                        לצפייה בפרופיל
-                    </a>
-                </div>
+                            <?php if ($city !== ''): ?>
+                                <span>עיר: <?= htmlspecialchars($city) ?></span>
+                            <?php endif; ?>
+                        </div>
+
+                        <div class="search-result-actions">
+                            <a class="profile-btn" href="/profile.php?id=<?= urlencode($id) ?>">
+                                לצפייה בפרופיל
+                            </a>
+                        </div>
+                    </div>
+                </article>
             <?php endforeach; ?>
         <?php endif; ?>
     </div>
