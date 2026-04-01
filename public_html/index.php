@@ -33,3 +33,16 @@ if (file_exists($page_file)) {
 }
 
 include __DIR__ . "/includes/footer.php";
+
+?>
+
+
+<script>
+window.addEventListener('load', () => {
+    document.body.classList.remove('modal-open', 'loading');
+
+    document.querySelectorAll('.overlay, .modal, .backdrop').forEach(el => {
+        el.style.display = 'none';
+    });
+});
+</script>

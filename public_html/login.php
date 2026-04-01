@@ -1,4 +1,8 @@
 <?php
+// =======================
+// FILE: login.php
+// =======================
+
 $error = $_GET['error'] ?? '';
 ?>
 
@@ -14,7 +18,7 @@ $error = $_GET['error'] ?? '';
     background: #fff;
     border-radius: 24px;
     padding: 36px 30px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
 }
 
 .login-box h1 {

@@ -1,66 +1,76 @@
 <?php
+// =======================
+// FILE: header.php
+// =======================
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 $page = $_GET['page'] ?? 'home';
 
-/* אם $menu לא הגיע מ-index.php, נשתמש בברירת מחדל */
-if (!isset($menu) || !is_array($menu)) {
-    $menu = [
-        'home'     => 'בית',
-        'search'   => 'חיפוש',
-        'messages' => 'הודעות',
-        'views'    => 'צפיות',
-    ];
+$userLoggedIn = !empty($_SESSION['user_id']);
+
+$headerUserId = $_SESSION['user_id'] ?? '';
+$headerUserName = $_SESSION['user_name'] ?? ($_SESSION['username'] ?? '');
+
+$headerUserImage = '/images/no_photo.jpg';
+
+if (!empty($_SESSION['user_main_pic'])) {
+    $headerUserImage = $_SESSION['user_main_pic'];
+} elseif (!empty($_SESSION['user_image'])) {
+    $headerUserImage = '/images/' . $_SESSION['user_image'];
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
+
 <head>
     <meta charset="UTF-8">
     <title>LoveMatch</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <link rel="stylesheet" href="/css/style.css?v=130">
+    <link rel="stylesheet" href="/css/style.css?v=126">
 </head>
+
 <body>
 
-<header class="site-header">
-    <div class="logo">
-        <a href="/?page=home">LoveMatch</a>
-    </div>
+    <header class="site-header">
 
-    <nav class="links">
-        <?php foreach ($menu as $p => $label): ?>
-            <a href="/?page=<?= htmlspecialchars($p) ?>"
-               class="<?= ($page === $p) ? 'active' : '' ?>">
+        <div class="logo">
+            <a href="?page=home">LoveMatch</a>
+        </div>
+
+        <nav class="links">
+            <?php foreach ($menu as $p => $label): ?>
+            <a href="?page=<?= $p ?>" class="<?= ($page === $p) ? 'active' : '' ?>">
                 <?= htmlspecialchars($label) ?>
             </a>
-        <?php endforeach; ?>
-    </nav>
+            <?php endforeach; ?>
+        </nav>
 
-    <div class="auth">
-        <?php if (!empty($_SESSION['user_logged_in'])): ?>
+        <div class="auth">
+
+            <?php if ($userLoggedIn): ?>
+
+            <a href="?page=profile&id=<?= urlencode($headerUserId) ?>&edit=1" class="header-avatar-link">
+
+                <img src="<?= htmlspecialchars($headerUserImage) ?>" class="header-avatar">
+            </a>
+
             <span class="welcome-user">
-                שלום <?= htmlspecialchars($_SESSION['user_name'] ?? '') ?>
+                שלום <?= htmlspecialchars($headerUserName) ?>
             </span>
 
-           <a href="/logout.php" class="auth-btn logout-btn">התנתקות</a>
-        <?php else: ?>
-            <a href="/?page=login"
-               class="auth-btn <?= ($page === 'login') ? 'active' : '' ?>">
-                התחברות
-            </a>
+            <a href="/logout.php" class="auth-btn">התנתקות</a>
 
-            <a href="/?page=register"
-               class="auth-btn <?= ($page === 'register') ? 'active' : '' ?>">
-                הרשמה
-            </a>
-        <?php endif; ?>
-    </div>
-</header>
+            <?php else: ?>
+
+            <a href="?page=login" class="auth-btn">התחברות</a>
+            <a href="?page=register" class="auth-btn">הרשמה</a>
+
+            <?php endif; ?>
+
+        </div>
+
+    </header>

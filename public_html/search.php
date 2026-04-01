@@ -4,8 +4,24 @@ error_reporting(E_ALL);
 
 require_once __DIR__ . '/config/config.php';
 
+/* =======================================================
+   הגדרות
+======================================================= */
+
+$mainTable      = 'users_profile';
+$fieldId        = 'Id';
+$fieldName      = 'Name';
+$fieldDob       = 'DOB';
+$fieldGenderId  = 'Gender_id';
+$fieldZoneId    = 'Zone_id';
+$fieldImage     = 'Image';
+$fieldCity      = 'Place_Str';
+
+/* =======================================================
+   שליפת מגדרים
+======================================================= */
+
 $genders = [];
-$zones   = [];
 
 try {
     $stmtGender = $pdo->query("
@@ -13,10 +29,16 @@ try {
         FROM gender
         ORDER BY Gender_id ASC
     ");
-    $genders = $stmtGender->fetchAll(PDO::FETCH_ASSOC);
+    $genders = $stmtGender->fetchAll();
 } catch (PDOException $e) {
     $genders = [];
 }
+
+/* =======================================================
+   שליפת אזורים
+======================================================= */
+
+$zones = [];
 
 try {
     $stmtZone = $pdo->query("
@@ -24,61 +46,74 @@ try {
         FROM zone
         ORDER BY Zone_id ASC
     ");
-    $zones = $stmtZone->fetchAll(PDO::FETCH_ASSOC);
+    $zones = $stmtZone->fetchAll();
 } catch (PDOException $e) {
     $zones = [];
 }
 
+/* =======================================================
+   קבלת נתוני טופס
+======================================================= */
+
 $gender_id = $_GET['gender_id'] ?? '';
-$age_min   = $_GET['age_min'] ?? '';
-$age_max   = $_GET['age_max'] ?? '';
+$age_from  = $_GET['age_from'] ?? '';
+$age_to    = $_GET['age_to'] ?? '';
 $zone_id   = $_GET['zone_id'] ?? '';
 
-$results = [];
-$search_done = ($gender_id !== '' || $age_min !== '' || $age_max !== '' || $zone_id !== '');
-
-if ($age_min !== '' && $age_max !== '' && (int)$age_min > (int)$age_max) {
-    $tmp = $age_min;
-    $age_min = $age_max;
-    $age_max = $tmp;
+if ($age_from !== '' && !is_numeric($age_from)) {
+    $age_from = '';
 }
 
-if ($search_done) {
-    $sql = "
-        SELECT *,
-               TIMESTAMPDIFF(YEAR, DOB, CURDATE()) AS calc_age
-        FROM users_profile
-        WHERE email_verified = 1
-          AND DOB IS NOT NULL
-    ";
+if ($age_to !== '' && !is_numeric($age_to)) {
+    $age_to = '';
+}
 
+if ($age_from !== '' && $age_to !== '' && (int)$age_from > (int)$age_to) {
+    $tmp = $age_from;
+    $age_from = $age_to;
+    $age_to = $tmp;
+}
+
+$results = [];
+$search_done = ($gender_id !== '' || $age_from !== '' || $age_to !== '' || $zone_id !== '');
+
+/* =======================================================
+   חיפוש
+======================================================= */
+
+if ($search_done) {
+    $sql = "SELECT * FROM {$mainTable} WHERE 1=1";
     $params = [];
 
     if ($gender_id !== '') {
-        $sql .= " AND Gender_Id = :gender_id";
+        $sql .= " AND {$fieldGenderId} = :gender_id";
         $params[':gender_id'] = (int)$gender_id;
     }
 
-    if ($age_min !== '') {
-        $sql .= " AND TIMESTAMPDIFF(YEAR, DOB, CURDATE()) >= :age_min";
-        $params[':age_min'] = (int)$age_min;
+    if ($age_from !== '') {
+        $sql .= " AND TIMESTAMPDIFF(YEAR, {$fieldDob}, CURDATE()) >= :age_from";
+        $params[':age_from'] = (int)$age_from;
     }
 
-    if ($age_max !== '') {
-        $sql .= " AND TIMESTAMPDIFF(YEAR, DOB, CURDATE()) <= :age_max";
-        $params[':age_max'] = (int)$age_max;
+    if ($age_to !== '') {
+        $sql .= " AND TIMESTAMPDIFF(YEAR, {$fieldDob}, CURDATE()) <= :age_to";
+        $params[':age_to'] = (int)$age_to;
     }
 
     if ($zone_id !== '') {
-        $sql .= " AND Zone_Id = :zone_id";
+        $sql .= " AND {$fieldZoneId} = :zone_id";
         $params[':zone_id'] = (int)$zone_id;
     }
 
-    $sql .= " ORDER BY Id DESC";
+    $sql .= " ORDER BY {$fieldId} ASC";
 
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute($params);
-    $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    try {
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $results = $stmt->fetchAll();
+    } catch (PDOException $e) {
+        echo "<div class='search-container'><div class='no-results'>שגיאה בחיפוש: " . htmlspecialchars($e->getMessage()) . "</div></div>";
+    }
 }
 ?>
 
@@ -97,27 +132,23 @@ if ($search_done) {
             <?php endforeach; ?>
         </select>
 
-        <div class="age-range-wrap">
-            <select name="age_min">
-                <option value="">מגיל</option>
-                <?php for ($i = 18; $i <= 90; $i++): ?>
-                    <option value="<?= $i ?>" <?= ((string)$age_min === (string)$i) ? 'selected' : '' ?>>
-                        <?= $i ?>
-                    </option>
-                <?php endfor; ?>
-            </select>
+        <select name="age_from">
+            <option value="">מגיל</option>
+            <?php for ($i = 18; $i <= 80; $i++): ?>
+                <option value="<?= $i ?>" <?= ((string)$age_from === (string)$i) ? 'selected' : '' ?>>
+                    <?= $i ?>
+                </option>
+            <?php endfor; ?>
+        </select>
 
-            <span class="age-range-sep">עד</span>
-
-            <select name="age_max">
-                <option value="">עד גיל</option>
-                <?php for ($i = 18; $i <= 90; $i++): ?>
-                    <option value="<?= $i ?>" <?= ((string)$age_max === (string)$i) ? 'selected' : '' ?>>
-                        <?= $i ?>
-                    </option>
-                <?php endfor; ?>
-            </select>
-        </div>
+        <select name="age_to">
+            <option value="">עד גיל</option>
+            <?php for ($i = 18; $i <= 80; $i++): ?>
+                <option value="<?= $i ?>" <?= ((string)$age_to === (string)$i) ? 'selected' : '' ?>>
+                    <?= $i ?>
+                </option>
+            <?php endfor; ?>
+        </select>
 
         <select name="zone_id">
             <option value="">בחר אזור</option>
@@ -131,9 +162,9 @@ if ($search_done) {
         <button type="submit">חפש</button>
     </form>
 
-    <div class="results-list">
+    <div class="results">
         <?php if (!$search_done): ?>
-            <div class="no-results">בחר מין, גיל ואזור לחיפוש</div>
+            <div class="no-results">בחר מין, טווח גילאים ואזור לחיפוש</div>
 
         <?php elseif (count($results) === 0): ?>
             <div class="no-results">לא נמצאו תוצאות מתאימות</div>
@@ -141,34 +172,98 @@ if ($search_done) {
         <?php else: ?>
             <?php foreach ($results as $row): ?>
                 <?php
-                $name = $row['Name'] ?? 'ללא שם';
-                $age  = $row['calc_age'] ?? '-';
-                $city = $row['Place_Str'] ?? '';
-                $id   = $row['Id'] ?? '';
+                $img  = !empty($row[$fieldImage]) ? $row[$fieldImage] : 'no_photo.jpg';
+                $name = $row[$fieldName] ?? 'ללא שם';
+                $city = trim((string)($row[$fieldCity] ?? ''));
+                $id   = $row[$fieldId] ?? '';
+
+                $age = '';
+                if (!empty($row[$fieldDob])) {
+                    $age = (string) date_diff(date_create($row[$fieldDob]), date_create('today'))->y;
+                }
+
+                $zodiac       = trim((string)($row['ZODIAC'] ?? ''));
+                $familyStatus = trim((string)($row['family_status'] ?? ''));
+                $religion     = trim((string)($row['religion'] ?? ''));
+                $religionRef  = trim((string)($row['religion_ref'] ?? ''));
+                $place        = trim((string)($row['place'] ?? $city));
+                $height       = trim((string)($row['height'] ?? ''));
+                $smoking      = trim((string)($row['smoking_habbit'] ?? ''));
+
+                $childrenRaw = $row['childs_num'] ?? '';
+                if ($childrenRaw === '' || $childrenRaw === null) {
+                    $children = '';
+                } else {
+                    $children = ((int)$childrenRaw > 0) ? $childrenRaw . '+' : '0';
+                }
                 ?>
-                <article class="search-result-card">
-                    <div class="search-result-image">
-                        <img src="/images/no_photo.jpg" alt="<?= htmlspecialchars($name) ?>">
-                    </div>
 
-                    <div class="search-result-content">
-                        <h3><?= htmlspecialchars($name) ?></h3>
+                <div class="card">
+                    <img
+                        class="profile-img"
+                        src="/images/<?= htmlspecialchars($img) ?>"
+                        alt="<?= htmlspecialchars($name) ?>"
+                    >
 
-                        <div class="search-result-meta">
-                            <span>גיל: <?= htmlspecialchars($age) ?></span>
-
-                            <?php if ($city !== ''): ?>
-                                <span>עיר: <?= htmlspecialchars($city) ?></span>
-                            <?php endif; ?>
+                    <div class="card-content">
+                        <div class="card-header">
+                            <h3><?= htmlspecialchars($name) ?></h3>
+                            <div class="card-line"></div>
                         </div>
 
-                        <div class="search-result-actions">
-                            <a class="profile-btn" href="/profile.php?id=<?= urlencode($id) ?>">
-                                לצפייה בפרופיל
-                            </a>
+                        <div class="card-info">
+                            <div class="info-row">
+                                <?php if ($age !== ''): ?>
+                                    <span><?= htmlspecialchars($age) ?></span>
+                                <?php endif; ?>
+
+                                <?php if ($zodiac !== ''): ?>
+                                    <span><?= htmlspecialchars($zodiac) ?></span>
+                                <?php endif; ?>
+                            </div>
+
+                            <div class="info-row">
+                                <?php if ($familyStatus !== ''): ?>
+                                    <span><?= htmlspecialchars($familyStatus) ?></span>
+                                <?php endif; ?>
+
+                                <?php if ($children !== ''): ?>
+                                    <span><?= htmlspecialchars($children) ?></span>
+                                <?php endif; ?>
+
+                                <?php if ($religion !== ''): ?>
+                                    <span><?= htmlspecialchars($religion) ?></span>
+                                <?php endif; ?>
+
+                                <?php if ($religionRef !== ''): ?>
+                                    <span><?= htmlspecialchars($religionRef) ?></span>
+                                <?php endif; ?>
+                            </div>
+
+                            <div class="info-row">
+                                <?php if ($place !== ''): ?>
+                                    <span><?= htmlspecialchars($place) ?></span>
+                                <?php endif; ?>
+                            </div>
+
+                            <div class="info-row">
+                                <?php if ($height !== ''): ?>
+                                    <span><?= htmlspecialchars($height) ?></span>
+                                <?php endif; ?>
+                            </div>
+
+                            <div class="info-row">
+                                <?php if ($smoking !== ''): ?>
+                                    <span><?= htmlspecialchars($smoking) ?></span>
+                                <?php endif; ?>
+                            </div>
                         </div>
+
+                        <a class="profile-link" href="/?page=profile&id=<?= urlencode($id) ?>">
+    לצפיה בפרופיל
+</a>
                     </div>
-                </article>
+                </div>
             <?php endforeach; ?>
         <?php endif; ?>
     </div>
