@@ -1,300 +1,376 @@
 <?php
-// =======================
-// FILE: profile.php
-// =======================
+require_once __DIR__ . '/config/config.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-require_once __DIR__ . '/config/config.php';
+/* -----------------------------
+   עזר
+----------------------------- */
+function e($value)
+{
+    return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+}
 
-$id = (int)($_GET['id'] ?? 0);
+function profile_value(array $user, string $field): string
+{
+    return isset($user[$field]) && $user[$field] !== null ? trim((string)$user[$field]) : '';
+}
 
+function can_edit_profile(array $user): bool
+{
+    if (empty($_SESSION['user_id'])) {
+        return false;
+    }
+
+    return (int)$_SESSION['user_id'] === (int)$user['Id'];
+}
+
+/* -----------------------------
+   קבלת מזהה משתמש
+----------------------------- */
+$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+
+if ($id <= 0) {
+    echo "<div class='page-shell'>משתמש לא נמצא</div>";
+    exit;
+}
+
+/* -----------------------------
+   שליפת משתמש
+----------------------------- */
 $stmt = $pdo->prepare("SELECT * FROM users_profile WHERE Id = :id LIMIT 1");
 $stmt->execute([':id' => $id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$user) {
-    echo "<main class='page-shell'><p>משתמש לא נמצא</p></main>";
-    return;
+    echo "<div class='page-shell'>משתמש לא נמצא</div>";
+    exit;
 }
 
-$isOwnProfile = !empty($_SESSION['user_id']) && (int)$_SESSION['user_id'] === $id;
-$editMode = $isOwnProfile && isset($_GET['edit']);
+$editMode = can_edit_profile($user) && isset($_GET['edit']) && (int)$_GET['edit'] === 1;
 
-/* =========================================
-   עזר להצגת שדות ריקים
-========================================= */
-function showField($value): string
-{
-    return ($value !== null && $value !== '')
-        ? htmlspecialchars((string)$value)
-        : '<span class="empty-field">טרם מולא</span>';
-}
+/* -----------------------------
+   תמונת פרופיל
+----------------------------- */
+$profileImage = !empty($user['ProfileImage'])
+    ? $user['ProfileImage']
+    : (!empty($user['profile_image']) ? $user['profile_image'] : 'images/no_photo.jpg');
 
-/* =========================================
-   צד ימין
-========================================= */
+/* -----------------------------
+   שם ותיאור קצר
+----------------------------- */
+$displayName = trim(
+    profile_value($user, 'UserName') !== ''
+        ? profile_value($user, 'UserName')
+        : (
+            profile_value($user, 'FirstName') !== '' || profile_value($user, 'LastName') !== ''
+                ? trim(profile_value($user, 'FirstName') . ' ' . profile_value($user, 'LastName'))
+                : 'ללא שם'
+        )
+);
 
-$img  = !empty($user['Image']) ? $user['Image'] : 'no_photo.jpg';
-$name = trim((string)($user['Name'] ?? ''));
+$age        = profile_value($user, 'Age');
+$city       = profile_value($user, 'Area');
+$gender     = profile_value($user, 'Gender');
+$lookingFor = profile_value($user, 'LookingFor');
 
-$age = '';
-if (!empty($user['DOB'])) {
-    $age = (string)date_diff(date_create($user['DOB']), date_create('today'))->y;
-}
+/* -----------------------------
+   שדות ימין
+----------------------------- */
+$rightFields = [
+    'Age'            => 'גיל',
+    'Gender'         => 'מין',
+    'Area'           => 'מקום מיגורים',
+    'Height'         => 'גובה',
+    'BodyType'       => 'מבנה גוף',
+    'Status'         => 'סטטוס',
+    'Religion'       => 'דת',
+    'Smoking'        => 'מעשן/ת',
+    'Drinking'       => 'שותה/ה',
+    'Children'       => 'ילדים',
+    'Education'      => 'השכלה',
+    'Occupation'     => 'עיסוק',
+    'LookingFor'     => 'מחפש/ת',
+    'Vegitrain_Str'  => 'תזונה'
+];
 
-$place        = $user['Place_Str'] ?? ($user['place'] ?? '');
-$height       = $user['height'] ?? '';
-$smoking      = $user['smoking_habbit'] ?? '';
-$familyStatus = $user['family_status'] ?? '';
-$religion     = $user['religion'] ?? '';
-$religionRef  = $user['religion_ref'] ?? '';
-$zodiac       = $user['ZODIAC'] ?? '';
-$vegetrain    = $user['Vegitrain_Str'] ?? '';
-
-$childrenRaw = $user['childs_num'] ?? '';
-if ($childrenRaw === '' || $childrenRaw === null) {
-    $childrenCount = '<span class="empty-field">טרם מולא</span>';
-} else {
-    $childrenCount = ((int)$childrenRaw > 0)
-        ? htmlspecialchars((string)$childrenRaw . '+')
-        : '0';
-}
-
-/* =========================================
-   צד שמאל
-========================================= */
-
-function profileText(?string $value, string $default = 'טרם מולא'): string
-{
-    $v = trim((string)$value);
-    return ($v !== '') ? htmlspecialchars($v) : $default;
-}
-
+/* -----------------------------
+   בלוקים שמאל
+----------------------------- */
 $leftBlocks = [
-    [
-        'title' => 'קצת על עצמי',
-        'field' => 'Who_Am_I',
-        'value' => profileText($user['Who_Am_I'] ?? '', 'טרם מולא')
-    ],
-    [
-        'title' => 'מה אני מחפש',
-        'field' => 'I_Looking_For',
-        'value' => profileText($user['I_Looking_For'] ?? '', 'טרם מולא')
-    ],
-    [
-        'title' => 'מערכת יחסים שהייתי רוצה',
-        'field' => 'Ideal_Relation_Is',
-        'value' => profileText($user['Ideal_Relation_Is'] ?? '', 'טרם מולא')
-    ],
-    [
-        'title' => 'תחביבים',
-        'field' => 'Hobbies',
-        'value' => profileText($user['Hobbies'] ?? '', 'טרם מולא')
-    ],
-    [
-        'title' => 'בילוי מועדף',
-        'field' => 'Spending',
-        'value' => profileText($user['Spending'] ?? '', 'טרם מולא')
-    ],
-    [
-        'title' => 'סרטים אהובים',
-        'field' => 'Favorite_Movies',
-        'value' => profileText($user['Favorite_Movies'] ?? '', 'טרם מולא')
-    ],
-    [
-        'title' => 'תוכניות טלוויזיה אהובות',
-        'field' => 'Favorite_TV',
-        'value' => profileText($user['Favorite_TV'] ?? '', 'טרם מולא')
-    ],
-    [
-        'title' => 'ספרים',
-        'field' => 'Favorite_Books',
-        'value' => profileText($user['Favorite_Books'] ?? '', 'טרם מולא')
-    ],
-    [
-        'title' => 'מוזיקה',
-        'field' => 'Favorite_Music',
-        'value' => profileText($user['Favorite_Music'] ?? '', 'טרם מולא')
-    ],
+    'AboutMe'        => 'קצת על עצמי',
+    'MyMatch'        => 'מה אני מחפש/ת',
+    'Hobbies'        => 'תחביבים',
+    'FavoriteMusic'  => 'מוזיקה אהובה',
+    'FavoriteFood'   => 'אוכל אהוב'
+  
 ];
 ?>
+<div class="page-shell">
+    <div class="profile-page">
 
-<main class="page-shell">
-    <div class="profile-wrap">
+        <!-- צד שמאל -->
+        <div class="profile-left">
 
-        <section class="profile-left">
-            <?php foreach ($leftBlocks as $block): ?>
-                <div class="profile-block editable-block"
-                     data-field="<?= htmlspecialchars($block['field']) ?>"
-                     data-user-id="<?= (int)$id ?>">
-
+            <?php foreach ($leftBlocks as $field => $title): ?>
+    <?php
+    $value = profile_value($user, $field);
+    if ($value === '') continue;
+    ?>
+    <div class="profile-block" data-field="<?= e($field) ?>">
                     <div class="profile-block-head">
-                        <h3><?= htmlspecialchars($block['title']) ?></h3>
+                        <h3><?= e($title) ?></h3>
 
                         <?php if ($editMode): ?>
-                            <button type="button" class="edit-btn" title="עריכה">✎</button>
+                            <div class="profile-block-actions">
+                                <button type="button" class="edit-btn">✎</button>
+                                <button type="button" class="save-btn" style="display:none;">שמור</button>
+                                <button type="button" class="cancel-btn" style="display:none;">ביטול</button>
+                            </div>
                         <?php endif; ?>
                     </div>
 
-                    <div class="profile-view">
-                        <?= nl2br($block['value']) ?>
-                    </div>
-
-                    <?php if ($editMode): ?>
-                        <div class="profile-edit" style="display:none;">
-                            <textarea class="edit-textarea"><?= htmlspecialchars(trim((string)($user[$block['field']] ?? ''))) ?></textarea>
-
-                            <div class="edit-actions">
-                                <button type="button" class="save-btn">שמירה</button>
-                                <a href="#" class="cancel-btn">ביטול</a>
-                            </div>
+                    <div class="profile-block-body">
+                        <div class="view-mode">
+                            <?= $value !== '' ? nl2br(e($value)) : '<span class="empty-text">לא הוזן מידע</span>' ?>
                         </div>
-                    <?php endif; ?>
+
+                        <?php if ($editMode): ?>
+                            <div class="edit-mode" style="display:none;">
+                                <textarea class="profile-textarea" rows="5"><?= e($value) ?></textarea>
+                            </div>
+                        <?php endif; ?>
+                    </div>
                 </div>
             <?php endforeach; ?>
-        </section>
 
+        </div>
+
+        <!-- צד ימין -->
         <aside class="profile-right">
             <div class="profile-card">
-                <img
-                    src="/images/<?= htmlspecialchars($img) ?>"
-                    alt="<?= htmlspecialchars($name) ?>"
-                    class="profile-card-img"
-                >
+                <div class="profile-card-image-wrap">
+                    <img src="<?= e($profileImage) ?>" alt="<?= e($displayName) ?>" class="profile-card-image">
+                </div>
 
-                <div class="profile-card-content">
-                    <h2 class="profile-name"><?= htmlspecialchars($name) ?></h2>
+                <div class="profile-card-main">
+                    <h1 class="profile-card-name"><?= e($displayName) ?></h1>
 
-                    <div class="profile-row">
-                        <strong>גיל:</strong>
-                        <span><?= ($age !== '') ? htmlspecialchars($age) : '<span class="empty-field">טרם מולא</span>' ?></span>
-                    </div>
-
-                    <div class="profile-row">
-                        <strong>מקום מגורים:</strong>
-                        <span><?= showField($place) ?></span>
-                    </div>
-
-                    <div class="profile-row">
-                        <strong>גובה:</strong>
-                        <span><?= showField($height) ?></span>
-                    </div>
-
-                    <div class="profile-row">
-                        <strong>עישון:</strong>
-                        <span><?= showField($smoking) ?></span>
-                    </div>
-
-                    <div class="profile-row">
-                        <strong>צמחונות:</strong>
-                        <span><?= showField($vegetrain) ?></span>
-                    </div>
-
-                    <div class="profile-row">
-                        <strong>מצב משפחתי:</strong>
-                        <span><?= showField($familyStatus) ?></span>
-                    </div>
-
-                    <div class="profile-row">
-                        <strong>דת:</strong>
-                        <span><?= showField($religion) ?></span>
-                    </div>
-
-                    <div class="profile-row">
-                        <strong>דתיות:</strong>
-                        <span><?= showField($religionRef) ?></span>
-                    </div>
-
-                    <div class="profile-row">
-                        <strong>מזל:</strong>
-                        <span><?= showField($zodiac) ?></span>
-                    </div>
-
-                    <div class="profile-row">
-                        <strong>ילדים:</strong>
-                        <span><?= ($childrenRaw !== '' && $childrenRaw !== null && (int)$childrenRaw > 0) ? 'יש' : (($childrenRaw !== '' && $childrenRaw !== null) ? 'אין' : '<span class="empty-field">טרם מולא</span>') ?></span>
-                    </div>
-
-                    <div class="profile-row">
-                        <strong>מספר ילדים:</strong>
-                        <span><?= $childrenCount ?></span>
+                    <div class="profile-card-sub">
+                        <?php
+                        $subParts = [];
+                        if ($age !== '') {
+                            $subParts[] = e($age);
+                        }
+                        if ($city !== '') {
+                            $subParts[] = e($city);
+                        }
+                        echo !empty($subParts) ? implode(' , ', $subParts) : 'פרופיל משתמש';
+                        ?>
                     </div>
                 </div>
+
+                <div class="profile-card-actions">
+                    <?php if (!$editMode): ?>
+                        <button type="button" class="profile-message-btn" onclick="openChatWithUser(<?= (int)$user['Id'] ?>)">
+                            שלח הודעה
+                        </button>
+                    <?php else: ?>
+                        <a class="profile-edit-link" href="?page=profile&id=<?= (int)$user['Id'] ?>">
+                            סיום עריכה
+                        </a>
+                    <?php endif; ?>
+                </div>
+
+                <div class="profile-info-list">
+                    <?php foreach ($rightFields as $field => $label): ?>
+    <?php
+    $value = profile_value($user, $field);
+    if ($value === '') continue;
+    ?>
+    <div class="profile-info-row" data-field="<?= e($field) ?>">
+                            <div class="profile-info-label"><?= e($label) ?></div>
+
+                            <div class="profile-info-value-wrap">
+                                <div class="view-mode profile-info-value">
+                                    <?= $value !== '' ? e($value) : '<span class="empty-text">לא צוין</span>' ?>
+                                </div>
+
+                                <?php if ($editMode): ?>
+                                    <div class="edit-mode" style="display:none;">
+                                        <input type="text" class="profile-input" value="<?= e($value) ?>">
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+
+                            <?php if ($editMode): ?>
+                                <div class="profile-info-actions">
+                                    <button type="button" class="edit-btn">✎</button>
+                                    <button type="button" class="save-btn" style="display:none;">שמור</button>
+                                    <button type="button" class="cancel-btn" style="display:none;">ביטול</button>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+
             </div>
         </aside>
-
     </div>
-</main>
+</div>
 
-<?php if ($editMode): ?>
 <script>
+function openChatWithUser(userId) {
+    const params = new URLSearchParams(window.location.search);
+    params.set('chat_user', userId);
+
+    if (!params.get('page')) {
+        params.set('page', 'profile');
+    }
+
+    window.location.search = params.toString();
+}
+
 document.addEventListener('click', async function (e) {
     const editBtn = e.target.closest('.edit-btn');
     const saveBtn = e.target.closest('.save-btn');
     const cancelBtn = e.target.closest('.cancel-btn');
 
-    if (!editBtn && !saveBtn && !cancelBtn) return;
-
-    const block = e.target.closest('.editable-block');
-    if (!block) return;
-
-    const view = block.querySelector('.profile-view');
-    const edit = block.querySelector('.profile-edit');
-    const textarea = block.querySelector('.edit-textarea');
-
     if (editBtn) {
-        e.preventDefault();
-        view.style.display = 'none';
-        edit.style.display = 'block';
-        textarea.focus();
-        textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+        const container = editBtn.closest('.profile-block, .profile-info-row');
+        if (!container) return;
+
+        const viewMode = container.querySelector('.view-mode');
+        const editMode = container.querySelector('.edit-mode');
+
+        if (viewMode) viewMode.style.display = 'none';
+        if (editMode) editMode.style.display = 'block';
+
+        const localEditBtn = container.querySelector('.edit-btn');
+        const localSaveBtn = container.querySelector('.save-btn');
+        const localCancelBtn = container.querySelector('.cancel-btn');
+
+        if (localEditBtn) localEditBtn.style.display = 'none';
+        if (localSaveBtn) localSaveBtn.style.display = 'inline-block';
+        if (localCancelBtn) localCancelBtn.style.display = 'inline-block';
         return;
     }
 
     if (cancelBtn) {
-        e.preventDefault();
-        edit.style.display = 'none';
-        view.style.display = 'block';
+        const container = cancelBtn.closest('.profile-block, .profile-info-row');
+        if (!container) return;
+
+        const viewMode = container.querySelector('.view-mode');
+        const editMode = container.querySelector('.edit-mode');
+
+        const textarea = container.querySelector('textarea');
+        const input = container.querySelector('input');
+
+        if (textarea) {
+            textarea.value = textarea.defaultValue;
+        }
+
+        if (input) {
+            input.value = input.defaultValue;
+        }
+
+        if (editMode) editMode.style.display = 'none';
+        if (viewMode) viewMode.style.display = 'block';
+
+        const localEditBtn = container.querySelector('.edit-btn');
+        const localSaveBtn = container.querySelector('.save-btn');
+        const localCancelBtn = container.querySelector('.cancel-btn');
+
+        if (localEditBtn) localEditBtn.style.display = 'inline-block';
+        if (localSaveBtn) localSaveBtn.style.display = 'none';
+        if (localCancelBtn) localCancelBtn.style.display = 'none';
         return;
     }
 
     if (saveBtn) {
-        e.preventDefault();
+        const container = saveBtn.closest('.profile-block, .profile-info-row');
+        if (!container) return;
 
-        const userId = block.dataset.userId;
-        const field = block.dataset.field;
-        const value = textarea.value;
+        const field = container.dataset.field;
+        if (!field) return;
 
-        const formData = new FormData();
-        formData.append('id', userId);
-        formData.append('field', field);
-        formData.append('value', value);
+        let value = '';
+        const textarea = container.querySelector('textarea');
+        const input = container.querySelector('input');
+
+        if (textarea) {
+            value = textarea.value;
+        } else if (input) {
+            value = input.value;
+        }
 
         try {
-            const response = await fetch('/save_profile_field.php', {
+            const response = await fetch('save_profile_field.php', {
                 method: 'POST',
-                body: formData
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                },
+                body: new URLSearchParams({
+                    field: field,
+                    value: value,
+                    user_id: '<?= (int)$user['Id'] ?>'
+                }).toString()
             });
 
-            const data = await response.json();
+            const result = await response.json();
 
-            if (data.ok) {
-                view.innerHTML = value.trim() !== ''
-                    ? value.replace(/\n/g, '<br>')
-                    : '<span class="empty-field">טרם מולא</span>';
-
-                edit.style.display = 'none';
-                view.style.display = 'block';
-            } else {
-                alert(data.message || 'שגיאה בשמירה');
+            if (!result.success) {
+                alert(result.message || 'שמירה נכשלה');
+                return;
             }
+
+            const viewMode = container.querySelector('.view-mode');
+            const editMode = container.querySelector('.edit-mode');
+
+            if (viewMode) {
+                if (textarea) {
+                    viewMode.innerHTML = value.trim() !== ''
+                        ? value
+                            .replace(/&/g, '&amp;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;')
+                            .replace(/"/g, '&quot;')
+                            .replace(/'/g, '&#039;')
+                            .replace(/\n/g, '<br>')
+                        : '<span class="empty-text">לא הוזן מידע</span>';
+
+                    textarea.defaultValue = value;
+                } else {
+                    viewMode.innerHTML = value.trim() !== ''
+                        ? value
+                            .replace(/&/g, '&amp;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;')
+                            .replace(/"/g, '&quot;')
+                            .replace(/'/g, '&#039;')
+                        : '<span class="empty-text">לא צוין</span>';
+
+                    input.defaultValue = value;
+                }
+            }
+
+            if (editMode) editMode.style.display = 'none';
+            if (viewMode) viewMode.style.display = 'block';
+
+            const localEditBtn = container.querySelector('.edit-btn');
+            const localSaveBtn = container.querySelector('.save-btn');
+            const localCancelBtn = container.querySelector('.cancel-btn');
+
+            if (localEditBtn) localEditBtn.style.display = 'inline-block';
+            if (localSaveBtn) localSaveBtn.style.display = 'none';
+            if (localCancelBtn) localCancelBtn.style.display = 'none';
+
         } catch (err) {
-            alert('שגיאת תקשורת');
+            alert('אירעה שגיאה בשמירה');
+            console.error(err);
         }
     }
 });
 </script>
-<?php endif; ?>

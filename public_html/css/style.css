@@ -35,12 +35,12 @@ main {
 
 /* ===== מרכז לבן כללי לכל הדפים ===== */
 .page-shell {
-    max-width: 1100px;
+    max-width: 1000px;
+    /* קודם היה יותר גדול */
     margin: 30px auto;
     padding: 25px;
     background: #ffffff;
     border-radius: 20px;
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
 }
 
 /* =======================================================
@@ -843,3 +843,135 @@ footer {
     }
 }
 
+/* =======================================================
+   CHAT / MESSAGES
+======================================================= */
+
+.msg-btn {
+    display: block;
+    margin: 10px auto 15px;
+    background: #ff2e63;
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.msg-btn:hover {
+    background: #e82658;
+}
+
+/* חלון צ'אט */
+.chat-box {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 320px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 9999;
+}
+
+
+/* =========================
+   PROFILE FIX (לא שובר עיצוב קיים)
+========================= */
+
+.profile-page {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+}
+
+/* צד שמאל */
+.profile-left {
+    flex: 1;
+}
+
+/* צד ימין */
+.profile-right {
+    width: 320px;
+}
+
+/* כרטיס ימין */
+.profile-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 20px;
+}
+
+/* תמונה */
+.profile-card-image {
+    width: 100%;
+    max-height: 300px;
+    object-fit: cover;
+    border-radius: 15px;
+}
+
+/* שם */
+.profile-card-name {
+    margin-top: 10px;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+/* כפתור הודעה */
+
+.profile-message-btn {
+    width: 80%;
+        padding: 10px;
+        border: none;
+        border-radius: 12px;
+        background: #e5395f;
+        color: #fff;
+        font-weight: bold;
+        cursor: pointer;
+        display: block;
+            margin: 10px auto;
+            /* זה מה שממרכז */
+}
+
+
+.profile-card-actions {
+    margin-bottom: 25px;
+}
+/* שורות מידע */
+.profile-info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 14px;
+}
+
+/* ==== FIX PROFILE RTL ==== */
+
+.profile-page {
+    display: flex;
+    flex-direction: row-reverse;
+    /* זה התיקון! */
+    gap: 30px;
+}
+
+/* כרטיס ימין */
+.profile-right {
+    width: 320px;
+}
+
+/* תוכן שמאל */
+.profile-left {
+    flex: 1;
+}
+
+/* שורות מידע בכרטיס */
+.profile-info-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    margin-top: 6px;
+}
