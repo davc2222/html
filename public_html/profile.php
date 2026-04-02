@@ -5,6 +5,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+$profileFields = require __DIR__ . '/profile_fields.php';
+
 /* -----------------------------
    עזר
 ----------------------------- */
@@ -25,6 +27,124 @@ function can_edit_profile(array $user): bool
     }
 
     return (int)$_SESSION['user_id'] === (int)$user['Id'];
+}
+
+function get_options(PDO $pdo, array $cfg): array
+{
+    if (
+        empty($cfg['table']) ||
+        empty($cfg['column']) ||
+        !in_array(($cfg['type'] ?? ''), ['select'], true)
+    ) {
+        return [];
+    }
+
+    $table = $cfg['table'];
+    $column = $cfg['column'];
+
+    $allowedMaps = [
+        'gender'           => 'Gender_Str',
+        'age'              => 'Age_Str',
+        'occupation'       => 'Occupation_Str',
+        'education'        => 'Education_Str',
+        'place'            => 'Place_Str',
+        'family_status'    => 'Family_Status_Str',
+        'childs_num'       => 'Childs_Num_Str',
+        'religion'         => 'Religion_Str',
+        'religion_ref'     => 'Religion_Ref_Str',
+        'smoking_habbit'   => 'Smoking_Habbit_Str',
+        'drinking_habbit'  => 'Drinking_Habbit_Str',
+        'vegitrain'        => 'Vegitrain_Str',
+        'height'           => 'Height_Str',
+        'hair_color'       => 'Hair_Color_Str',
+        'hair_type'        => 'Hair_Type_Str',
+        'body_type'        => 'Body_Type_Str',
+        'look_type'        => 'Look_Type_Str',
+        'zone'             => 'Zone_Str',
+    ];
+
+    if (!isset($allowedMaps[$table]) || $allowedMaps[$table] !== $column) {
+        return [];
+    }
+
+    try {
+        $stmt = $pdo->query("
+            SELECT {$column}
+            FROM {$table}
+            WHERE {$column} IS NOT NULL
+              AND {$column} <> ''
+            ORDER BY {$column} ASC
+        ");
+
+        return $stmt ? $stmt->fetchAll(PDO::FETCH_COLUMN) : [];
+    } catch (Throwable $e) {
+        return [];
+    }
+}
+
+function detect_birthdate_value(array $user): string
+{
+    $possibleFields = [
+        'Birth_Date',
+        'BirthDate',
+        'Date_Of_Birth',
+        'DOB',
+        'Birthday',
+        'BDate',
+        'Birth_Dt'
+    ];
+
+    foreach ($possibleFields as $field) {
+        if (!empty($user[$field])) {
+            return trim((string)$user[$field]);
+        }
+    }
+
+    return '';
+}
+
+function compute_age_from_birthdate(array $user): string
+{
+    $birthDate = detect_birthdate_value($user);
+
+    if ($birthDate === '') {
+        return '';
+    }
+
+    try {
+        $birth = new DateTime($birthDate);
+        $today = new DateTime('today');
+        return (string)$birth->diff($today)->y;
+    } catch (Throwable $e) {
+        return '';
+    }
+}
+
+function format_profile_display_value(string $field, string $value, array $cfg = []): string
+{
+    $value = trim($value);
+
+    if (!empty($cfg['zero_as_none'])) {
+        if ($value === '0' || $value === '0 ילדים') {
+            return 'ללא';
+        }
+    }
+
+    return $value;
+}
+
+/* -----------------------------
+   חלוקת שדות לימין/שמאל
+----------------------------- */
+$rightFields = [];
+$leftFields = [];
+
+foreach ($profileFields as $field => $cfg) {
+    if (($cfg['side'] ?? '') === 'right') {
+        $rightFields[$field] = $cfg;
+    } elseif (($cfg['side'] ?? '') === 'left') {
+        $leftFields[$field] = $cfg;
+    }
 }
 
 /* -----------------------------
@@ -54,111 +174,310 @@ $editMode = can_edit_profile($user) && isset($_GET['edit']) && (int)$_GET['edit'
 /* -----------------------------
    תמונת פרופיל
 ----------------------------- */
-$profileImage = !empty($user['ProfileImage'])
-    ? $user['ProfileImage']
-    : (!empty($user['profile_image']) ? $user['profile_image'] : 'images/no_photo.jpg');
+$profileImage = '/images/no_photo.jpg';
+
+$picStmt = $pdo->prepare("
+    SELECT Pic_Name
+    FROM user_pics
+    WHERE Id = :id
+      AND Main_Pic = 1
+      AND Pic_Status = 1
+    LIMIT 1
+");
+$picStmt->execute([':id' => $id]);
+$picRow = $picStmt->fetch(PDO::FETCH_ASSOC);
+
+if ($picRow && !empty($picRow['Pic_Name'])) {
+    $profileImage = '/upload/' . $picRow['Pic_Name'];
+}
 
 /* -----------------------------
-   שם ותיאור קצר
+   שם
 ----------------------------- */
 $displayName = profile_value($user, 'Name');
 if ($displayName === '') {
     $displayName = 'ללא שם';
 }
-
-function calculate_age_from_dob(?string $dob): string
-{
-    if (empty($dob)) {
-        return '';
-    }
-
-    try {
-        $birthDate = new DateTime($dob);
-        $today = new DateTime();
-        return (string)$today->diff($birthDate)->y;
-    } catch (Exception $e) {
-        return '';
-    }
+?>
+<style>
+.profile-right-edit-link-wrap {
+    text-align: center;
+    margin-bottom: 12px;
 }
 
-$age        = calculate_age_from_dob($user['DOB'] ?? '');
-$city       = profile_value($user, 'Area');
-$gender     = profile_value($user, 'Gender');
-$lookingFor = profile_value($user, 'LookingFor');
+.profile-right-edit-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #7c7c7c;
+    font-size: 15px;
+    text-decoration: none;
+}
 
-/* -----------------------------
-   שדות ימין
------------------------------ */
-$rightFields = [
-    'Age'            => 'גיל',
-    'Gender'         => 'מין',
-    'Area'           => 'מקום מיגורים',
-    'Height'         => 'גובה',
-    'BodyType'       => 'מבנה גוף',
-    'Status'         => 'סטטוס',
-    'Religion'       => 'דת',
-    'Smoking'        => 'מעשן/ת',
-    'Drinking'       => 'שותה/ה',
-    'Children'       => 'ילדים',
-    'Education'      => 'השכלה',
-    'Occupation'     => 'עיסוק',
-    'LookingFor'     => 'מחפש/ת',
-    'Vegitrain_Str'  => 'תזונה'
-];
+.profile-right-edit-link:hover {
+    color: #15b6c7;
+}
 
-/* -----------------------------
-   בלוקים שמאל
------------------------------ */
-$leftBlocks = [
-    'AboutMe'        => 'קצת על עצמי',
-    'MyMatch'        => 'מה אני מחפש/ת',
-    'Hobbies'        => 'תחביבים',
-    'FavoriteMusic'  => 'מוזיקה אהובה',
-    'FavoriteFood'   => 'אוכל אהוב'
-  
-];
-?>
+.profile-right-form {
+    margin-top: 10px;
+}
+
+.profile-right-edit-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 12px;
+}
+
+.profile-right-edit-label {
+    width: 110px;
+    flex-shrink: 0;
+    font-size: 15px;
+    color: #333;
+}
+
+.profile-right-edit-control {
+    flex: 1;
+}
+
+.profile-right-select-wrap {
+    position: relative;
+}
+
+.profile-right-select-wrap::after {
+    content: "▾";
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+    font-size: 15px;
+    pointer-events: none;
+}
+
+.profile-right-input {
+    width: 100%;
+    height: 40px;
+    border: 1px solid #d8d8d8;
+    background: #f8f8f8;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 15px;
+    color: #333;
+    font-family: Arial, sans-serif;
+}
+
+.profile-right-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    cursor: pointer;
+    background: #f8f8f8;
+    padding-left: 34px;
+    border: 1px solid #cfcfcf;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.01);
+}
+
+.profile-right-select:hover {
+    border-color: #bdbdbd;
+    background: #f4f4f4;
+}
+
+.profile-right-select:focus,
+.profile-right-input:focus {
+    outline: none;
+    border-color: #15b6c7;
+    box-shadow: 0 0 0 3px rgba(21, 182, 199, 0.12);
+    background: #fff;
+}
+
+.profile-right-readonly {
+    display: flex;
+    align-items: center;
+    background: #f3f3f3;
+}
+
+.profile-right-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.profile-right-save-btn {
+    background: #ff2e63;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 24px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.profile-right-cancel-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #ececec;
+    color: #444;
+    border-radius: 10px;
+    padding: 10px 24px;
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.profile-left-save-btn,
+.profile-left-cancel-btn {
+    border: none;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.profile-left-save-btn {
+    background: #ff4d6d;
+    color: #fff;
+}
+
+.profile-left-cancel-btn {
+    background: #ececec;
+    color: #444;
+}
+
+.profile-left-edit-input,
+.profile-left-edit-textarea {
+    width: 100%;
+    border: 1px solid #d9d9d9;
+    background: #fafafa;
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 15px;
+    font-family: Arial, sans-serif;
+    color: #333;
+    margin-top: 8px;
+}
+
+.profile-left-edit-input {
+    height: 42px;
+}
+
+.profile-left-edit-textarea {
+    min-height: 120px;
+    resize: vertical;
+    line-height: 1.7;
+}
+
+.profile-left-edit-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.profile-left .edit-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: #15b6c7;
+    font-size: 15px;
+    padding: 0;
+}
+
+.profile-right-edit-status,
+.profile-left-edit-status {
+    font-size: 13px;
+    color: #777;
+    margin-top: 8px;
+    min-height: 18px;
+}
+
+.profile-info-value,
+.left-view-mode,
+.profile-right-readonly {
+    font-style: italic;
+    color: #7a7a7a;
+    font-weight: 500;
+}
+
+.profile-card-main {
+    text-align: center;
+    margin-top: 14px;
+    margin-bottom: 14px;
+}
+
+.profile-card-main {
+    text-align: center;
+    margin-top: 12px;
+    margin-bottom: 14px;
+}
+
+.profile-card-name {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 400;   /* לא בולד */
+    color: #000;        /* שחור */
+    letter-spacing: 0.3px;
+}
+
+/* גיל ליד השם */
+.profile-age {
+    font-size: 20px;
+    color: #555;        /* אפור עדין */
+    font-weight: 300;
+    margin-right: 4px;
+}
+</style>
+
 <div class="page-shell">
     <div class="profile-page">
 
-        <!-- צד שמאל -->
         <div class="profile-left">
+            <?php foreach ($leftFields as $field => $cfg): ?>
+                <?php
+                $title = $cfg['label'] ?? $field;
+                $type = $cfg['type'] ?? 'textarea';
+                $value = profile_value($user, $field);
 
-            <?php foreach ($leftBlocks as $field => $title): ?>
-    <?php
-    $value = profile_value($user, $field);
-    if ($value === '') continue;
-    ?>
-    <div class="profile-block" data-field="<?= e($field) ?>">
+                if ($value === '') {
+                    continue;
+                }
+                ?>
+                <div class="profile-block" data-field="<?= e($field) ?>">
                     <div class="profile-block-head">
                         <h3><?= e($title) ?></h3>
 
-                        <?php if ($editMode): ?>
-                            <div class="profile-block-actions">
-                                <button type="button" class="edit-btn">✎</button>
-                                <button type="button" class="save-btn" style="display:none;">שמור</button>
-                                <button type="button" class="cancel-btn" style="display:none;">ביטול</button>
-                            </div>
+                        <?php if (can_edit_profile($user)): ?>
+                            <button type="button" class="edit-btn left-edit-btn">✎</button>
                         <?php endif; ?>
                     </div>
 
                     <div class="profile-block-body">
-                        <div class="view-mode">
-                            <?= $value !== '' ? nl2br(e($value)) : '<span class="empty-text">לא הוזן מידע</span>' ?>
+                        <div class="left-view-mode">
+                            <?= nl2br(e($value)) ?>
                         </div>
 
-                        <?php if ($editMode): ?>
-                            <div class="edit-mode" style="display:none;">
-                                <textarea class="profile-textarea" rows="5"><?= e($value) ?></textarea>
+                        <?php if (can_edit_profile($user)): ?>
+                            <div class="left-edit-mode" style="display:none;">
+                                <?php if ($type === 'input'): ?>
+                                    <input type="text" class="profile-left-edit-input" value="<?= e($value) ?>">
+                                <?php else: ?>
+                                    <textarea class="profile-left-edit-textarea"><?= e($value) ?></textarea>
+                                <?php endif; ?>
+
+                                <div class="profile-left-edit-actions">
+                                    <button type="button" class="profile-left-save-btn">שמירה</button>
+                                    <button type="button" class="profile-left-cancel-btn">ביטול</button>
+                                </div>
+
+                                <div class="profile-left-edit-status"></div>
                             </div>
                         <?php endif; ?>
                     </div>
                 </div>
             <?php endforeach; ?>
-
         </div>
 
-        <!-- צד ימין -->
         <aside class="profile-right">
             <div class="profile-card">
                 <div class="profile-card-image-wrap">
@@ -166,54 +485,119 @@ $leftBlocks = [
                 </div>
 
                 <div class="profile-card-main">
-                    <h1 class="profile-card-name"><?= e($displayName) ?></h1>
+                 <?php
+$age = compute_age_from_birthdate($user);
+?>
 
-                
+<h1 class="profile-card-name">
+    <?= e($displayName) ?>
+    <?php if ($age !== ''): ?>
+        <span class="profile-age">, <?= e($age) ?></span>
+    <?php endif; ?>
+</h1>
+                </div>
 
                 <div class="profile-card-actions">
-                    <?php if (!$editMode): ?>
+                    <?php if (!can_edit_profile($user)): ?>
                         <button type="button" class="profile-message-btn" onclick="openChatWithUser(<?= (int)$user['Id'] ?>)">
                             שלח הודעה
                         </button>
-                    <?php else: ?>
-                        <a class="profile-edit-link" href="?page=profile&id=<?= (int)$user['Id'] ?>">
-                            סיום עריכה
-                        </a>
                     <?php endif; ?>
                 </div>
 
-                <div class="profile-info-list">
-                    <?php foreach ($rightFields as $field => $label): ?>
-    <?php
-    $value = profile_value($user, $field);
-    if ($value === '') continue;
-    ?>
-    <div class="profile-info-row" data-field="<?= e($field) ?>">
-                            <div class="profile-info-label"><?= e($label) ?>:</div>
+                <?php if (can_edit_profile($user) && !$editMode): ?>
+                    <div class="profile-right-edit-link-wrap">
+                        <a href="?page=profile&id=<?= (int)$user['Id'] ?>&edit=1" class="profile-right-edit-link">
+                            ✏️ עריכת פרטים
+                        </a>
+                    </div>
+                <?php endif; ?>
 
-                            <div class="profile-info-value-wrap">
-                                <div class="view-mode profile-info-value">
-                                    <?= $value !== '' ? e($value) : '<span class="empty-text">לא צוין</span>' ?>
+                <?php if (!$editMode): ?>
+                    <div class="profile-info-list">
+                        <?php foreach ($rightFields as $field => $cfg): ?>
+                            <?php
+                            $label = $cfg['label'] ?? $field;
+
+                            if ($field === 'Age_Computed') {
+                                $value = compute_age_from_birthdate($user);
+                            } else {
+                                $value = profile_value($user, $field);
+                            }
+
+                            $displayValue = format_profile_display_value($field, $value, $cfg);
+
+                            if ($displayValue === '') {
+                                continue;
+                            }
+                            ?>
+                            <div class="profile-info-row">
+                                <div class="profile-info-label"><?= e($label) ?>:</div>
+                                <div class="profile-info-value-wrap">
+                                    <div class="profile-info-value"><?= e($displayValue) ?></div>
                                 </div>
-
-                                <?php if ($editMode): ?>
-                                    <div class="edit-mode" style="display:none;">
-                                        <input type="text" class="profile-input" value="<?= e($value) ?>">
-                                    </div>
-                                <?php endif; ?>
                             </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else: ?>
+                    <form id="profileRightForm" class="profile-right-form">
+                        <?php foreach ($rightFields as $field => $cfg): ?>
+                            <?php
+                            $label = $cfg['label'] ?? $field;
+                            $type = $cfg['type'] ?? 'input';
 
-                            <?php if ($editMode): ?>
-                                <div class="profile-info-actions">
-                                    <button type="button" class="edit-btn">✎</button>
-                                    <button type="button" class="save-btn" style="display:none;">שמור</button>
-                                    <button type="button" class="cancel-btn" style="display:none;">ביטול</button>
+                            if ($field === 'Age_Computed') {
+                                $value = compute_age_from_birthdate($user);
+                            } else {
+                                $value = profile_value($user, $field);
+                            }
+
+                            $options = $type === 'select' ? get_options($pdo, $cfg) : [];
+                            $readOnly = !empty($cfg['read_only']);
+                            $displayValue = format_profile_display_value($field, $value, $cfg);
+                            ?>
+                            <div class="profile-right-edit-row">
+                                <label class="profile-right-edit-label" for="field_<?= e($field) ?>"><?= e($label) ?></label>
+
+                                <div class="profile-right-edit-control">
+                                    <?php if ($readOnly): ?>
+                                        <div class="profile-right-input profile-right-readonly">
+                                            <?= e($displayValue) ?>
+                                        </div>
+                                    <?php elseif ($type === 'select'): ?>
+                                        <div class="profile-right-select-wrap">
+                                            <select
+                                                id="field_<?= e($field) ?>"
+                                                name="<?= e($field) ?>"
+                                                class="profile-right-input profile-right-select">
+                                                <option value="">בחר</option>
+                                                <?php foreach ($options as $opt): ?>
+                                                    <option value="<?= e($opt) ?>" <?= $opt === $value ? 'selected' : '' ?>>
+                                                        <?= e($opt) ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </div>
+                                    <?php else: ?>
+                                        <input
+                                            id="field_<?= e($field) ?>"
+                                            name="<?= e($field) ?>"
+                                            type="text"
+                                            class="profile-right-input"
+                                            value="<?= e($value) ?>">
+                                    <?php endif; ?>
                                 </div>
-                            <?php endif; ?>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
+                            </div>
+                        <?php endforeach; ?>
 
+                        <div class="profile-right-actions">
+                            <button type="button" id="saveRightProfileBtn" class="profile-right-save-btn">שמירה</button>
+                            <a href="?page=profile&id=<?= (int)$user['Id'] ?>" class="profile-right-cancel-btn">ביטול</a>
+                        </div>
+
+                        <div id="profileRightEditStatus" class="profile-right-edit-status"></div>
+                    </form>
+                <?php endif; ?>
             </div>
         </aside>
     </div>
@@ -232,77 +616,61 @@ function openChatWithUser(userId) {
 }
 
 document.addEventListener('click', async function (e) {
-    const editBtn = e.target.closest('.edit-btn');
-    const saveBtn = e.target.closest('.save-btn');
-    const cancelBtn = e.target.closest('.cancel-btn');
+    const leftEditBtn = e.target.closest('.left-edit-btn');
+    const leftCancelBtn = e.target.closest('.profile-left-cancel-btn');
+    const leftSaveBtn = e.target.closest('.profile-left-save-btn');
 
-    if (editBtn) {
-        const container = editBtn.closest('.profile-block, .profile-info-row');
-        if (!container) return;
+    if (leftEditBtn) {
+        const block = leftEditBtn.closest('.profile-block');
+        if (!block) return;
 
-        const viewMode = container.querySelector('.view-mode');
-        const editMode = container.querySelector('.edit-mode');
+        const viewMode = block.querySelector('.left-view-mode');
+        const editMode = block.querySelector('.left-edit-mode');
 
         if (viewMode) viewMode.style.display = 'none';
         if (editMode) editMode.style.display = 'block';
-
-        const localEditBtn = container.querySelector('.edit-btn');
-        const localSaveBtn = container.querySelector('.save-btn');
-        const localCancelBtn = container.querySelector('.cancel-btn');
-
-        if (localEditBtn) localEditBtn.style.display = 'none';
-        if (localSaveBtn) localSaveBtn.style.display = 'inline-block';
-        if (localCancelBtn) localCancelBtn.style.display = 'inline-block';
+        leftEditBtn.style.display = 'none';
         return;
     }
 
-    if (cancelBtn) {
-        const container = cancelBtn.closest('.profile-block, .profile-info-row');
-        if (!container) return;
+    if (leftCancelBtn) {
+        const block = leftCancelBtn.closest('.profile-block');
+        if (!block) return;
 
-        const viewMode = container.querySelector('.view-mode');
-        const editMode = container.querySelector('.edit-mode');
+        const viewMode = block.querySelector('.left-view-mode');
+        const editMode = block.querySelector('.left-edit-mode');
+        const editBtn = block.querySelector('.left-edit-btn');
+        const input = block.querySelector('.profile-left-edit-input');
+        const textarea = block.querySelector('.profile-left-edit-textarea');
+        const status = block.querySelector('.profile-left-edit-status');
 
-        const textarea = container.querySelector('textarea');
-        const input = container.querySelector('input');
-
-        if (textarea) {
-            textarea.value = textarea.defaultValue;
-        }
-
-        if (input) {
-            input.value = input.defaultValue;
-        }
+        if (input) input.value = input.defaultValue;
+        if (textarea) textarea.value = textarea.defaultValue;
+        if (status) status.textContent = '';
 
         if (editMode) editMode.style.display = 'none';
         if (viewMode) viewMode.style.display = 'block';
-
-        const localEditBtn = container.querySelector('.edit-btn');
-        const localSaveBtn = container.querySelector('.save-btn');
-        const localCancelBtn = container.querySelector('.cancel-btn');
-
-        if (localEditBtn) localEditBtn.style.display = 'inline-block';
-        if (localSaveBtn) localSaveBtn.style.display = 'none';
-        if (localCancelBtn) localCancelBtn.style.display = 'none';
+        if (editBtn) editBtn.style.display = 'inline-block';
         return;
     }
 
-    if (saveBtn) {
-        const container = saveBtn.closest('.profile-block, .profile-info-row');
-        if (!container) return;
+    if (leftSaveBtn) {
+        const block = leftSaveBtn.closest('.profile-block');
+        if (!block) return;
 
-        const field = container.dataset.field;
-        if (!field) return;
+        const field = block.dataset.field;
+        const input = block.querySelector('.profile-left-edit-input');
+        const textarea = block.querySelector('.profile-left-edit-textarea');
+        const status = block.querySelector('.profile-left-edit-status');
+        const editBtn = block.querySelector('.left-edit-btn');
+        const viewMode = block.querySelector('.left-view-mode');
+        const editMode = block.querySelector('.left-edit-mode');
 
         let value = '';
-        const textarea = container.querySelector('textarea');
-        const input = container.querySelector('input');
+        if (input) value = input.value;
+        if (textarea) value = textarea.value;
 
-        if (textarea) {
-            value = textarea.value;
-        } else if (input) {
-            value = input.value;
-        }
+        if (status) status.textContent = 'שומר...';
 
         try {
             const response = await fetch('save_profile_field.php', {
@@ -311,64 +679,82 @@ document.addEventListener('click', async function (e) {
                     'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
                 },
                 body: new URLSearchParams({
+                    id: '<?= (int)$user['Id'] ?>',
                     field: field,
-                    value: value,
-                    user_id: '<?= (int)$user['Id'] ?>'
+                    value: value
                 }).toString()
             });
 
             const result = await response.json();
 
-            if (!result.success) {
-                alert(result.message || 'שמירה נכשלה');
+            if (!result.ok) {
+                if (status) status.textContent = result.message || 'שמירה נכשלה';
                 return;
             }
 
-            const viewMode = container.querySelector('.view-mode');
-            const editMode = container.querySelector('.edit-mode');
-
             if (viewMode) {
-                if (textarea) {
-                    viewMode.innerHTML = value.trim() !== ''
-                        ? value
-                            .replace(/&/g, '&amp;')
-                            .replace(/</g, '&lt;')
-                            .replace(/>/g, '&gt;')
-                            .replace(/"/g, '&quot;')
-                            .replace(/'/g, '&#039;')
-                            .replace(/\n/g, '<br>')
-                        : '<span class="empty-text">לא הוזן מידע</span>';
-
-                    textarea.defaultValue = value;
-                } else {
-                    viewMode.innerHTML = value.trim() !== ''
-                        ? value
-                            .replace(/&/g, '&amp;')
-                            .replace(/</g, '&lt;')
-                            .replace(/>/g, '&gt;')
-                            .replace(/"/g, '&quot;')
-                            .replace(/'/g, '&#039;')
-                        : '<span class="empty-text">לא צוין</span>';
-
-                    input.defaultValue = value;
-                }
+                viewMode.innerHTML = value.trim() !== ''
+                    ? value
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;')
+                        .replace(/'/g, '&#039;')
+                        .replace(/\n/g, '<br>')
+                    : '';
             }
 
+            if (input) input.defaultValue = value;
+            if (textarea) textarea.defaultValue = value;
+
+            if (status) status.textContent = '';
             if (editMode) editMode.style.display = 'none';
             if (viewMode) viewMode.style.display = 'block';
-
-            const localEditBtn = container.querySelector('.edit-btn');
-            const localSaveBtn = container.querySelector('.save-btn');
-            const localCancelBtn = container.querySelector('.cancel-btn');
-
-            if (localEditBtn) localEditBtn.style.display = 'inline-block';
-            if (localSaveBtn) localSaveBtn.style.display = 'none';
-            if (localCancelBtn) localCancelBtn.style.display = 'none';
-
+            if (editBtn) editBtn.style.display = 'inline-block';
         } catch (err) {
-            alert('אירעה שגיאה בשמירה');
+            if (status) status.textContent = 'אירעה שגיאה בשמירה';
             console.error(err);
         }
     }
 });
+
+const saveRightProfileBtn = document.getElementById('saveRightProfileBtn');
+
+if (saveRightProfileBtn) {
+    saveRightProfileBtn.addEventListener('click', async function () {
+        const status = document.getElementById('profileRightEditStatus');
+        const form = document.getElementById('profileRightForm');
+        const fields = form ? form.querySelectorAll('input[name], select[name]') : [];
+
+        if (status) status.textContent = 'שומר...';
+
+        try {
+            for (const field of fields) {
+                const response = await fetch('save_profile_field.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                    },
+                    body: new URLSearchParams({
+                        id: '<?= (int)$user['Id'] ?>',
+                        field: field.name,
+                        value: field.value
+                    }).toString()
+                });
+
+                const result = await response.json();
+
+                if (!result.ok) {
+                    if (status) status.textContent = result.message || ('שמירה נכשלה בשדה: ' + field.name);
+                    return;
+                }
+            }
+
+            window.location.href = '?page=profile&id=<?= (int)$user['Id'] ?>';
+        } catch (err) {
+            if (status) status.textContent = 'אירעה שגיאה בשמירה';
+            console.error(err);
+        }
+    });
+}
 </script>
