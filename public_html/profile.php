@@ -61,17 +61,27 @@ $profileImage = !empty($user['ProfileImage'])
 /* -----------------------------
    שם ותיאור קצר
 ----------------------------- */
-$displayName = trim(
-    profile_value($user, 'UserName') !== ''
-        ? profile_value($user, 'UserName')
-        : (
-            profile_value($user, 'FirstName') !== '' || profile_value($user, 'LastName') !== ''
-                ? trim(profile_value($user, 'FirstName') . ' ' . profile_value($user, 'LastName'))
-                : 'ללא שם'
-        )
-);
+$displayName = profile_value($user, 'Name');
+if ($displayName === '') {
+    $displayName = 'ללא שם';
+}
 
-$age        = profile_value($user, 'Age');
+function calculate_age_from_dob(?string $dob): string
+{
+    if (empty($dob)) {
+        return '';
+    }
+
+    try {
+        $birthDate = new DateTime($dob);
+        $today = new DateTime();
+        return (string)$today->diff($birthDate)->y;
+    } catch (Exception $e) {
+        return '';
+    }
+}
+
+$age        = calculate_age_from_dob($user['DOB'] ?? '');
 $city       = profile_value($user, 'Area');
 $gender     = profile_value($user, 'Gender');
 $lookingFor = profile_value($user, 'LookingFor');
@@ -158,19 +168,7 @@ $leftBlocks = [
                 <div class="profile-card-main">
                     <h1 class="profile-card-name"><?= e($displayName) ?></h1>
 
-                    <div class="profile-card-sub">
-                        <?php
-                        $subParts = [];
-                        if ($age !== '') {
-                            $subParts[] = e($age);
-                        }
-                        if ($city !== '') {
-                            $subParts[] = e($city);
-                        }
-                        echo !empty($subParts) ? implode(' , ', $subParts) : 'פרופיל משתמש';
-                        ?>
-                    </div>
-                </div>
+                
 
                 <div class="profile-card-actions">
                     <?php if (!$editMode): ?>
@@ -191,7 +189,7 @@ $leftBlocks = [
     if ($value === '') continue;
     ?>
     <div class="profile-info-row" data-field="<?= e($field) ?>">
-                            <div class="profile-info-label"><?= e($label) ?></div>
+                            <div class="profile-info-label"><?= e($label) ?>:</div>
 
                             <div class="profile-info-value-wrap">
                                 <div class="view-mode profile-info-value">

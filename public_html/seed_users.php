@@ -13,7 +13,7 @@ const TOTAL_USERS = 40;
 const MALE_COUNT  = 20;
 const FEMALE_COUNT = 20;
 
-$email = 'davc22@gmail.con';
+$email = 'davc22@gmail.com';
 $plainPassword = '123rik';
 $hashedPassword = password_hash($plainPassword, PASSWORD_DEFAULT);
 

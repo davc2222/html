@@ -35,14 +35,17 @@ if (file_exists($page_file)) {
 include __DIR__ . "/includes/footer.php";
 
 ?>
-
-
 <script>
 window.addEventListener('load', () => {
     document.body.classList.remove('modal-open', 'loading');
 
-    document.querySelectorAll('.overlay, .modal, .backdrop').forEach(el => {
+    document.querySelectorAll(
+        '.overlay, .modal, .backdrop, .chat-overlay, .page-overlay, .loader, .loader-screen'
+    ).forEach(el => {
         el.style.display = 'none';
+        el.classList.remove('active', 'open', 'show');
     });
+
+    document.body.style.overflow = 'auto';
 });
 </script>

@@ -925,28 +925,41 @@ footer {
 
 .profile-message-btn {
     width: 80%;
-        padding: 10px;
-        border: none;
-        border-radius: 12px;
-        background: #e5395f;
-        color: #fff;
-        font-weight: bold;
-        cursor: pointer;
-        display: block;
-            margin: 10px auto;
-            /* זה מה שממרכז */
+    padding: 10px;
+    border: none;
+    border-radius: 12px;
+    background: #e5395f;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    display: block;
+    margin: 10px auto;
+    /* זה מה שממרכז */
 }
 
 
 .profile-card-actions {
     margin-bottom: 25px;
 }
+
 /* שורות מידע */
 .profile-info-row {
     display: flex;
-    justify-content: space-between;
-    margin-top: 8px;
+    justify-content: flex-start;
+    /* במקום space-between */
+    gap: 6px;
+    /* מרחק קטן בין טייטל לערך */
     font-size: 14px;
+    margin-top: 6px;
+}
+
+
+.profile-info-label {
+    min-width: auto;
+}
+
+.profile-info-value {
+    margin-right: 4px;
 }
 
 /* ==== FIX PROFILE RTL ==== */
@@ -974,4 +987,53 @@ footer {
     justify-content: space-between;
     font-size: 14px;
     margin-top: 6px;
+}
+
+
+/* ==== FIX PROFILE INFO SPACING ==== */
+
+.profile-info-row {
+    display: flex;
+    justify-content: flex-start !important;
+    align-items: center;
+    gap: 4px !important;
+}
+
+.profile-info-label {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.profile-info-value-wrap {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.profile-info-value {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* ==== FIX PROFILE INFO SPACING ==== */
+
+.profile-info-row {
+    display: flex;
+    justify-content: flex-start !important;
+    align-items: center;
+    gap: 4px !important;
+}
+
+.profile-info-label {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.profile-info-value-wrap {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.profile-info-value {
+    margin: 0 !important;
+    padding: 0 !important;
 }

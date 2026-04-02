@@ -38,7 +38,10 @@ if (!empty($_SESSION['user_main_pic'])) {
     <header class="site-header">
 
         <div class="logo">
-            <a href="?page=home">LoveMatch</a>
+          <a href="?page=home" class="logo-link">
+    <span class="logo-heart">❤️</span>
+    <span class="logo-text">LoveMatch</span>
+</a>
         </div>
 
         <nav class="links">
