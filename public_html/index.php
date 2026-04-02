@@ -36,16 +36,22 @@ include __DIR__ . "/includes/footer.php";
 
 ?>
 <script>
-window.addEventListener('load', () => {
-    document.body.classList.remove('modal-open', 'loading');
+function forceClearOverlays() {
+    document.body.classList.remove('modal-open', 'loading', 'menu-open');
+    document.body.style.overflow = 'auto';
 
     document.querySelectorAll(
         '.overlay, .modal, .backdrop, .chat-overlay, .page-overlay, .loader, .loader-screen'
     ).forEach(el => {
         el.style.display = 'none';
+        el.style.visibility = 'hidden';
+        el.style.opacity = '0';
         el.classList.remove('active', 'open', 'show');
     });
+}
 
-    document.body.style.overflow = 'auto';
-});
+window.addEventListener('load', forceClearOverlays);
+document.addEventListener('DOMContentLoaded', forceClearOverlays);
+setTimeout(forceClearOverlays, 300);
+setTimeout(forceClearOverlays, 1000);
 </script>

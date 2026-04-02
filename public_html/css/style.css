@@ -36,7 +36,6 @@ main {
 /* ===== מרכז לבן כללי לכל הדפים ===== */
 .page-shell {
     max-width: 1000px;
-    /* קודם היה יותר גדול */
     margin: 30px auto;
     padding: 25px;
     background: #ffffff;
@@ -44,7 +43,7 @@ main {
 }
 
 /* =======================================================
-   2) HEADER
+   2) HEADER - לוגו + תפריט + אזור משתמש
 ======================================================= */
 
 .site-header {
@@ -56,38 +55,103 @@ main {
     gap: 18px;
 }
 
+/* ===== לוגו ===== */
 .logo {
     flex: 1;
     text-align: right;
 }
 
 .logo a {
-    color: white;
+    color: #fff;
     font-size: 24px;
     font-weight: bold;
 }
 
+/* ===== תפריט עליון ===== */
 .links {
     flex: 1;
     display: flex;
     justify-content: center;
-    gap: 14px;
+    align-items: center;
+    gap: 18px;
     flex-wrap: wrap;
 }
 
-.links a {
-    color: white;
-    font-weight: bold;
+/* לינק בתפריט: אייקון + טקסט */
+.menu-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #fff;
+    font-size: 20px;
+    font-weight: 600;
     padding: 8px 12px;
     border-radius: 10px;
-    transition: background 0.2s ease;
+    line-height: 1;
+    transition: background 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
 }
 
-.links a.active,
-.links a:hover {
-    background: rgba(255, 255, 255, 0.3);
+.menu-link:hover,
+.menu-link.active {
+    background: rgba(255, 255, 255, 0.22);
 }
 
+.menu-link:hover {
+    transform: scale(1.04);
+}
+
+.menu-link-icon {
+    font-size: 22px;
+    line-height: 1;
+}
+
+.menu-link-text {
+    font-size: 20px;
+    line-height: 1;
+}
+.menu-badge {
+    display: none;
+}
+
+/* ===== Badge אדום בתפריט ===== */
+.menu-badge {
+    position: absolute;
+    top: -6px;
+    left: -8px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: #ff2e63;
+    color: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+}
+
+.badge-pulse {
+    animation: pulse 0.4s ease;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.28);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* ===== אזור משתמש ===== */
 .auth {
     flex: 1;
     display: flex;
@@ -111,8 +175,13 @@ main {
     background: #cfcfcf;
 }
 
+/* כפתור התנתקות נדחף שמאלה */
+.logout-btn {
+    margin-right: auto;
+}
+
 .welcome-user {
-    color: white;
+    color: #fff;
     font-weight: bold;
 }
 
@@ -268,7 +337,7 @@ main {
     width: 100%;
     max-width: 950px;
     margin: 0 auto;
-    background: white;
+    background: #fff;
     border-radius: 24px;
     padding: 35px 30px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
@@ -380,7 +449,7 @@ main {
 
 .submit-wrap button {
     background: #ff4d6d;
-    color: white;
+    color: #fff;
     border: none;
     border-radius: 14px;
     padding: 14px 28px;
@@ -477,7 +546,7 @@ main {
 
 .search-form button {
     background: #ff4d6d;
-    color: white;
+    color: #fff;
     border: none;
     cursor: pointer;
     font-weight: bold;
@@ -563,7 +632,6 @@ main {
 .profile-link {
     margin-top: auto;
     color: #1bb7c9;
-    text-decoration: none;
     font-size: 15px;
     align-self: flex-start;
 }
@@ -576,28 +644,28 @@ main {
     text-align: center;
     font-size: 22px;
     color: #666;
-    background: white;
+    background: #fff;
     padding: 26px;
     border-radius: 18px;
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
 }
 
 /* =======================================================
-   PROFILE
+   6) PROFILE PAGE - מבנה כללי
 ======================================================= */
 
+.profile-page,
 .profile-wrap {
     display: flex;
     flex-direction: row-reverse;
-    gap: 40px;
-    /* היה קטן מדי */
+    gap: 30px;
+    align-items: flex-start;
 }
 
 .profile-left {
     flex: 1;
     min-width: 0;
     padding-right: 20px;
-    /* חשוב */
 }
 
 .profile-right {
@@ -605,20 +673,43 @@ main {
     flex-shrink: 0;
 }
 
+/* ===== כרטיס פרופיל ימני ===== */
 .profile-card {
     background: #fff;
-    border-radius: 18px;
-    padding: 14px;
+    border-radius: 20px;
+    padding: 20px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
 }
 
-.profile-card-img {
+.profile-card-img,
+.profile-card-image {
     width: 100%;
-    max-height: 260px;
+    max-height: 300px;
     object-fit: cover;
     border-radius: 16px;
     display: block;
     margin-bottom: 12px;
+}
+
+.profile-card-main {
+    text-align: center;
+    margin-top: 12px;
+    margin-bottom: 14px;
+}
+
+.profile-card-name {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 400;
+    color: #000;
+    letter-spacing: 0.3px;
+}
+
+.profile-age {
+    font-size: 20px;
+    color: #555;
+    font-weight: 300;
+    margin-right: 4px;
 }
 
 .profile-name {
@@ -628,10 +719,44 @@ main {
     margin: 0 0 16px;
 }
 
+/* ===== כפתור הודעה ===== */
+.profile-message-btn {
+    width: 80%;
+    padding: 10px;
+    border: none;
+    border-radius: 12px;
+    background: #e5395f;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    display: block;
+    margin: 10px auto;
+}
+
+.profile-card-actions {
+    margin-bottom: 25px;
+}
+
+/* ===== רשימת פרטים בימין ===== */
+.profile-info-row {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 4px;
+    font-size: 14px;
+    margin-top: 6px;
+}
+
+.profile-info-label,
+.profile-info-value-wrap,
+.profile-info-value {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
 .profile-row {
     display: flex;
     flex-direction: row-reverse;
-    /* 🔥 זה התיקון */
     justify-content: space-between;
     align-items: center;
     gap: 10px;
@@ -651,6 +776,7 @@ main {
     flex: 1;
 }
 
+/* ===== בלוקים בצד שמאל ===== */
 .profile-block {
     margin-bottom: 24px;
 }
@@ -669,10 +795,14 @@ main {
     margin: 0;
 }
 
-.profile-view {
+.profile-view,
+.left-view-mode,
+.profile-right-readonly {
     font-size: 15px;
     line-height: 1.8;
-    color: #333;
+    color: #7a7a7a;
+    font-style: italic;
+    font-weight: 500;
 }
 
 .empty-field {
@@ -680,58 +810,12 @@ main {
     font-style: italic;
 }
 
-
 .profile-card-content {
     padding: 0 10px;
 }
 
-.edit-btn {
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    color: #15b6c7;
-    font-size: 15px;
-    padding: 0;
-}
-
-.profile-edit {
-    margin-top: 8px;
-}
-
-.edit-textarea {
-    width: 100%;
-    min-height: 110px;
-    resize: vertical;
-    border: 1px solid #ddd;
-    border-radius: 12px;
-    padding: 10px;
-    font-family: Arial, sans-serif;
-    font-size: 14px;
-    line-height: 1.6;
-    background: #fafafa;
-}
-
-.edit-actions {
-    margin-top: 8px;
-    display: flex;
-    gap: 10px;
-}
-
-.save-btn {
-    background: #ff4d6d;
-    color: #fff;
-    border: none;
-    border-radius: 10px;
-    padding: 8px 14px;
-    cursor: pointer;
-}
-
-.cancel-btn {
-    color: #15b6c7;
-}
-
 /* =======================================================
-   7) EDIT MODE
+   7) PROFILE EDIT MODE
 ======================================================= */
 
 .edit-btn {
@@ -740,37 +824,80 @@ main {
     cursor: pointer;
     color: #16b6c7;
     font-size: 16px;
+    padding: 0;
 }
 
-.edit-textarea {
+.profile-edit {
+    margin-top: 8px;
+}
+
+.edit-textarea,
+.profile-left-edit-textarea {
     width: 100%;
     min-height: 120px;
     border-radius: 12px;
-    padding: 10px;
+    padding: 10px 12px;
     border: 1px solid #ccc;
     resize: vertical;
     font-family: Arial, sans-serif;
     font-size: 15px;
     line-height: 1.6;
+    background: #fafafa;
+    color: #333;
 }
 
-.edit-actions {
+.profile-left-edit-input {
+    width: 100%;
+    height: 42px;
+    border: 1px solid #d9d9d9;
+    background: #fafafa;
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 15px;
+    font-family: Arial, sans-serif;
+    color: #333;
+    margin-top: 8px;
+}
+
+.edit-actions,
+.profile-left-edit-actions {
     margin-top: 10px;
     display: flex;
     gap: 10px;
 }
 
-.save-btn {
+.save-btn,
+.profile-left-save-btn {
     background: #ff4d6d;
-    color: white;
+    color: #fff;
     border: none;
-    padding: 8px 16px;
     border-radius: 10px;
+    padding: 8px 14px;
     cursor: pointer;
 }
 
-.cancel-btn {
-    color: #16b6c7;
+.cancel-btn,
+.profile-left-cancel-btn {
+    background: #ececec;
+    color: #444;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 14px;
+    cursor: pointer;
+}
+
+.profile-right-edit-status,
+.profile-left-edit-status {
+    font-size: 13px;
+    color: #777;
+    margin-top: 8px;
+    min-height: 18px;
+}
+
+.profile-right-readonly {
+    display: flex;
+    align-items: center;
+    background: #f3f3f3;
 }
 
 /* =======================================================
@@ -801,50 +928,7 @@ footer {
 }
 
 /* =======================================================
-   9) RESPONSIVE
-======================================================= */
-
-@media (max-width: 950px) {
-    .site-header {
-        flex-direction: column;
-        gap: 10px;
-        padding: 15px;
-    }
-
-    .logo,
-    .links,
-    .auth {
-        width: 100%;
-        text-align: center;
-        justify-content: center;
-    }
-
-    .profile-wrap {
-        flex-direction: column;
-    }
-
-    .profile-right {
-        width: 100%;
-    }
-
-    .profile-card-img {
-        height: auto;
-        max-height: 420px;
-    }
-
-    .card {
-        flex-direction: column;
-    }
-
-    .profile-img {
-        width: 100%;
-        height: auto;
-        max-height: 420px;
-    }
-}
-
-/* =======================================================
-   CHAT / MESSAGES
+   9) CHAT / MESSAGES
 ======================================================= */
 
 .msg-btn {
@@ -863,7 +947,6 @@ footer {
     background: #e82658;
 }
 
-/* חלון צ'אט */
 .chat-box {
     position: fixed;
     bottom: 20px;
@@ -878,162 +961,150 @@ footer {
     z-index: 9999;
 }
 
+/* =======================================================
+   10) VIEWS PAGE
+======================================================= */
 
-/* =========================
-   PROFILE FIX (לא שובר עיצוב קיים)
-========================= */
+.views-page-title {
+    text-align: center;
+    color: #d91f4f;
+    font-size: 32px;
+    margin-bottom: 24px;
+}
 
-.profile-page {
+.views-list {
     display: flex;
-    gap: 30px;
-    align-items: flex-start;
+    flex-direction: column;
+    gap: 16px;
 }
 
-/* צד שמאל */
-.profile-left {
-    flex: 1;
-}
-
-/* צד ימין */
-.profile-right {
-    width: 320px;
-}
-
-/* כרטיס ימין */
-.profile-card {
-    background: #fff;
-    border-radius: 20px;
-    padding: 20px;
-}
-
-/* תמונה */
-.profile-card-image {
-    width: 100%;
-    max-height: 300px;
-    object-fit: cover;
-    border-radius: 15px;
-}
-
-/* שם */
-.profile-card-name {
-    margin-top: 10px;
-    font-size: 22px;
-    font-weight: bold;
-}
-
-/* כפתור הודעה */
-
-.profile-message-btn {
-    width: 80%;
-    padding: 10px;
-    border: none;
-    border-radius: 12px;
-    background: #e5395f;
-    color: #fff;
-    font-weight: bold;
-    cursor: pointer;
-    display: block;
-    margin: 10px auto;
-    /* זה מה שממרכז */
-}
-
-
-.profile-card-actions {
-    margin-bottom: 25px;
-}
-
-/* שורות מידע */
-.profile-info-row {
-    display: flex;
-    justify-content: flex-start;
-    /* במקום space-between */
-    gap: 6px;
-    /* מרחק קטן בין טייטל לערך */
-    font-size: 14px;
-    margin-top: 6px;
-}
-
-
-.profile-info-label {
-    min-width: auto;
-}
-
-.profile-info-value {
-    margin-right: 4px;
-}
-
-/* ==== FIX PROFILE RTL ==== */
-
-.profile-page {
+.view-card {
     display: flex;
     flex-direction: row-reverse;
-    /* זה התיקון! */
-    gap: 30px;
+    gap: 18px;
+    align-items: center;
+    background: #f8f8f8;
+    border-radius: 20px;
+    padding: 16px;
 }
 
-/* כרטיס ימין */
-.profile-right {
-    width: 320px;
+.view-card-image {
+    width: 145px;
+    height: 145px;
+    object-fit: cover;
+    border-radius: 16px;
+    flex-shrink: 0;
 }
 
-/* תוכן שמאל */
-.profile-left {
+.view-card-content {
     flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
-/* שורות מידע בכרטיס */
-.profile-info-row {
+.view-card-top {
     display: flex;
     justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.view-card-link {
+    color: #15b6c7;
     font-size: 14px;
-    margin-top: 6px;
+}
+
+.view-card-link:hover {
+    text-decoration: underline;
+}
+
+.view-card-name {
+    font-size: 22px;
+    font-weight: 400;
+    color: #000;
+    text-align: right;
+}
+
+.view-card-divider {
+    width: 100%;
+    height: 1px;
+    background: #d9d9d9;
+    margin: 10px 0 12px;
+}
+
+.view-card-details {
+    font-size: 15px;
+    color: #555;
+    line-height: 1.7;
+    text-align: right;
+}
+
+.view-card-time {
+    font-size: 13px;
+    color: #888;
+    margin-top: 8px;
+    text-align: right;
+}
+
+.no-views-box {
+    text-align: center;
+    font-size: 20px;
+    color: #666;
+    background: #fff;
+    padding: 26px;
+    border-radius: 18px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+}
+
+/* =======================================================
+   11) RESPONSIVE
+======================================================= */
+
+@media (max-width: 950px) {
+    .site-header {
+        flex-direction: column;
+        gap: 10px;
+        padding: 15px;
+    }
+
+    .logo,
+    .links,
+    .auth {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+    }
+
+    .logout-btn {
+        margin-right: 0;
+    }
+
+    .profile-page,
+    .profile-wrap {
+        flex-direction: column;
+    }
+
+    .profile-right {
+        width: 100%;
+    }
+
+    .profile-card-img,
+    .profile-card-image {
+        height: auto;
+        max-height: 420px;
+    }
+
+    .card,
+    .view-card {
+        flex-direction: column;
+    }
+
+    .profile-img,
+    .view-card-image {
+        width: 100%;
+        height: auto;
+        max-height: 420px;
+    }
 }
 
 
-/* ==== FIX PROFILE INFO SPACING ==== */
-
-.profile-info-row {
-    display: flex;
-    justify-content: flex-start !important;
-    align-items: center;
-    gap: 4px !important;
-}
-
-.profile-info-label {
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-.profile-info-value-wrap {
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-.profile-info-value {
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-/* ==== FIX PROFILE INFO SPACING ==== */
-
-.profile-info-row {
-    display: flex;
-    justify-content: flex-start !important;
-    align-items: center;
-    gap: 4px !important;
-}
-
-.profile-info-label {
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-.profile-info-value-wrap {
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-.profile-info-value {
-    margin: 0 !important;
-    padding: 0 !important;
-}

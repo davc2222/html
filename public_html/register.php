@@ -22,8 +22,8 @@
     padding: 0;
     line-height: 1;
 }
-
 </style>
+
 <?php
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -32,18 +32,22 @@ error_reporting(E_ALL);
 require_once __DIR__ . '/config/config.php';
 
 $genders = [];
+$lookGenders = [];
 $zones = [];
 $places = [];
 
 try {
-    $stmt = $pdo->query("SELECT Gender_id, Gender_Str FROM gender ORDER BY Gender_id ASC");
-    $genders = $stmt->fetchAll();
+    $stmt = $pdo->query("SELECT Gender_Id, Gender_Str FROM gender ORDER BY Gender_Id ASC");
+    $genders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    $stmt = $pdo->query("SELECT Zone_id, Zone_Str FROM zone ORDER BY Zone_id ASC");
-    $zones = $stmt->fetchAll();
+    $stmt = $pdo->query("SELECT Id, Str FROM look_gender ORDER BY Id ASC");
+    $lookGenders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    $stmt = $pdo->query("SELECT Place_id, Place_Str FROM place ORDER BY Place_id ASC");
-    $places = $stmt->fetchAll();
+    $stmt = $pdo->query("SELECT Zone_Id, Zone_Str FROM zone ORDER BY Zone_Id ASC");
+    $zones = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $stmt = $pdo->query("SELECT Place_Id, Place_Str FROM place ORDER BY Place_Id ASC");
+    $places = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     die("שגיאה בטעינת נתוני הרשמה: " . htmlspecialchars($e->getMessage()));
 }
@@ -90,16 +94,16 @@ $success = $_GET['success'] ?? '';
                 <div class="error-text" id="email-error"></div>
             </div>
 
-        <div class="form-group password-group">
-    <label for="Pass">סיסמה</label>
+            <div class="form-group password-group">
+                <label for="Pass">סיסמה</label>
 
-    <div class="password-wrapper">
-        <input type="password" name="Pass" id="Pass" required autocomplete="new-password">
-        <button type="button" class="toggle-pass" id="togglePass">👁</button>
-    </div>
+                <div class="password-wrapper">
+                    <input type="password" name="Pass" id="Pass" required autocomplete="new-password">
+                    <button type="button" class="toggle-pass" id="togglePass">👁</button>
+                </div>
 
-    <div class="error-text" id="pass-error"></div>
-</div>
+                <div class="error-text" id="pass-error"></div>
+            </div>
 
             <div class="form-group">
                 <label for="DOB">תאריך לידה</label>
@@ -111,7 +115,7 @@ $success = $_GET['success'] ?? '';
                 <select name="Gender_Id" id="Gender_Id" required>
                     <option value="">בחר</option>
                     <?php foreach ($genders as $gender): ?>
-                        <option value="<?= htmlspecialchars($gender['Gender_id']) ?>">
+                        <option value="<?= htmlspecialchars($gender['Gender_Id']) ?>">
                             <?= htmlspecialchars($gender['Gender_Str']) ?>
                         </option>
                     <?php endforeach; ?>
@@ -122,9 +126,9 @@ $success = $_GET['success'] ?? '';
                 <label for="Look_Gender">מחפש/ת</label>
                 <select name="Look_Gender" id="Look_Gender" required>
                     <option value="">בחר</option>
-                    <?php foreach ($genders as $gender): ?>
-                        <option value="<?= htmlspecialchars($gender['Gender_id']) ?>">
-                            <?= htmlspecialchars($gender['Gender_Str']) ?>
+                    <?php foreach ($lookGenders as $g): ?>
+                        <option value="<?= htmlspecialchars($g['Id']) ?>">
+                            <?= htmlspecialchars($g['Str']) ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
@@ -135,7 +139,7 @@ $success = $_GET['success'] ?? '';
                 <select name="Zone_Id" id="Zone_Id" required>
                     <option value="">בחר אזור</option>
                     <?php foreach ($zones as $zone): ?>
-                        <option value="<?= htmlspecialchars($zone['Zone_id']) ?>">
+                        <option value="<?= htmlspecialchars($zone['Zone_Id']) ?>">
                             <?= htmlspecialchars($zone['Zone_Str']) ?>
                         </option>
                     <?php endforeach; ?>
@@ -147,7 +151,7 @@ $success = $_GET['success'] ?? '';
                 <select name="Place_Id" id="Place_Id" required>
                     <option value="">בחר מקום</option>
                     <?php foreach ($places as $place): ?>
-                        <option value="<?= htmlspecialchars($place['Place_id']) ?>">
+                        <option value="<?= htmlspecialchars($place['Place_Id']) ?>">
                             <?= htmlspecialchars($place['Place_Str']) ?>
                         </option>
                     <?php endforeach; ?>
@@ -206,10 +210,9 @@ function checkFormValidity() {
         }
     });
 
-   registerBtn.disabled = !(allFilled && nameValid && emailValid && passValid);
+    registerBtn.disabled = !(allFilled && nameValid && emailValid && passValid);
 }
 
-/* בדיקת שם משתמש */
 /* בדיקת שם משתמש */
 let nameTimeout;
 nameInput.addEventListener("input", function () {
@@ -342,12 +345,12 @@ passInput.addEventListener("input", function () {
     passValid = true;
     checkFormValidity();
 });
+
 /* בדיקות על שדות נוספים */
 document.querySelectorAll(".register-form input, .register-form select").forEach(el => {
     el.addEventListener("input", checkFormValidity);
     el.addEventListener("change", checkFormValidity);
 });
-
 
 const togglePass = document.getElementById("togglePass");
 
@@ -361,4 +364,3 @@ togglePass.addEventListener("click", function () {
     }
 });
 </script>
-(END)

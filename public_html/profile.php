@@ -1,4 +1,8 @@
 <?php
+/* =========================
+   profile.php
+   ========================= */
+
 require_once __DIR__ . '/config/config.php';
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -151,6 +155,7 @@ foreach ($profileFields as $field => $cfg) {
    קבלת מזהה משתמש
 ----------------------------- */
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+$viewerId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
 
 if ($id <= 0) {
     echo "<div class='page-shell'>משתמש לא נמצא</div>";
@@ -167,6 +172,32 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$user) {
     echo "<div class='page-shell'>משתמש לא נמצא</div>";
     exit;
+}
+
+/* -----------------------------
+   שמירת צפייה
+   Id   = מי שנצפה
+   ById = מי שצפה
+----------------------------- */
+if ($viewerId > 0 && $viewerId !== (int)$user['Id']) {
+    $deleteViewStmt = $pdo->prepare("
+        DELETE FROM views
+        WHERE Id = :viewed_id
+          AND ById = :viewer_id
+    ");
+    $deleteViewStmt->execute([
+        ':viewed_id' => (int)$user['Id'],
+        ':viewer_id' => $viewerId
+    ]);
+
+    $insertViewStmt = $pdo->prepare("
+        INSERT INTO views (Id, ById, Date, New)
+        VALUES (:viewed_id, :viewer_id, NOW(), 1)
+    ");
+    $insertViewStmt->execute([
+        ':viewed_id' => (int)$user['Id'],
+        ':viewer_id' => $viewerId
+    ]);
 }
 
 $editMode = can_edit_profile($user) && isset($_GET['edit']) && (int)$_GET['edit'] === 1;
@@ -415,15 +446,14 @@ if ($displayName === '') {
 .profile-card-name {
     margin: 0;
     font-size: 26px;
-    font-weight: 400;   /* לא בולד */
-    color: #000;        /* שחור */
+    font-weight: 400;
+    color: #000;
     letter-spacing: 0.3px;
 }
 
-/* גיל ליד השם */
 .profile-age {
     font-size: 20px;
-    color: #555;        /* אפור עדין */
+    color: #555;
     font-weight: 300;
     margin-right: 4px;
 }
@@ -485,16 +515,14 @@ if ($displayName === '') {
                 </div>
 
                 <div class="profile-card-main">
-                 <?php
-$age = compute_age_from_birthdate($user);
-?>
+                    <?php $age = compute_age_from_birthdate($user); ?>
 
-<h1 class="profile-card-name">
-    <?= e($displayName) ?>
-    <?php if ($age !== ''): ?>
-        <span class="profile-age">, <?= e($age) ?></span>
-    <?php endif; ?>
-</h1>
+                    <h1 class="profile-card-name">
+                        <?= e($displayName) ?>
+                        <?php if ($age !== ''): ?>
+                            <span class="profile-age">, <?= e($age) ?></span>
+                        <?php endif; ?>
+                    </h1>
                 </div>
 
                 <div class="profile-card-actions">
