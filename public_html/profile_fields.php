@@ -167,25 +167,27 @@ return [
 
     'Favorite_Movies' => [
         'side'  => 'left',
-        'label' => 'סרט או סצנה מסרט אהובים',
+        'label' => 'סרטים אהובים',
         'type'  => 'textarea',
     ],
 
     'Favorite_TV' => [
         'side'  => 'left',
-        'label' => 'תוכניות אהובות',
+        'label' => 'תוכניות טלוויזיה אהובות',
         'type'  => 'input',
     ],
 
     'Favorite_Books' => [
         'side'  => 'left',
-        'label' => 'ספורט',
+        'label' =>'ספרים אהובים',
         'type'  => 'input',
     ],
 
+
+    
   'I_Looking_For' => [
         'side'  => 'left',
-        'label' => 'מה אני מחפש/ת',
+        'label' => ' את מי אני מחפש/ת ',
         'type'  => 'textarea',
     ],
 ];

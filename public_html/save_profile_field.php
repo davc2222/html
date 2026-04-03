@@ -1,4 +1,6 @@
 <?php
+// ===== FILE: save_profile_field.php =====
+
 require_once __DIR__ . '/config/config.php';
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -28,6 +30,11 @@ if ((int)$_SESSION['user_id'] !== (int)$id) {
     exit;
 }
 
+if (!is_array($profileFields)) {
+    echo json_encode(['ok' => false, 'message' => 'הגדרת שדות לא תקינה']);
+    exit;
+}
+
 $allowedFields = array_keys($profileFields);
 
 if (!in_array($field, $allowedFields, true)) {
@@ -51,6 +58,6 @@ $ok = $stmt->execute([
 ]);
 
 echo json_encode([
-    'ok' => $ok,
+    'ok'    => $ok,
     'value' => $value
 ]);
