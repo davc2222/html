@@ -1,79 +1,128 @@
 <?php
-/* =========================
-   views.php
-   ========================= */
-
-require_once __DIR__ . '/config/config.php';
+// ===== FILE: views.php =====
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-$userId = $_SESSION['user_id'] ?? 0;
+require_once __DIR__ . '/config/config.php';
 
-if (!$userId) {
-    echo "<div class='page-shell'>יש להתחבר</div>";
+if (empty($_SESSION['user_id'])) {
+    header('Location: ?page=login');
     exit;
 }
 
-/* =========================
-   איפוס צפיות חדשות
-   ========================= */
-$resetStmt = $pdo->prepare("
+$session_user_id = (int)$_SESSION['user_id'];
+
+function h($v)
+{
+    return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
+}
+
+/* סימון כנקראו */
+$pdo->prepare("
     UPDATE views
     SET `New` = 0
-    WHERE Id = :id
-      AND (Deleted_By_Id IS NULL OR Deleted_By_Id = 0)
-");
-$resetStmt->execute([':id' => $userId]);
+    WHERE Id = :id AND `New` = 1
+")->execute([':id' => $session_user_id]);
 
-/* =========================
-   שליפת צפיות
-   ========================= */
+/* שליפה */
 $stmt = $pdo->prepare("
-    SELECT DISTINCT u.Id, u.Name, u.Age, u.Place_Str, u.Zone_Str, v.Date
+    SELECT up.*, MAX(v.Date) AS last_view_date
     FROM views v
-    JOIN users_profile u ON u.Id = v.ById
-    WHERE v.Id = :id 
-      AND (v.Deleted_By_Id IS NULL OR v.Deleted_By_Id = 0)
-    ORDER BY v.Date DESC
+    JOIN users_profile up ON up.Id = v.ById
+    WHERE v.Id = :id
+      AND (v.Deleted_By_Id = 0 OR v.Deleted_By_Id IS NULL)
+    GROUP BY up.Id
+    ORDER BY last_view_date DESC
 ");
 
-$stmt->execute([':id' => $userId]);
-
-$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$stmt->execute([':id' => $session_user_id]);
+$results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
-<section class="page-shell">
-    <h1>מי צפה בי</h1>
+<div class="page-shell">
 
-    <?php if (!$rows): ?>
-        <p>אין צפיות עדיין</p>
+    <h2 class="views-page-title">מי צפה בי</h2>
+
+    <?php if (!$results): ?>
+        <div class="no-views-box">אין צפיות עדיין</div>
     <?php else: ?>
 
-        <div style="display:grid;gap:15px">
+        <div class="views-list">
 
-            <?php foreach ($rows as $r): ?>
-                <div style="border:1px solid #ddd;padding:15px;border-radius:12px">
+            <?php foreach ($results as $row): ?>
 
-                    <h3><?= htmlspecialchars($r['Name']) ?></h3>
+                <?php
+                $id   = (int)($row['Id'] ?? 0);
+                $name = trim((string)($row['Name'] ?? ''));
 
-                    <p>גיל: <?= htmlspecialchars($r['Age'] ?? '') ?></p>
-                    <p>אזור: <?= htmlspecialchars($r['Zone_Str'] ?? '') ?></p>
-                    <p>מקום: <?= htmlspecialchars($r['Place_Str'] ?? '') ?></p>
+                $age = '';
+                if (!empty($row['DOB'])) {
+                    $age = date_diff(date_create($row['DOB']), date_create('today'))->y;
+                }
 
-                    <small>נצפה: <?= htmlspecialchars($r['Date']) ?></small>
+                $zone        = trim((string)($row['Zone_Str'] ?? ''));
+                $place       = trim((string)($row['Place_Str'] ?? ''));
+                $family      = trim((string)($row['Family_Status_Str'] ?? ''));
+                $children    = trim((string)($row['Childs_Num_Str'] ?? ''));
+                $religion    = trim((string)($row['Religion_Str'] ?? ''));
+                $religionRef = trim((string)($row['Religion_Ref_Str'] ?? ''));
+                $height      = trim((string)($row['Height_Str'] ?? ''));
 
-                    <br><br>
+                $img = '/images/no_photo.jpg';
 
-                    <a href="?page=profile&id=<?= (int)$r['Id'] ?>">
-                        לפרופיל
-                    </a>
+                $time = '';
+                if (!empty($row['last_view_date'])) {
+                    $time = date('d/m/Y H:i', strtotime($row['last_view_date']));
+                }
+                ?>
+
+                <div class="view-card">
+
+                    <div class="view-card-media">
+                        <img
+                            class="view-card-image"
+                            src="<?= h($img) ?>"
+                            alt="<?= h($name) ?>"
+                        >
+
+                        <?php if ($time): ?>
+                            <div class="view-card-time"><?= h($time) ?></div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="view-card-content">
+
+                        <div class="view-card-name">
+                            <?= h($name) ?>
+                            <?= $age !== '' ? ', ' . h((string)$age) : '' ?>
+                        </div>
+
+                        <div class="view-card-divider"></div>
+
+                        <div class="view-card-details">
+                            <?php if ($zone !== ''): ?><?= h($zone) ?><?php endif; ?>
+                            <?php if ($place !== ''): ?> | <?= h($place) ?><?php endif; ?>
+                            <?php if ($family !== ''): ?> | <?= h($family) ?><?php endif; ?>
+                            <?php if ($children !== ''): ?> | <?= h($children) ?><?php endif; ?>
+                            <?php if ($religion !== ''): ?> | <?= h($religion) ?><?php endif; ?>
+                            <?php if ($religionRef !== ''): ?> | <?= h($religionRef) ?><?php endif; ?>
+                            <?php if ($height !== ''): ?> | <?= h($height) ?><?php endif; ?>
+                        </div>
+
+                        <a class="view-card-link" href="/?page=profile&id=<?= $id ?>">
+                            צפייה בפרופיל
+                        </a>
+
+                    </div>
 
                 </div>
+
             <?php endforeach; ?>
 
         </div>
 
     <?php endif; ?>
-</section>
+
+</div>

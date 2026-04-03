@@ -1,3 +1,5 @@
+/* style.css */
+
 /* =======================================================
    LOVE MATCH - CSS מלא ומסודר
 ======================================================= */
@@ -16,6 +18,7 @@ html,
 body {
     width: 100%;
     min-height: 100%;
+    height: 100%;
 }
 
 body {
@@ -23,6 +26,8 @@ body {
     direction: rtl;
     background: #f2f2f2;
     color: #222;
+    display: flex;
+    flex-direction: column;
 }
 
 a {
@@ -33,8 +38,11 @@ main {
     display: block;
 }
 
-/* מרכז לבן כללי לכל הדפים */
+/* ===== Sticky Footer Layout ===== */
+
 .page-shell {
+    flex: 1;
+    width: calc(100% - 40px);
     max-width: 1000px;
     margin: 30px auto;
     padding: 25px;
@@ -61,10 +69,23 @@ main {
     text-align: right;
 }
 
-.logo a {
+.logo a,
+.logo-link {
     color: #fff;
     font-size: 24px;
     font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.logo-heart {
+    font-size: 24px;
+    line-height: 1;
+}
+
+.logo-text {
+    line-height: 1;
 }
 
 /* תפריט עליון */
@@ -570,13 +591,12 @@ main {
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
 }
 
-/* כרטיס חיפוש קומפקטי - הבלוק היחיד הפעיל */
+/* כרטיס חיפוש - בלוק יחיד ונקי */
 .search-card-compact {
-    position: relative;
     display: flex;
     flex-direction: row-reverse;
     align-items: center;
-    gap: 20px;
+    gap: 18px;
     width: 100%;
     background: #f6f6f6;
     border-radius: 24px;
@@ -584,44 +604,53 @@ main {
     min-height: 170px;
 }
 
-.search-card-compact .profile-img {
+.search-card-image {
     width: 170px;
     height: 170px;
     object-fit: cover;
     border-radius: 18px;
     flex-shrink: 0;
-    margin-bottom: 0;
 }
 
-.search-card-compact .card-content {
+.search-card-content {
     flex: 1;
     display: flex;
     flex-direction: column;
     text-align: right;
-    padding-top: 8px;
 }
 
-.search-card-compact .card-header {
-    width: 100%;
+.search-card-top {
+    display: flex;
+    justify-content: flex-start;
     margin-bottom: 10px;
 }
 
-.search-card-compact .card-header h3 {
-    margin: 0;
+.search-card-link {
+    color: #15b6c7;
+    font-size: 13px;
+    text-decoration: none;
+}
+
+.search-card-link:hover {
+    text-decoration: underline;
+}
+
+.search-card-title {
     font-size: 22px;
     font-weight: 400;
     color: #000;
+    margin-bottom: 12px;
     line-height: 1.2;
 }
 
-.compact-row {
+.search-card-row {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     margin-bottom: 8px;
 }
 
-.compact-row span {
+.search-card-row span {
     background: #f3f3f3;
     padding: 5px 10px;
     border-radius: 8px;
@@ -629,20 +658,6 @@ main {
     color: #333;
     line-height: 1.4;
     white-space: nowrap;
-}
-
-.card-profile-link-top {
-    position: absolute;
-    top: 12px;
-    left: 16px;
-    font-size: 13px;
-    color: #15b6c7;
-    text-decoration: none;
-    z-index: 2;
-}
-
-.card-profile-link-top:hover {
-    text-decoration: underline;
 }
 
 /* =======================================================
@@ -967,16 +982,26 @@ footer {
     display: flex;
     flex-direction: column;
     gap: 16px;
+    width: 100%;
 }
 
 .view-card {
     display: flex;
     flex-direction: row-reverse;
+    align-items: flex-start;
     gap: 18px;
-    align-items: center;
+    width: 100%;
     background: #f8f8f8;
     border-radius: 20px;
     padding: 16px;
+}
+
+.view-card-media {
+    width: 145px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
 .view-card-image {
@@ -984,36 +1009,33 @@ footer {
     height: 145px;
     object-fit: cover;
     border-radius: 16px;
-    flex-shrink: 0;
+    display: block;
+}
+
+.view-card-time {
+    position: static;
+    font-size: 12px;
+    color: #777;
+    margin-top: 6px;
+    text-align: left;
+    width: 100%;
 }
 
 .view-card-content {
     flex: 1;
     display: flex;
     flex-direction: column;
-}
-
-.view-card-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
-}
-
-.view-card-link {
-    color: #15b6c7;
-    font-size: 14px;
-}
-
-.view-card-link:hover {
-    text-decoration: underline;
+    justify-content: flex-start;
+    text-align: right;
+    min-height: 145px;
 }
 
 .view-card-name {
-    font-size: 22px;
-    font-weight: 400;
+    font-size: 24px;
+    font-weight: 500;
     color: #000;
     text-align: right;
+    margin-bottom: 10px;
 }
 
 .view-card-divider {
@@ -1024,17 +1046,23 @@ footer {
 }
 
 .view-card-details {
-    font-size: 15px;
-    color: #555;
-    line-height: 1.7;
+    font-size: 16px;
+    color: #444;
+    margin-top: 6px;
+    line-height: 1.8;
     text-align: right;
 }
 
-.view-card-time {
-    font-size: 13px;
-    color: #888;
-    margin-top: 8px;
-    text-align: right;
+.view-card-link {
+    color: #15b6c7;
+    font-size: 14px;
+    display: inline-block;
+    margin-top: 10px;
+    align-self: flex-start;
+}
+
+.view-card-link:hover {
+    text-decoration: underline;
 }
 
 .no-views-box {
@@ -1089,10 +1117,19 @@ footer {
         flex-direction: column;
     }
 
+    .view-card-media {
+        width: 100%;
+        align-items: stretch;
+    }
+
     .view-card-image {
         width: 100%;
         height: auto;
         max-height: 420px;
+    }
+
+    .view-card-time {
+        text-align: right;
     }
 
     .search-card-compact {
@@ -1100,15 +1137,117 @@ footer {
         align-items: stretch;
     }
 
-    .search-card-compact .profile-img {
+    .search-card-image {
         width: 100%;
         height: auto;
         max-height: 320px;
     }
+}
 
-    .card-profile-link-top {
-        position: static;
-        display: inline-block;
-        margin-bottom: 10px;
-    }
+
+.left-edit-mode {
+    display: none;
+}
+
+.empty-inline-note {
+    color: #999;
+}
+
+
+/* =======================================================
+   FIX - PROFILE RIGHT EDIT MODE
+======================================================= */
+
+.profile-right-form {
+    margin-top: 12px;
+}
+
+.profile-right-edit-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.profile-right-edit-label {
+    width: 110px;
+    flex-shrink: 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.profile-right-edit-control {
+    flex: 1;
+}
+
+.profile-right-input {
+    width: 100%;
+    height: 40px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 8px 12px;
+    background: #fafafa;
+    font-size: 14px;
+}
+
+.profile-right-input:focus {
+    outline: none;
+    border-color: #ff4d6d;
+    background: #fff;
+}
+
+/* קומבובוקס */
+.profile-right-select {
+    appearance: none;
+    cursor: pointer;
+}
+
+/* כפתורים */
+.profile-right-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.profile-right-save-btn {
+    background: #ff4d6d;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.profile-right-cancel-btn {
+    background: #eee;
+    border-radius: 10px;
+    padding: 10px 20px;
+    color: #444;
+    text-decoration: none;
+}
+
+/* לינק עריכה */
+.profile-right-edit-link-wrap {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.profile-right-edit-link {
+    color: #666;
+    font-size: 14px;
+}
+
+.profile-right-edit-link:hover {
+    color: #15b6c7;
+}
+
+/* LEFT FIX קטן */
+.left-edit-mode {
+    display: none;
+}
+
+.empty-inline-note {
+    color: #999;
 }
