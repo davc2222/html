@@ -157,11 +157,7 @@ return [
         'type'  => 'textarea',
     ],
 
-    'I_Looking_For' => [
-        'side'  => 'left',
-        'label' => 'מה אני מחפש/ת',
-        'type'  => 'textarea',
-    ],
+   
 
     'Hobbies' => [
         'side'  => 'left',
@@ -185,5 +181,11 @@ return [
         'side'  => 'left',
         'label' => 'ספורט',
         'type'  => 'input',
+    ],
+
+  'I_Looking_For' => [
+        'side'  => 'left',
+        'label' => 'מה אני מחפש/ת',
+        'type'  => 'textarea',
     ],
 ];

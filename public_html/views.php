@@ -17,6 +17,17 @@ if (!$userId) {
 }
 
 /* =========================
+   איפוס צפיות חדשות
+   ========================= */
+$resetStmt = $pdo->prepare("
+    UPDATE views
+    SET `New` = 0
+    WHERE Id = :id
+      AND (Deleted_By_Id IS NULL OR Deleted_By_Id = 0)
+");
+$resetStmt->execute([':id' => $userId]);
+
+/* =========================
    שליפת צפיות
    ========================= */
 $stmt = $pdo->prepare("
@@ -28,7 +39,7 @@ $stmt = $pdo->prepare("
     ORDER BY v.Date DESC
 ");
 
-$stmt->execute([':id'=>$userId]);
+$stmt->execute([':id' => $userId]);
 
 $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>

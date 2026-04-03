@@ -26,11 +26,10 @@ function profile_value(array $user, string $field): string
 
 function can_edit_profile(array $user): bool
 {
-    if (empty($_SESSION['user_id'])) {
-        return false;
-    }
+    $sessionUserId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
+    $profileUserId = isset($user['Id']) ? (int)$user['Id'] : 0;
 
-    return (int)$_SESSION['user_id'] === (int)$user['Id'];
+    return $sessionUserId > 0 && $sessionUserId === $profileUserId;
 }
 
 function get_options(PDO $pdo, array $cfg): array
@@ -174,6 +173,8 @@ if (!$user) {
     exit;
 }
 
+$isOwner = isset($_SESSION['user_id']) && (int)$_SESSION['user_id'] === (int)$user['Id'];
+
 /* -----------------------------
    שמירת צפייה
    Id   = מי שנצפה
@@ -200,7 +201,7 @@ if ($viewerId > 0 && $viewerId !== (int)$user['Id']) {
     ]);
 }
 
-$editMode = can_edit_profile($user) && isset($_GET['edit']) && (int)$_GET['edit'] === 1;
+$editMode = $isOwner && isset($_GET['edit']) && (int)$_GET['edit'] === 1;
 
 /* -----------------------------
    תמונת פרופיל
@@ -469,25 +470,25 @@ if ($displayName === '') {
                 $type = $cfg['type'] ?? 'textarea';
                 $value = profile_value($user, $field);
 
-                if ($value === '') {
-                    continue;
-                }
+                $displayValue = $value !== ''
+                    ? nl2br(e($value))
+                    : '<span style="color:#999;">אין מידע עדיין</span>';
                 ?>
                 <div class="profile-block" data-field="<?= e($field) ?>">
                     <div class="profile-block-head">
                         <h3><?= e($title) ?></h3>
 
-                        <?php if (can_edit_profile($user)): ?>
+                        <?php if ($isOwner): ?>
                             <button type="button" class="edit-btn left-edit-btn">✎</button>
                         <?php endif; ?>
                     </div>
 
                     <div class="profile-block-body">
                         <div class="left-view-mode">
-                            <?= nl2br(e($value)) ?>
+                            <?= $displayValue ?>
                         </div>
 
-                        <?php if (can_edit_profile($user)): ?>
+                        <?php if ($isOwner): ?>
                             <div class="left-edit-mode" style="display:none;">
                                 <?php if ($type === 'input'): ?>
                                     <input type="text" class="profile-left-edit-input" value="<?= e($value) ?>">
@@ -526,14 +527,14 @@ if ($displayName === '') {
                 </div>
 
                 <div class="profile-card-actions">
-                    <?php if (!can_edit_profile($user)): ?>
+                    <?php if (!$isOwner): ?>
                         <button type="button" class="profile-message-btn" onclick="openChatWithUser(<?= (int)$user['Id'] ?>)">
                             שלח הודעה
                         </button>
                     <?php endif; ?>
                 </div>
 
-                <?php if (can_edit_profile($user) && !$editMode): ?>
+                <?php if ($isOwner && !$editMode): ?>
                     <div class="profile-right-edit-link-wrap">
                         <a href="?page=profile&id=<?= (int)$user['Id'] ?>&edit=1" class="profile-right-edit-link">
                             ✏️ עריכת פרטים
@@ -729,7 +730,7 @@ document.addEventListener('click', async function (e) {
                         .replace(/"/g, '&quot;')
                         .replace(/'/g, '&#039;')
                         .replace(/\n/g, '<br>')
-                    : '';
+                    : '<span style="color:#999;">אין מידע עדיין</span>';
             }
 
             if (input) input.defaultValue = value;

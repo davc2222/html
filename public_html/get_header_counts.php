@@ -27,6 +27,7 @@ try {
         SELECT COUNT(DISTINCT ById)
         FROM views
         WHERE Id = :id
+          AND `New` = 1
           AND (Deleted_By_Id IS NULL OR Deleted_By_Id = 0)
     ");
     $stmt->execute([':id' => $userId]);
