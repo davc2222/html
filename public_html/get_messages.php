@@ -29,7 +29,6 @@ if ($other <= 0) {
     exit;
 }
 
-/* שמות משתמשים */
 $names = [];
 
 $nameStmt = $pdo->prepare("
@@ -46,10 +45,9 @@ foreach ($nameStmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
     $names[(int)$row['Id']] = trim((string)($row['Name'] ?? ''));
 }
 
-/* טעינה ראשונה: כל ההיסטוריה | רענון: רק הודעות חדשות */
 if ($lastId <= 0) {
     $msgStmt = $pdo->prepare("
-        SELECT Msg_Num, Id, ById, Date_Sent, Msg_Txt
+        SELECT Msg_Num, Id, ById, Date_Sent, Msg_Txt, `New`
         FROM messages
         WHERE
             (
@@ -72,7 +70,7 @@ if ($lastId <= 0) {
     ]);
 } else {
     $msgStmt = $pdo->prepare("
-        SELECT Msg_Num, Id, ById, Date_Sent, Msg_Txt
+        SELECT Msg_Num, Id, ById, Date_Sent, Msg_Txt, `New`
         FROM messages
         WHERE
             Msg_Num > :last_id
@@ -106,18 +104,27 @@ $maxMessageId = $lastId;
 while ($row = $msgStmt->fetch(PDO::FETCH_ASSOC)) {
     $messageId = (int)$row['Msg_Num'];
     $senderId = (int)$row['ById'];
+    $receiverId = (int)$row['Id'];
     $isMe = $senderId === $me;
 
     if ($messageId > $maxMessageId) {
         $maxMessageId = $messageId;
     }
 
-    $dateSent = '';
+    $shortDate = '';
+    $fullDate = '';
+
     if (!empty($row['Date_Sent'])) {
         $ts = strtotime((string)$row['Date_Sent']);
         if ($ts) {
-            $dateSent = date('d/m/Y H:i', $ts);
+            $shortDate = date('d/m/Y H:i', $ts);
+            $fullDate = date('d/m/Y H:i:s', $ts);
         }
+    }
+
+    $isRead = null;
+    if ($isMe && $receiverId === $other) {
+        $isRead = ((int)$row['New'] === 0);
     }
 
     $messages[] = [
@@ -126,7 +133,9 @@ while ($row = $msgStmt->fetch(PDO::FETCH_ASSOC)) {
         'sender_id' => $senderId,
         'sender_name' => $names[$senderId] ?? ($isMe ? 'אני' : 'משתמש'),
         'text' => htmlspecialchars((string)($row['Msg_Txt'] ?? ''), ENT_QUOTES, 'UTF-8'),
-        'date_sent' => $dateSent
+        'date_sent' => $shortDate,
+        'full_date' => $fullDate,
+        'is_read' => $isRead
     ];
 }
 

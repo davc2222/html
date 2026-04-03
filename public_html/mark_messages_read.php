@@ -36,7 +36,6 @@ $stmt = $pdo->prepare("
       AND `New` = 1
       AND (Deleted_By_Id = 0 OR Deleted_By_Id IS NULL)
 ");
-
 $stmt->execute([
     ':me' => $me,
     ':other' => $other

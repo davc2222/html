@@ -1,5 +1,5 @@
 <?php
-// ===== FILE: header.php =====
+// ===== FILE: includes/header.php =====
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -20,30 +20,30 @@ if (!empty($_SESSION['user_main_pic'])) {
     $headerAvatar = '/images/' . $_SESSION['user_image'];
 }
 
-/* תפריט */
 $menu = [
-    'home'     => 'בית',
-    'search'   => 'חיפוש',
-    'messages' => 'הודעות',
-    'views'    => 'צפיות'
+    'home'     => ['label' => 'בית', 'icon' => '🏠'],
+    'search'   => ['label' => 'חיפוש', 'icon' => '🔎'],
+    'messages' => ['label' => 'הודעות', 'icon' => '💌'],
+    'views'    => ['label' => 'צפיות', 'icon' => '👁']
 ];
 ?>
-<link rel="stylesheet" href="/css/style.css">;
+
 <header class="site-header">
 
     <div class="logo">
         <a href="?page=home" class="logo-link">
-            <span class="logo-heart">❤</span>
             <span class="logo-text">LoveMatch</span>
+            <span class="logo-heart">❤</span>
         </a>
     </div>
 
     <nav class="links">
-        <?php foreach ($menu as $p => $label): ?>
+        <?php foreach ($menu as $p => $item): ?>
             <a href="?page=<?= htmlspecialchars($p, ENT_QUOTES, 'UTF-8') ?>"
                class="menu-link <?= ($page === $p) ? 'active' : '' ?>">
 
-                <span class="menu-link-text"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></span>
+                <span class="menu-link-icon"><?= $item['icon'] ?></span>
+                <span class="menu-link-text"><?= htmlspecialchars($item['label'], ENT_QUOTES, 'UTF-8') ?></span>
 
                 <?php if ($p === 'messages'): ?>
                     <span id="messagesBadge" class="menu-badge"></span>
@@ -58,7 +58,9 @@ $menu = [
 
     <div class="auth">
         <?php if ($sessionUserId > 0): ?>
-            <span class="welcome-user">שלום <?= htmlspecialchars($sessionUserName !== '' ? $sessionUserName : 'משתמש', ENT_QUOTES, 'UTF-8') ?></span>
+            <span class="welcome-user">
+                שלום <?= htmlspecialchars($sessionUserName !== '' ? $sessionUserName : 'משתמש', ENT_QUOTES, 'UTF-8') ?>
+            </span>
 
             <a href="?page=profile&id=<?= $sessionUserId ?>&edit=1" class="header-avatar-link" title="הפרופיל שלי">
                 <img src="<?= htmlspecialchars($headerAvatar, ENT_QUOTES, 'UTF-8') ?>" alt="user" class="header-avatar">
@@ -73,86 +75,4 @@ $menu = [
 
 </header>
 
-<?php if ($sessionUserId > 0): ?>
-<script>
-async function refreshMessagesBadge() {
-    const badge = document.getElementById('messagesBadge');
-    if (!badge) return;
-
-    try {
-        const response = await fetch('get_unread_count.php', {
-            cache: 'no-store'
-        });
-
-        const result = await response.json();
-
-        if (!result.ok) {
-            badge.style.display = 'none';
-            badge.textContent = '';
-            return;
-        }
-
-        const count = parseInt(result.count || 0, 10);
-
-        if (count > 0) {
-            badge.textContent = count > 99 ? '99+' : String(count);
-            badge.style.display = 'flex';
-            badge.classList.add('badge-pulse');
-
-            setTimeout(() => {
-                badge.classList.remove('badge-pulse');
-            }, 400);
-        } else {
-            badge.textContent = '';
-            badge.style.display = 'none';
-        }
-    } catch (err) {
-        console.error(err);
-    }
-}
-
-async function refreshViewsBadge() {
-    const badge = document.getElementById('viewsBadge');
-    if (!badge) return;
-
-    try {
-        const response = await fetch('get_views_count.php', {
-            cache: 'no-store'
-        });
-
-        const result = await response.json();
-
-        if (!result.ok) {
-            badge.style.display = 'none';
-            badge.textContent = '';
-            return;
-        }
-
-        const count = parseInt(result.count || 0, 10);
-
-        if (count > 0) {
-            badge.textContent = count > 99 ? '99+' : String(count);
-            badge.style.display = 'flex';
-            badge.classList.add('badge-pulse');
-
-            setTimeout(() => {
-                badge.classList.remove('badge-pulse');
-            }, 400);
-        } else {
-            badge.textContent = '';
-            badge.style.display = 'none';
-        }
-    } catch (err) {
-        console.error(err);
-    }
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-    refreshMessagesBadge();
-    refreshViewsBadge();
-
-    setInterval(refreshMessagesBadge, 5000);
-    setInterval(refreshViewsBadge, 5000);
-});
-</script>
-<?php endif; ?>
+<?php include __DIR__ . '/chat_windows.php'; ?>
