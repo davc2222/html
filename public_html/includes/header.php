@@ -1,181 +1,158 @@
 <?php
-// =======================================================
-// HEADER - כולל תפריט עליון + משתמש + badges
-// =======================================================
+// ===== FILE: header.php =====
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-/* חיבור למסד */
 require_once __DIR__ . '/../config/config.php';
 
-/* דף נוכחי */
 $page = $_GET['page'] ?? 'home';
 
-/* משתמש */
-$userLoggedIn = !empty($_SESSION['user_id']);
-$headerUserId = $_SESSION['user_id'] ?? '';
-$headerUserName = $_SESSION['user_name'] ?? ($_SESSION['username'] ?? '');
+$sessionUserId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
+$sessionUserName = trim((string)($_SESSION['user_name'] ?? ($_SESSION['username'] ?? '')));
 
-/* תמונת משתמש */
-$headerUserImage = '/images/no_photo.jpg';
+$headerAvatar = '/images/no_photo.jpg';
 
 if (!empty($_SESSION['user_main_pic'])) {
-    $headerUserImage = $_SESSION['user_main_pic'];
+    $headerAvatar = (string)$_SESSION['user_main_pic'];
 } elseif (!empty($_SESSION['user_image'])) {
-    $headerUserImage = '/images/' . $_SESSION['user_image'];
+    $headerAvatar = '/images/' . $_SESSION['user_image'];
 }
+
+/* תפריט */
+$menu = [
+    'home'     => 'בית',
+    'search'   => 'חיפוש',
+    'messages' => 'הודעות',
+    'views'    => 'צפיות'
+];
 ?>
-
-<!DOCTYPE html>
-<html lang="he" dir="rtl">
-
-<head>
-    <meta charset="UTF-8">
-    <title>LoveMatch</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!-- CSS ראשי -->
-    <link rel="stylesheet" href="/css/style.css?v=201">
-</head>
-
-<body>
-
+<link rel="stylesheet" href="/css/style.css">;
 <header class="site-header">
 
-    <!-- ===================================================
-         לוגו
-    =================================================== -->
     <div class="logo">
         <a href="?page=home" class="logo-link">
-            <span class="logo-heart">❤️</span>
+            <span class="logo-heart">❤</span>
             <span class="logo-text">LoveMatch</span>
         </a>
     </div>
 
-    <!-- ===================================================
-         תפריט אייקונים (חיפוש / צפיות / הודעות)
-    =================================================== -->
     <nav class="links">
-       <!-- בית -->
-<a href="?page=home" class="menu-link <?= ($page === 'home') ? 'active' : '' ?>" title="בית">
-    <span class="menu-link-icon">🏠</span>
-    <span class="menu-link-text">בית</span>
-</a>
-        <!-- חיפוש -->
-        <a href="?page=search" class="menu-link <?= ($page === 'search') ? 'active' : '' ?>" title="חיפוש">
-            <span class="menu-link-icon">🔍</span>
-            <span class="menu-link-text">חיפוש</span>
-        </a>
+        <?php foreach ($menu as $p => $label): ?>
+            <a href="?page=<?= htmlspecialchars($p, ENT_QUOTES, 'UTF-8') ?>"
+               class="menu-link <?= ($page === $p) ? 'active' : '' ?>">
 
-        <?php if ($userLoggedIn): ?>
+                <span class="menu-link-text"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></span>
 
-            <!-- צפיות -->
-            <a href="?page=views" class="menu-link has-badge <?= ($page === 'views') ? 'active' : '' ?>" title="צפיות">
-                <span class="menu-link-icon">👁</span>
-                <span class="menu-link-text">צפיות</span>
-                <span id="viewsBadge" class="menu-badge">0</span>
+                <?php if ($p === 'messages'): ?>
+                    <span id="messagesBadge" class="menu-badge"></span>
+                <?php endif; ?>
+
+                <?php if ($p === 'views'): ?>
+                    <span id="viewsBadge" class="menu-badge"></span>
+                <?php endif; ?>
             </a>
-
-            <!-- הודעות -->
-            <a href="?page=messages" class="menu-link has-badge <?= ($page === 'messages') ? 'active' : '' ?>" title="הודעות">
-                <span class="menu-link-icon">💬</span>
-                <span class="menu-link-text">הודעות</span>
-                <span id="messagesBadge" class="menu-badge">0</span>
-            </a>
-
-        <?php endif; ?>
-
+        <?php endforeach; ?>
     </nav>
 
-    <!-- ===================================================
-         אזור משתמש (תמונה + שלום + התנתקות)
-    =================================================== -->
     <div class="auth">
+        <?php if ($sessionUserId > 0): ?>
+            <span class="welcome-user">שלום <?= htmlspecialchars($sessionUserName !== '' ? $sessionUserName : 'משתמש', ENT_QUOTES, 'UTF-8') ?></span>
 
-        <?php if ($userLoggedIn): ?>
-
-            <!-- תמונת משתמש -->
-            <a href="?page=profile&id=<?= urlencode($headerUserId) ?>" class="header-avatar-link">
-                <img src="<?= htmlspecialchars($headerUserImage) ?>" class="header-avatar">
+            <a href="?page=profile&id=<?= $sessionUserId ?>&edit=1" class="header-avatar-link" title="הפרופיל שלי">
+                <img src="<?= htmlspecialchars($headerAvatar, ENT_QUOTES, 'UTF-8') ?>" alt="user" class="header-avatar">
             </a>
 
-            <!-- שם משתמש -->
-            <span class="welcome-user">
-                שלום <?= htmlspecialchars($headerUserName) ?>
-            </span>
-
-            <!-- התנתקות -->
-            <a href="/logout.php" class="auth-btn logout-btn">התנתקות</a>
-
+            <a href="logout.php" class="auth-btn logout-btn">התנתקות</a>
         <?php else: ?>
-
-            <a href="?page=login" class="auth-btn">התחברות</a>
-            <a href="?page=register" class="auth-btn">הרשמה</a>
-
+            <a href="?page=login" class="auth-btn <?= ($page === 'login') ? 'active' : '' ?>">התחברות</a>
+            <a href="?page=register" class="auth-btn <?= ($page === 'register') ? 'active' : '' ?>">הרשמה</a>
         <?php endif; ?>
-
     </div>
 
 </header>
 
-<!-- ===================================================
-     JAVASCRIPT - עדכון badge (Polling כל 5 שניות)
-=================================================== -->
+<?php if ($sessionUserId > 0): ?>
 <script>
-let lastViews = null;
-let lastMessages = null;
+async function refreshMessagesBadge() {
+    const badge = document.getElementById('messagesBadge');
+    if (!badge) return;
 
-async function updateHeaderBadges() {
     try {
-        const response = await fetch('/get_header_counts.php', {
+        const response = await fetch('get_unread_count.php', {
             cache: 'no-store'
         });
 
-        if (!response.ok) return;
+        const result = await response.json();
 
-        const data = await response.json();
-
-        const viewsBadge = document.getElementById('viewsBadge');
-        const messagesBadge = document.getElementById('messagesBadge');
-
-        /* ===== צפיות ===== */
-        if (viewsBadge && data.views !== undefined) {
-            if (data.views > 0) {
-                viewsBadge.style.display = 'flex';
-                viewsBadge.textContent = data.views;
-
-                if (lastViews !== null && data.views > lastViews) {
-                    viewsBadge.classList.add('badge-pulse');
-                }
-            } else {
-                viewsBadge.style.display = 'none';
-            }
-            lastViews = data.views;
+        if (!result.ok) {
+            badge.style.display = 'none';
+            badge.textContent = '';
+            return;
         }
 
-        /* ===== הודעות ===== */
-        if (messagesBadge && data.messages !== undefined) {
-            if (data.messages > 0) {
-                messagesBadge.style.display = 'flex';
-                messagesBadge.textContent = data.messages;
+        const count = parseInt(result.count || 0, 10);
 
-                if (lastMessages !== null && data.messages > lastMessages) {
-                    messagesBadge.classList.add('badge-pulse');
-                }
-            } else {
-                messagesBadge.style.display = 'none';
-            }
-            lastMessages = data.messages;
+        if (count > 0) {
+            badge.textContent = count > 99 ? '99+' : String(count);
+            badge.style.display = 'flex';
+            badge.classList.add('badge-pulse');
+
+            setTimeout(() => {
+                badge.classList.remove('badge-pulse');
+            }, 400);
+        } else {
+            badge.textContent = '';
+            badge.style.display = 'none';
         }
-
-    } catch (error) {
-        console.error('Badge update failed:', error);
+    } catch (err) {
+        console.error(err);
     }
 }
 
-/* ריצה ראשונית + polling */
-updateHeaderBadges();
-setInterval(updateHeaderBadges, 5000);
+async function refreshViewsBadge() {
+    const badge = document.getElementById('viewsBadge');
+    if (!badge) return;
+
+    try {
+        const response = await fetch('get_views_count.php', {
+            cache: 'no-store'
+        });
+
+        const result = await response.json();
+
+        if (!result.ok) {
+            badge.style.display = 'none';
+            badge.textContent = '';
+            return;
+        }
+
+        const count = parseInt(result.count || 0, 10);
+
+        if (count > 0) {
+            badge.textContent = count > 99 ? '99+' : String(count);
+            badge.style.display = 'flex';
+            badge.classList.add('badge-pulse');
+
+            setTimeout(() => {
+                badge.classList.remove('badge-pulse');
+            }, 400);
+        } else {
+            badge.textContent = '';
+            badge.style.display = 'none';
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    refreshMessagesBadge();
+    refreshViewsBadge();
+
+    setInterval(refreshMessagesBadge, 5000);
+    setInterval(refreshViewsBadge, 5000);
+});
 </script>
+<?php endif; ?>
