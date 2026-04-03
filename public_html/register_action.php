@@ -189,8 +189,13 @@ $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
 $baseUrl = $scheme . '://' . $host;
 
 /* חשוב: מפנה ישירות לקובץ verify.php */
-$verifyLink = $baseUrl . '/verify.php?token=' . urlencode($verifyToken);
+//$verifyLink = $baseUrl . '/verify.php?token=' . urlencode($verifyToken);
+// define('APP_BASE_URL', 'https://your-real-domain.com');
 
+$verifyLink =
+    (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') .
+    $_SERVER['HTTP_HOST'] .
+    '/?page=verify_email&token=' . urlencode($verifyToken);
 /* =========================
    שליחת אימייל דרך Gmail SMTP
 ========================= */
