@@ -15,6 +15,7 @@ $page = $_GET['page'] ?? 'home';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LoveMatch</title>
     <link rel="stylesheet" href="/css/style.css">
+    <?php include __DIR__ . '/includes/chat_windows.php'; ?>
 </head>
 
 <body>

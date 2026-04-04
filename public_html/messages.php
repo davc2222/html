@@ -18,6 +18,29 @@ function h($v) {
     return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
 }
 
+function get_profile_image(PDO $pdo, int $userId): string {
+    try {
+        $stmt = $pdo->prepare("
+            SELECT Pic_Name
+            FROM user_pics
+            WHERE Id = :id
+              AND Main_Pic = 1
+              AND Pic_Status = 1
+            LIMIT 1
+        ");
+        $stmt->execute([':id' => $userId]);
+        $picName = $stmt->fetchColumn();
+
+        if ($picName) {
+            return '/uploads/' . ltrim((string)$picName, '/');
+        }
+    } catch (Throwable $e) {
+        // ignore
+    }
+
+    return '/images/no_photo.jpg';
+}
+
 /* ===== שליפה ===== */
 $stmt = $pdo->prepare("
     SELECT 
@@ -35,6 +58,10 @@ $stmt = $pdo->prepare("
             ELSE m.ById
         END
     WHERE (m.Id = :me OR m.ById = :me)
+      AND (
+            (m.Id = :me AND (m.Deleted_By_Id = 0 OR m.Deleted_By_Id IS NULL))
+         OR (m.ById = :me AND (m.Deleted_By_ById = 0 OR m.Deleted_By_ById IS NULL))
+      )
     GROUP BY other_user_id
     ORDER BY last_msg_date DESC
 ");
@@ -56,12 +83,16 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <?php foreach ($results as $row): ?>
 
                 <?php
-                $id   = (int)($row['Id'] ?? 0);
+                $otherUserId = (int)($row['other_user_id'] ?? 0);
                 $name = trim((string)($row['Name'] ?? ''));
 
                 $age = '';
                 if (!empty($row['DOB'])) {
-                    $age = date_diff(date_create($row['DOB']), date_create('today'))->y;
+                    try {
+                        $age = date_diff(date_create($row['DOB']), date_create('today'))->y;
+                    } catch (Throwable $e) {
+                        $age = '';
+                    }
                 }
 
                 $zone     = trim((string)($row['Zone_Str'] ?? ''));
@@ -73,7 +104,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                 $unread = (int)($row['unread_count'] ?? 0);
 
-                $img = '/images/no_photo.jpg';
+                $img = get_profile_image($pdo, $otherUserId);
                 ?>
 
                 <div class="view-card">
@@ -140,7 +171,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <a
                             href="#"
                             class="view-card-link open-chat-btn"
-                            data-user-id="<?= $id ?>">
+                            data-user-id="<?= $otherUserId ?>">
                             פתח צ'אט
                         </a>
 
@@ -155,3 +186,29 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <?php endif; ?>
 
 </div>
+
+<script>
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.open-chat-btn');
+        if (!btn) return;
+
+        e.preventDefault();
+
+        const card = btn.closest('.view-card');
+        const userId = Number(btn.getAttribute('data-user-id'));
+        if (!userId) return;
+
+        const nameEl = card ? card.querySelector('.view-card-name') : null;
+        const imgEl = card ? card.querySelector('.view-card-image') : null;
+
+        const userName = nameEl ? nameEl.textContent.trim() : 'משתמש';
+        const userImage = imgEl ? imgEl.getAttribute('src') : '/images/no_photo.jpg';
+
+        if (typeof openMessageModal !== 'function') {
+            console.error('openMessageModal is not loaded');
+            return;
+        }
+
+        openMessageModal(userId, userName, userImage);
+    });
+</script>

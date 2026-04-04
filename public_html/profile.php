@@ -561,33 +561,25 @@ foreach ($rightFields as $field => $cfg) {
 <?php endif; ?>
 
 <?php if (!$isOwner && $viewerId > 0): ?>
-    <?php if (!$isOwner && $viewerId > 0): ?>
-        <script>
-            document.addEventListener('click', function(e) {
-                const btn = e.target.closest('.open-chat-btn');
-                if (!btn) return;
+    <script>
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('.open-chat-btn');
+            if (!btn) return;
 
-                e.preventDefault();
+            e.preventDefault();
 
-                const userId = Number(btn.getAttribute('data-user-id'));
-                if (!userId) return;
+            const userId = Number(btn.getAttribute('data-user-id'));
+            if (!userId) return;
 
-                if (typeof openMessageModal !== 'function') {
-                    console.error('openMessageModal is not loaded');
-                    return;
-                }
+            if (typeof openMessageModal !== 'function') {
+                console.error('openMessageModal is not loaded');
+                return;
+            }
 
-                const userName = <?= json_encode($name !== '' ? $name : 'משתמש', JSON_UNESCAPED_UNICODE) ?>;
-                const userImage = <?= json_encode($profileImage, JSON_UNESCAPED_UNICODE) ?>;
+            const userName = <?= json_encode($name !== '' ? $name : 'משתמש', JSON_UNESCAPED_UNICODE) ?>;
+            const userImage = <?= json_encode($profileImage, JSON_UNESCAPED_UNICODE) ?>;
 
-                openMessageModal(
-                    userId,
-                    userName,
-                    userImage,
-                    window.chatViewer ? window.chatViewer.name : 'אני',
-                    window.chatViewer ? window.chatViewer.image : '/images/no_photo.jpg'
-                );
-            });
-        </script>
-    <?php endif; ?>
+            openMessageModal(userId, userName, userImage);
+        });
+    </script>
 <?php endif; ?>

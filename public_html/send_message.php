@@ -1,84 +1,86 @@
 <?php
 // ===== FILE: send_message.php =====
 
+require_once __DIR__ . '/config/config.php';
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
 header('Content-Type: application/json; charset=UTF-8');
 
-require_once __DIR__ . '/config/config.php';
+$me = (int)($_SESSION['user_id'] ?? 0);
+$to = (int)($_POST['to'] ?? 0);
+$text = trim((string)($_POST['text'] ?? ''));
 
-$fromId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
-$toId   = isset($_POST['to_id']) ? (int)$_POST['to_id'] : 0;
-$msgTxt = isset($_POST['message']) ? trim((string)$_POST['message']) : '';
-
-if ($fromId <= 0) {
+if ($me <= 0) {
     echo json_encode([
         'ok' => false,
-        'message' => 'יש להתחבר כדי לשלוח הודעה'
-    ]);
+        'message' => 'המשתמש לא מחובר'
+    ], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
-if ($toId <= 0) {
+if ($to <= 0 || $to === $me) {
     echo json_encode([
         'ok' => false,
         'message' => 'נמען לא תקין'
-    ]);
+    ], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
-if ($fromId === $toId) {
+if ($text === '') {
     echo json_encode([
         'ok' => false,
-        'message' => 'לא ניתן לשלוח הודעה לעצמך'
-    ]);
-    exit;
-}
-
-if ($msgTxt === '') {
-    echo json_encode([
-        'ok' => false,
-        'message' => 'יש לכתוב הודעה'
-    ]);
+        'message' => 'אי אפשר לשלוח הודעה ריקה'
+    ], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
 try {
+    $checkStmt = $pdo->prepare("
+        SELECT Id
+        FROM users_profile
+        WHERE Id = :id
+        LIMIT 1
+    ");
+    $checkStmt->execute([':id' => $to]);
+
+    if (!$checkStmt->fetchColumn()) {
+        echo json_encode([
+            'ok' => false,
+            'message' => 'המשתמש לא קיים'
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
     $stmt = $pdo->prepare("
-        INSERT INTO messages (
-            Id,
-            ById,
-            Date_Sent,
-            Msg_Txt,
-            `New`,
-            Deleted_By_Id,
-            Deleted_By_ById
-        )
-        VALUES (
-            :to_id,
-            :from_id,
-            NOW(),
-            :msg_txt,
-            1,
-            0,
-            0
-        )
+        INSERT INTO messages (Id, ById, Date_Sent, Msg_Txt, `New`, Deleted_By_Id, Deleted_By_ById)
+        VALUES (:to, :me, NOW(), :txt, 1, 0, 0)
     ");
 
     $stmt->execute([
-        ':to_id'   => $toId,
-        ':from_id' => $fromId,
-        ':msg_txt' => $msgTxt
+        ':to' => $to,
+        ':me' => $me,
+        ':txt' => $text
+    ]);
+
+    $deleteTypingStmt = $pdo->prepare("
+        DELETE FROM message_typing
+        WHERE user_id = :user_id
+          AND target_id = :target_id
+    ");
+    $deleteTypingStmt->execute([
+        ':user_id' => $me,
+        ':target_id' => $to
     ]);
 
     echo json_encode([
         'ok' => true
-    ]);
+    ], JSON_UNESCAPED_UNICODE);
 } catch (Throwable $e) {
     echo json_encode([
         'ok' => false,
-        'message' => 'שגיאה בשמירת ההודעה'
-    ]);
+        'message' => 'שגיאת שרת'
+    ], JSON_UNESCAPED_UNICODE);
 }
