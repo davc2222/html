@@ -555,15 +555,33 @@ foreach ($rightFields as $field => $cfg) {
 <?php endif; ?>
 
 <?php if (!$isOwner && $viewerId > 0): ?>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const btn = document.querySelector('.open-chat-btn');
-            if (!btn) return;
+    <?php if (!$isOwner && $viewerId > 0): ?>
+        <script>
+            document.addEventListener('click', function(e) {
+                const btn = e.target.closest('.open-chat-btn');
+                if (!btn) return;
 
-            btn.addEventListener('click', function() {
-                const userId = this.getAttribute('data-user-id');
-                window.location.href = '/?page=messages&user_id=' + encodeURIComponent(userId);
+                e.preventDefault();
+
+                const userId = Number(btn.getAttribute('data-user-id'));
+                if (!userId) return;
+
+                if (typeof openMessageModal !== 'function') {
+                    console.error('openMessageModal is not loaded');
+                    return;
+                }
+
+                const userName = <?= json_encode($name !== '' ? $name : 'משתמש', JSON_UNESCAPED_UNICODE) ?>;
+                const userImage = <?= json_encode($profileImage, JSON_UNESCAPED_UNICODE) ?>;
+
+                openMessageModal(
+                    userId,
+                    userName,
+                    userImage,
+                    window.chatViewer ? window.chatViewer.name : 'אני',
+                    window.chatViewer ? window.chatViewer.image : '/images/no_photo.jpg'
+                );
             });
-        });
-    </script>
+        </script>
+    <?php endif; ?>
 <?php endif; ?>

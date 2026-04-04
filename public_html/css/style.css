@@ -2357,7 +2357,7 @@ footer {
 
 .profile-right-edit-link:hover {
     background: none !important;
-color: #21a1eb;
+    color: #21a1eb;
     text-decoration: none !important;
     box-shadow: none !important;
 }
@@ -3828,4 +3828,39 @@ color: #21a1eb;
 
 .profile-right-edit-link:hover {
     color: #c9184a !important;
+}
+
+/* ===== DATE INPUT FIX ===== */
+
+input[type="date"] {
+    color: #222;
+    /* צבע רגיל */
+}
+
+/* Chrome / Edge - כשהשדה ריק */
+input[type="date"]:invalid {
+    color: #999;
+    /* אפור כהה יותר (קריא) */
+}
+
+/* כשהוזן תאריך */
+input[type="date"]:valid {
+    color: #222;
+}
+
+
+.message-modal-window {
+    width: 300px;
+    /* היה ~380 */
+}
+
+
+.message-history {
+    height: 200px;
+    max-height: 200px;
+}
+
+.message-modal-textarea {
+    min-height: 70px;
+    font-size: 13px;
 }

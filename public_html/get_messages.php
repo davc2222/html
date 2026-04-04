@@ -122,10 +122,12 @@ while ($row = $msgStmt->fetch(PDO::FETCH_ASSOC)) {
         }
     }
 
-    $isRead = null;
-    if ($isMe && $receiverId === $other) {
-        $isRead = ((int)$row['New'] === 0);
-    }
+    //  $isRead = null;
+    //  if ($isMe && $receiverId === $other) {
+    //      $isRead = ((int)$row['New'] === 0);
+    // }
+    $isRead = ((int)$row['New'] === 0);
+
 
     $messages[] = [
         'id' => $messageId,

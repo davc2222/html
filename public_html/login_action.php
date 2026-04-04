@@ -64,6 +64,11 @@ if ((int)$user['email_verified'] !== 1) {
 }
 
 /* =========================
+   RESET SESSION  🔥 חשוב!
+========================= */
+$_SESSION = [];
+session_regenerate_id(true);
+/* =========================
    Session values
 ========================= */
 $_SESSION['user_id']    = (int)$user['Id'];
@@ -73,10 +78,12 @@ $_SESSION['user_email'] = $user['Email'];
 /* =========================
    Regenerate session ID
 ========================= */
-session_regenerate_id(true);
+
 
 /* =========================
    Redirect after login
 ========================= */
-header('Location: /?page=profile&id=' . (int)$user['Id']);
+//header('Location: /?page=profile&id=' . (int)$user['Id']);
+
+header('Location: /?page=search');
 exit;

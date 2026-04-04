@@ -17,200 +17,200 @@ if (!empty($_SESSION['user_main_pic'])) {
 ?>
 
 <?php if ($chatViewerId > 0): ?>
-<div id="chatWindowsLayer" class="chat-windows-layer"></div>
+    <div id="chatWindowsLayer" class="chat-windows-layer"></div>
 
-<script>
-window.chatViewer = {
-    id: <?= (int)$chatViewerId ?>,
-    name: <?= json_encode($chatViewerName !== '' ? $chatViewerName : 'אני', JSON_UNESCAPED_UNICODE) ?>,
-    image: <?= json_encode($chatViewerImage, JSON_UNESCAPED_UNICODE) ?>
-};
+    <script>
+        window.chatViewer = {
+            id: <?= (int)$chatViewerId ?>,
+            name: <?= json_encode($chatViewerName !== '' ? $chatViewerName : 'אני', JSON_UNESCAPED_UNICODE) ?>,
+            image: <?= json_encode($chatViewerImage, JSON_UNESCAPED_UNICODE) ?>
+        };
 
-window.chatWindows = window.chatWindows || {};
-window.unreadByUser = window.unreadByUser || {};
-window.chatBadgeRefreshTimer = window.chatBadgeRefreshTimer || null;
-window.chatWindowZCounter = window.chatWindowZCounter || 10000;
+        window.chatWindows = window.chatWindows || {};
+        window.unreadByUser = window.unreadByUser || {};
+        window.chatBadgeRefreshTimer = window.chatBadgeRefreshTimer || null;
+        window.chatWindowZCounter = window.chatWindowZCounter || 10000;
 
-function getChatStorageKey() {
-    return 'lovematch_chat_windows_v3';
-}
-
-function getChatWindowId(userId) {
-    return 'chat-window-' + String(userId);
-}
-
-function escapeHtml(str) {
-    return String(str || '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-}
-
-function getChatWindowElements(userId) {
-    const root = document.getElementById(getChatWindowId(userId));
-    if (!root) return null;
-
-    return {
-        root,
-        head: root.querySelector('.message-window-head'),
-        body: root.querySelector('.message-window-body'),
-        history: root.querySelector('.message-history'),
-        text: root.querySelector('.message-modal-textarea'),
-        status: root.querySelector('.message-send-status'),
-        title: root.querySelector('.message-modal-title'),
-        image: root.querySelector('.message-modal-head-image')
-    };
-}
-
-function saveChatWindowsState() {
-    const data = [];
-
-    Object.keys(window.chatWindows).forEach((userId) => {
-        const chat = window.chatWindows[userId];
-        const root = document.getElementById(getChatWindowId(userId));
-
-        if (!chat || !root) return;
-
-        data.push({
-            userId: chat.userId,
-            userName: chat.userName,
-            userImage: chat.userImage,
-            lastMessageId: chat.lastMessageId || 0,
-            minimized: !!chat.minimized,
-            dragged: !!chat.dragged,
-            left: root.style.left || '',
-            top: root.style.top || '',
-            right: root.style.right || '',
-            bottom: root.style.bottom || '',
-            zIndex: root.style.zIndex || ''
-        });
-    });
-
-    localStorage.setItem(getChatStorageKey(), JSON.stringify(data));
-}
-
-function getOpenWindowIds() {
-    return Object.keys(window.chatWindows)
-        .filter(userId => !!document.getElementById(getChatWindowId(userId)));
-}
-
-function refreshDefaultWindowPositions() {
-    const openIds = getOpenWindowIds().sort((a, b) => Number(a) - Number(b));
-
-    openIds.forEach((userId, index) => {
-        const chat = window.chatWindows[userId];
-        const elements = getChatWindowElements(userId);
-        if (!chat || !elements) return;
-
-        if (!chat.dragged) {
-            elements.root.style.left = 'auto';
-            elements.root.style.top = 'auto';
-            elements.root.style.right = (18 + (index * 400)) + 'px';
-            elements.root.style.bottom = '18px';
+        function getChatStorageKey() {
+            return 'lovematch_chat_windows_v4';
         }
-    });
 
-    saveChatWindowsState();
-}
+        function getChatWindowId(userId) {
+            return 'chat-window-' + String(userId);
+        }
 
-function bringChatWindowToFront(userId) {
-    const elements = getChatWindowElements(userId);
-    if (!elements) return;
+        function escapeHtml(str) {
+            return String(str || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
 
-    window.chatWindowZCounter += 1;
-    elements.root.style.zIndex = String(window.chatWindowZCounter);
-    saveChatWindowsState();
-}
+        function getChatWindowElements(userId) {
+            const root = document.getElementById(getChatWindowId(userId));
+            if (!root) return null;
 
-function buildReadStatusHtml(msg) {
-    if (!msg.is_me) {
-        return '';
-    }
+            return {
+                root,
+                head: root.querySelector('.message-window-head'),
+                body: root.querySelector('.message-window-body'),
+                history: root.querySelector('.message-history'),
+                text: root.querySelector('.message-modal-textarea'),
+                status: root.querySelector('.message-send-status'),
+                title: root.querySelector('.message-modal-title'),
+                image: root.querySelector('.message-modal-head-image')
+            };
+        }
 
-    if (msg.is_read) {
-        return '<span class="message-read-state message-read-double" title="נקראה">✓✓</span>';
-    }
+        function saveChatWindowsState() {
+            const data = [];
 
-    return '<span class="message-read-state message-read-single" title="נשלחה / עדיין לא נקראה">✓</span>';
-}
+            Object.keys(window.chatWindows).forEach((userId) => {
+                const chat = window.chatWindows[userId];
+                const root = document.getElementById(getChatWindowId(userId));
 
-function buildMessageRow(msg, chat) {
-    const row = document.createElement('div');
-    row.className = 'message-row ' + (msg.is_me ? 'message-row-me' : 'message-row-other');
-    row.setAttribute('data-message-id', msg.id);
+                if (!chat || !root) return;
 
-    const avatar = document.createElement('img');
-    avatar.className = 'message-avatar';
-    avatar.src = msg.is_me ? chat.viewerImage : chat.userImage;
-    avatar.alt = msg.sender_name || '';
+                data.push({
+                    userId: chat.userId,
+                    userName: chat.userName,
+                    userImage: chat.userImage,
+                    lastMessageId: chat.lastMessageId || 0,
+                    minimized: !!chat.minimized,
+                    dragged: !!chat.dragged,
+                    left: root.style.left || '',
+                    top: root.style.top || '',
+                    right: root.style.right || '',
+                    bottom: root.style.bottom || '',
+                    zIndex: root.style.zIndex || ''
+                });
+            });
 
-    const bubbleWrap = document.createElement('div');
-    bubbleWrap.className = 'message-bubble-wrap';
+            localStorage.setItem(getChatStorageKey(), JSON.stringify(data));
+        }
 
-    const sender = document.createElement('div');
-    sender.className = 'message-sender';
-    sender.textContent = msg.sender_name || '';
+        function getOpenWindowIds() {
+            return Object.keys(window.chatWindows)
+                .filter(userId => !!document.getElementById(getChatWindowId(userId)));
+        }
 
-    const bubble = document.createElement('div');
-    bubble.className = 'message-bubble ' + (msg.is_me ? 'message-bubble-me' : 'message-bubble-other');
-    bubble.innerHTML = String(msg.text || '').replace(/\n/g, '<br>');
+        function refreshDefaultWindowPositions() {
+            const openIds = getOpenWindowIds().sort((a, b) => Number(a) - Number(b));
 
-    // tooltip מלא על ההודעה
-    bubble.title = msg.full_date || msg.date_sent || '';
+            openIds.forEach((userId, index) => {
+                const chat = window.chatWindows[userId];
+                const elements = getChatWindowElements(userId);
+                if (!chat || !elements) return;
 
-    const meta = document.createElement('div');
-    meta.className = 'message-meta';
-    meta.innerHTML =
-        '<span class="message-time">' + (msg.date_sent || '') + '</span>' +
-        buildReadStatusHtml(msg);
+                if (!chat.dragged) {
+                    elements.root.style.left = 'auto';
+                    elements.root.style.top = 'auto';
+                    elements.root.style.right = (18 + (index * 320)) + 'px';
+                    elements.root.style.bottom = '18px';
+                }
+            });
 
-    bubbleWrap.appendChild(sender);
-    bubbleWrap.appendChild(bubble);
-    bubbleWrap.appendChild(meta);
+            saveChatWindowsState();
+        }
 
-    row.appendChild(avatar);
-    row.appendChild(bubbleWrap);
+        function bringChatWindowToFront(userId) {
+            const elements = getChatWindowElements(userId);
+            if (!elements) return;
 
-    return row;
-}
+            window.chatWindowZCounter += 1;
+            elements.root.style.zIndex = String(window.chatWindowZCounter);
+            saveChatWindowsState();
+        }
 
-function isHistoryNearBottom(history) {
-    if (!history) return true;
-    return (history.scrollHeight - history.scrollTop - history.clientHeight) < 80;
-}
+        function buildReadStatusHtml(msg) {
+            if (!msg.is_me) {
+                return '';
+            }
 
-function scrollHistoryToBottom(history) {
-    if (!history) return;
-    history.scrollTop = history.scrollHeight;
-}
+            if (msg.is_read) {
+                return '<span class="message-read-state message-read-double" title="נקראה">✓✓</span>';
+            }
 
-function createChatWindow(userId, userName, userImage) {
-    const layer = document.getElementById('chatWindowsLayer');
-    if (!layer) return null;
+            return '<span class="message-read-state message-read-single" title="נשלחה / עדיין לא נקראה">✓</span>';
+        }
 
-    const existing = document.getElementById(getChatWindowId(userId));
-    if (existing) return existing;
+        function buildMessageRow(msg, chat) {
+            const row = document.createElement('div');
+            row.className = 'message-row ' + (msg.is_me ? 'message-row-me' : 'message-row-other');
+            row.setAttribute('data-message-id', msg.id);
 
-    const safeUserName = escapeHtml(userName);
-    const safeUserImage = escapeHtml(userImage || '/images/no_photo.jpg');
+            const avatar = document.createElement('img');
+            avatar.className = 'message-avatar';
+            avatar.src = msg.is_me ? chat.viewerImage : chat.userImage;
+            avatar.alt = msg.sender_name || '';
 
-    const root = document.createElement('div');
-    root.id = getChatWindowId(userId);
-    root.className = 'message-modal-window';
-    root.style.display = 'block';
+            const bubbleWrap = document.createElement('div');
+            bubbleWrap.className = 'message-bubble-wrap';
 
-    root.innerHTML = `
+            const sender = document.createElement('div');
+            sender.className = 'message-sender';
+            sender.textContent = msg.sender_name || '';
+
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble ' + (msg.is_me ? 'message-bubble-me' : 'message-bubble-other');
+            bubble.innerHTML = String(msg.text || '').replace(/\n/g, '<br>');
+            bubble.title = msg.full_date || msg.date_sent || '';
+
+            const meta = document.createElement('div');
+            meta.className = 'message-meta';
+            meta.innerHTML =
+                '<span class="message-time">' + (msg.date_sent || '') + '</span>' +
+                buildReadStatusHtml(msg);
+
+            bubbleWrap.appendChild(sender);
+            bubbleWrap.appendChild(bubble);
+            bubbleWrap.appendChild(meta);
+
+            row.appendChild(avatar);
+            row.appendChild(bubbleWrap);
+
+            return row;
+        }
+
+        function isHistoryNearBottom(history) {
+            if (!history) return true;
+            return (history.scrollHeight - history.scrollTop - history.clientHeight) < 80;
+        }
+
+        function scrollHistoryToBottom(history) {
+            if (!history) return;
+            history.scrollTop = history.scrollHeight;
+        }
+
+        function createChatWindow(userId, userName, userImage) {
+            const layer = document.getElementById('chatWindowsLayer');
+            if (!layer) return null;
+
+            const existing = document.getElementById(getChatWindowId(userId));
+            if (existing) return existing;
+
+            const safeUserName = escapeHtml(userName);
+            const safeUserImage = escapeHtml(userImage || '/images/no_photo.jpg');
+
+            const root = document.createElement('div');
+            root.id = getChatWindowId(userId);
+            root.className = 'message-modal-window';
+            root.style.display = 'block';
+
+            root.innerHTML = `
         <div class="message-window-card">
             <div class="message-window-head">
-                <div class="message-window-head-user">
-                    <img class="message-modal-head-image" src="${safeUserImage}" alt="">
-                    <div class="message-modal-head-text">
-                        <h3 class="message-modal-title">${safeUserName}</h3>
-                        <div class="message-modal-head-subtitle">היסטוריית הודעות</div>
-                    </div>
-                </div>
+               <div class="message-window-head-user">
+    <a href="/?page=profile&id=${Number(userId)}" class="message-head-user-link" title="מעבר לפרופיל">
+        <img class="message-modal-head-image" src="${safeUserImage}" alt="">
+        <div class="message-modal-head-text">
+            <h3 class="message-modal-title">${safeUserName}</h3>
+            <div class="message-modal-head-subtitle">היסטוריית הודעות</div>
+        </div>
+    </a>
+</div>
 
                 <div class="message-window-head-actions">
                     <button type="button" class="message-window-minimize">—</button>
@@ -236,502 +236,493 @@ function createChatWindow(userId, userName, userImage) {
         </div>
     `;
 
-    layer.appendChild(root);
+            layer.appendChild(root);
 
-    window.chatWindows[userId] = {
-        userId: Number(userId),
-        userName: userName,
-        userImage: userImage || '/images/no_photo.jpg',
-        viewerName: window.chatViewer.name || 'אני',
-        viewerImage: window.chatViewer.image || '/images/no_photo.jpg',
-        lastMessageId: 0,
-        minimized: false,
-        dragged: false,
-        timer: null,
-        isDragging: false,
-        dragOffsetX: 0,
-        dragOffsetY: 0
-    };
+            window.chatWindows[userId] = {
+                userId: Number(userId),
+                userName: userName,
+                userImage: userImage || '/images/no_photo.jpg',
+                viewerName: window.chatViewer.name || 'אני',
+                viewerImage: window.chatViewer.image || '/images/no_photo.jpg',
+                lastMessageId: 0,
+                minimized: false,
+                dragged: false,
+                timer: null,
+                isDragging: false,
+                dragOffsetX: 0,
+                dragOffsetY: 0
+            };
 
-    bindChatWindowEvents(userId);
-    refreshDefaultWindowPositions();
-    bringChatWindowToFront(userId);
+            bindChatWindowEvents(userId);
+            refreshDefaultWindowPositions();
+            bringChatWindowToFront(userId);
 
-    return root;
-}
-
-function bindChatWindowEvents(userId) {
-    const elements = getChatWindowElements(userId);
-    if (!elements) return;
-
-    const chat = window.chatWindows[userId];
-    if (!chat) return;
-
-    const sendBtn = elements.root.querySelector('.message-send-btn');
-    const closeBtn = elements.root.querySelector('.message-modal-close');
-    const cancelBtn = elements.root.querySelector('.message-cancel-btn');
-    const minimizeBtn = elements.root.querySelector('.message-window-minimize');
-
-    elements.root.addEventListener('mousedown', function () {
-        bringChatWindowToFront(userId);
-    });
-
-    minimizeBtn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        toggleMessageWindowMinimize(userId, true);
-    });
-
-    closeBtn.addEventListener('click', function () {
-        closeMessageModal(userId);
-    });
-
-    cancelBtn.addEventListener('click', function () {
-        closeMessageModal(userId);
-    });
-
-    sendBtn.addEventListener('click', function () {
-        sendProfileMessage(userId);
-    });
-
-    elements.text.addEventListener('focus', function () {
-        markConversationAsRead(userId);
-    });
-
-    elements.text.addEventListener('click', function () {
-        markConversationAsRead(userId);
-    });
-
-    elements.history.addEventListener('click', function () {
-        markConversationAsRead(userId);
-    });
-
-    elements.text.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendProfileMessage(userId);
-        }
-    });
-
-    elements.head.addEventListener('mousedown', function (e) {
-        if (
-            e.target.closest('.message-window-minimize') ||
-            e.target.closest('.message-modal-close')
-        ) {
-            return;
+            return root;
         }
 
-        const rect = elements.root.getBoundingClientRect();
+        function bindChatWindowEvents(userId) {
+            const elements = getChatWindowElements(userId);
+            if (!elements) return;
 
-        chat.isDragging = true;
-        chat.dragged = true;
-        chat.dragOffsetX = e.clientX - rect.left;
-        chat.dragOffsetY = e.clientY - rect.top;
+            const chat = window.chatWindows[userId];
+            if (!chat) return;
 
-        elements.root.style.left = rect.left + 'px';
-        elements.root.style.top = rect.top + 'px';
-        elements.root.style.right = 'auto';
-        elements.root.style.bottom = 'auto';
+            const sendBtn = elements.root.querySelector('.message-send-btn');
+            const closeBtn = elements.root.querySelector('.message-modal-close');
+            const cancelBtn = elements.root.querySelector('.message-cancel-btn');
+            const minimizeBtn = elements.root.querySelector('.message-window-minimize');
 
-        document.body.classList.add('message-window-dragging');
-        bringChatWindowToFront(userId);
-        saveChatWindowsState();
-    });
-}
+            elements.root.addEventListener('mousedown', function() {
+                bringChatWindowToFront(userId);
+            });
 
-document.addEventListener('mousemove', function (e) {
-    Object.keys(window.chatWindows).forEach(userId => {
-        const chat = window.chatWindows[userId];
-        if (!chat || !chat.isDragging) return;
+            minimizeBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleMessageWindowMinimize(userId, true);
+            });
 
-        const elements = getChatWindowElements(userId);
-        if (!elements) return;
+            closeBtn.addEventListener('click', function() {
+                closeMessageModal(userId);
+            });
 
-        const modalWidth = elements.root.offsetWidth;
-        const modalHeight = elements.root.offsetHeight;
-        const maxLeft = Math.max(0, window.innerWidth - modalWidth);
-        const maxTop = Math.max(0, window.innerHeight - modalHeight);
+            cancelBtn.addEventListener('click', function() {
+                closeMessageModal(userId);
+            });
 
-        let newLeft = e.clientX - chat.dragOffsetX;
-        let newTop = e.clientY - chat.dragOffsetY;
+            sendBtn.addEventListener('click', function() {
+                sendProfileMessage(userId);
+            });
 
-        if (newLeft < 0) newLeft = 0;
-        if (newTop < 0) newTop = 0;
-        if (newLeft > maxLeft) newLeft = maxLeft;
-        if (newTop > maxTop) newTop = maxTop;
+            elements.text.addEventListener('focus', function() {
+                markConversationAsRead(userId);
+            });
 
-        elements.root.style.left = newLeft + 'px';
-        elements.root.style.top = newTop + 'px';
-    });
-});
+            elements.text.addEventListener('click', function() {
+                markConversationAsRead(userId);
+            });
 
-document.addEventListener('mouseup', function () {
-    let hadDragging = false;
+            elements.history.addEventListener('click', function() {
+                markConversationAsRead(userId);
+            });
 
-    Object.keys(window.chatWindows).forEach(userId => {
-        const chat = window.chatWindows[userId];
-        if (chat && chat.isDragging) {
-            chat.isDragging = false;
-            hadDragging = true;
-        }
-    });
+            elements.text.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendProfileMessage(userId);
+                }
+            });
 
-    if (hadDragging) {
-        document.body.classList.remove('message-window-dragging');
-        saveChatWindowsState();
-    }
-});
+            elements.head.addEventListener('mousedown', function(e) {
+                if (
+                    e.target.closest('.message-window-minimize') ||
+                    e.target.closest('.message-modal-close')
+                ) {
+                    return;
+                }
 
-async function refreshMessagesBadge() {
-    const badge = document.getElementById('messagesBadge');
-    if (!badge) return;
+                const rect = elements.root.getBoundingClientRect();
 
-    try {
-        const response = await fetch('get_unread_count.php', { cache: 'no-store' });
-        const result = await response.json();
+                chat.isDragging = true;
+                chat.dragged = true;
+                chat.dragOffsetX = e.clientX - rect.left;
+                chat.dragOffsetY = e.clientY - rect.top;
 
-        if (!result.ok) {
-            return;
-        }
+                elements.root.style.left = rect.left + 'px';
+                elements.root.style.top = rect.top + 'px';
+                elements.root.style.right = 'auto';
+                elements.root.style.bottom = 'auto';
 
-        window.unreadByUser = result.by_user || {};
-        const count = parseInt(result.count || 0, 10);
-
-        if (count > 0) {
-            badge.textContent = count > 99 ? '99+' : String(count);
-            badge.style.display = 'flex';
-            badge.classList.add('badge-pulse');
-
-            setTimeout(() => {
-                badge.classList.remove('badge-pulse');
-            }, 400);
-        } else {
-            badge.textContent = '';
-            badge.style.display = 'none';
-        }
-    } catch (err) {
-        console.error(err);
-    }
-}
-
-async function refreshViewsBadge() {
-    const badge = document.getElementById('viewsBadge');
-    if (!badge) return;
-
-    try {
-        const response = await fetch('get_views_count.php', { cache: 'no-store' });
-        const result = await response.json();
-
-        if (!result.ok) {
-            return;
+                document.body.classList.add('message-window-dragging');
+                bringChatWindowToFront(userId);
+                saveChatWindowsState();
+            });
         }
 
-        const count = parseInt(result.count || 0, 10);
+        document.addEventListener('mousemove', function(e) {
+            Object.keys(window.chatWindows).forEach(userId => {
+                const chat = window.chatWindows[userId];
+                if (!chat || !chat.isDragging) return;
 
-        if (count > 0) {
-            badge.textContent = count > 99 ? '99+' : String(count);
-            badge.style.display = 'flex';
-            badge.classList.add('badge-pulse');
+                const elements = getChatWindowElements(userId);
+                if (!elements) return;
 
-            setTimeout(() => {
-                badge.classList.remove('badge-pulse');
-            }, 400);
-        } else {
-            badge.textContent = '';
-            badge.style.display = 'none';
-        }
-    } catch (err) {
-        console.error(err);
-    }
-}
+                const modalWidth = elements.root.offsetWidth;
+                const modalHeight = elements.root.offsetHeight;
+                const maxLeft = Math.max(0, window.innerWidth - modalWidth);
+                const maxTop = Math.max(0, window.innerHeight - modalHeight);
 
-async function markConversationAsRead(userId) {
-    if (!userId) return;
+                let newLeft = e.clientX - chat.dragOffsetX;
+                let newTop = e.clientY - chat.dragOffsetY;
 
-    try {
-        const response = await fetch('mark_messages_read.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-            },
-            body: new URLSearchParams({
-                user_id: userId
-            }).toString()
+                if (newLeft < 0) newLeft = 0;
+                if (newTop < 0) newTop = 0;
+                if (newLeft > maxLeft) newLeft = maxLeft;
+                if (newTop > maxTop) newTop = maxTop;
+
+                elements.root.style.left = newLeft + 'px';
+                elements.root.style.top = newTop + 'px';
+            });
         });
 
-        const result = await response.json();
+        document.addEventListener('mouseup', function() {
+            let hadDragging = false;
 
-        if (result.ok) {
-            window.unreadByUser[userId] = 0;
-            refreshMessagesBadge();
-            loadMessageHistory(userId, false, false);
-        }
-    } catch (err) {
-        console.error(err);
-    }
-}
+            Object.keys(window.chatWindows).forEach(userId => {
+                const chat = window.chatWindows[userId];
+                if (chat && chat.isDragging) {
+                    chat.isDragging = false;
+                    hadDragging = true;
+                }
+            });
 
-function openMessageModal(userId, userName, userImage, viewerName, viewerImage, persistState = true) {
-    userId = Number(userId);
-
-    createChatWindow(userId, userName, userImage);
-
-    const chat = window.chatWindows[userId];
-    const elements = getChatWindowElements(userId);
-
-    if (!chat || !elements) return;
-
-    elements.root.style.display = 'block';
-    elements.root.classList.remove('is-minimized');
-    elements.body.style.display = 'block';
-    elements.title.textContent = userName;
-    elements.image.src = userImage || '/images/no_photo.jpg';
-
-    chat.userName = userName;
-    chat.userImage = userImage || '/images/no_photo.jpg';
-    chat.viewerName = viewerName || window.chatViewer.name || 'אני';
-    chat.viewerImage = viewerImage || window.chatViewer.image || '/images/no_photo.jpg';
-    chat.minimized = false;
-
-    if (chat.lastMessageId === 0) {
-        elements.history.innerHTML = '<div class="message-history-empty">טוען הודעות...</div>';
-        loadMessageHistory(userId, true, true);
-    } else {
-        loadMessageHistory(userId, false, false);
-    }
-
-    elements.text.focus();
-
-    if (chat.timer) {
-        clearInterval(chat.timer);
-    }
-
-    chat.timer = setInterval(() => {
-        if (!chat.minimized) {
-            loadMessageHistory(userId, false, false);
-        }
-        refreshMessagesBadge();
-    }, 4000);
-
-    refreshDefaultWindowPositions();
-
-    if (persistState) {
-        saveChatWindowsState();
-    }
-}
-
-function closeMessageModal(userId) {
-    const chat = window.chatWindows[userId];
-    const elements = getChatWindowElements(userId);
-
-    if (chat && chat.timer) {
-        clearInterval(chat.timer);
-        chat.timer = null;
-    }
-
-    if (elements) {
-        elements.root.remove();
-    }
-
-    delete window.chatWindows[userId];
-    refreshDefaultWindowPositions();
-    saveChatWindowsState();
-}
-
-function toggleMessageWindowMinimize(userId, persistState = true) {
-    const chat = window.chatWindows[userId];
-    const elements = getChatWindowElements(userId);
-
-    if (!chat || !elements) return;
-
-    chat.minimized = !chat.minimized;
-
-    if (chat.minimized) {
-        elements.root.classList.add('is-minimized');
-        elements.body.style.display = 'none';
-    } else {
-        elements.root.classList.remove('is-minimized');
-        elements.body.style.display = 'block';
-        loadMessageHistory(userId, false, false);
-        scrollHistoryToBottom(elements.history);
-    }
-
-    if (persistState) {
-        saveChatWindowsState();
-    }
-}
-
-async function loadMessageHistory(userId, forceScrollToBottom = false, firstLoad = false) {
-    const chat = window.chatWindows[userId];
-    const elements = getChatWindowElements(userId);
-
-    if (!chat || !elements) return;
-
-    const history = elements.history;
-    const nearBottomBefore = isHistoryNearBottom(history);
-
-    try {
-        const response = await fetch(
-            'get_messages.php?user_id=' + encodeURIComponent(userId) + '&last_id=' + encodeURIComponent(chat.lastMessageId),
-            { cache: 'no-store' }
-        );
-
-        const result = await response.json();
-
-        if (!result.ok) {
-            if (firstLoad) {
-                history.innerHTML = '<div class="message-history-empty">לא ניתן לטעון הודעות</div>';
+            if (hadDragging) {
+                document.body.classList.remove('message-window-dragging');
+                saveChatWindowsState();
             }
-            return;
-        }
+        });
 
-        const messages = Array.isArray(result.messages) ? result.messages : [];
+        async function refreshMessagesBadge() {
+            const badge = document.getElementById('messagesBadge');
+            if (!badge) return;
 
-        if (firstLoad) {
-            history.innerHTML = '';
-
-            if (messages.length === 0) {
-                history.innerHTML = '<div class="message-history-empty">עדיין אין הודעות ביניכם</div>';
-            } else {
-                messages.forEach(msg => {
-                    history.appendChild(buildMessageRow(msg, chat));
+            try {
+                const response = await fetch('get_unread_count.php', {
+                    cache: 'no-store'
                 });
+                const result = await response.json();
+
+                if (!result.ok) {
+                    return;
+                }
+
+                window.unreadByUser = result.by_user || {};
+                const count = parseInt(result.count || 0, 10);
+
+                if (count > 0) {
+                    badge.textContent = count > 99 ? '99+' : String(count);
+                    badge.style.display = 'flex';
+                    badge.classList.add('badge-pulse');
+
+                    setTimeout(() => {
+                        badge.classList.remove('badge-pulse');
+                    }, 400);
+                } else {
+                    badge.textContent = '';
+                    badge.style.display = 'none';
+                }
+            } catch (err) {
+                console.error(err);
             }
-        } else if (messages.length > 0) {
-            messages.forEach(msg => {
-                const exists = history.querySelector('[data-message-id="' + msg.id + '"]');
-                if (!exists) {
-                    history.appendChild(buildMessageRow(msg, chat));
+        }
+
+        async function refreshViewsBadge() {
+            const badge = document.getElementById('viewsBadge');
+            if (!badge) return;
+
+            try {
+                const response = await fetch('get_views_count.php', {
+                    cache: 'no-store'
+                });
+                const result = await response.json();
+
+                if (!result.ok) {
+                    return;
+                }
+
+                const count = parseInt(result.count || 0, 10);
+
+                if (count > 0) {
+                    badge.textContent = count > 99 ? '99+' : String(count);
+                    badge.style.display = 'flex';
+                    badge.classList.add('badge-pulse');
+
+                    setTimeout(() => {
+                        badge.classList.remove('badge-pulse');
+                    }, 400);
+                } else {
+                    badge.textContent = '';
+                    badge.style.display = 'none';
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function markConversationAsRead(userId) {
+            if (!userId) return;
+
+            try {
+                const response = await fetch('mark_messages_read.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                    },
+                    body: new URLSearchParams({
+                        user_id: userId
+                    }).toString()
+                });
+
+                const result = await response.json();
+
+                if (result.ok) {
+                    window.unreadByUser[userId] = 0;
+                    refreshMessagesBadge();
+                    loadMessageHistory(userId, false, false);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function openMessageModal(userId, userName, userImage, viewerName, viewerImage, persistState = true) {
+            userId = Number(userId);
+
+            createChatWindow(userId, userName, userImage);
+
+            const chat = window.chatWindows[userId];
+            const elements = getChatWindowElements(userId);
+
+            if (!chat || !elements) return;
+
+            elements.root.style.display = 'block';
+            elements.root.classList.remove('is-minimized');
+            elements.body.style.display = 'block';
+            elements.title.textContent = userName;
+            elements.image.src = userImage || '/images/no_photo.jpg';
+
+            chat.userName = userName;
+            chat.userImage = userImage || '/images/no_photo.jpg';
+            chat.viewerName = viewerName || window.chatViewer.name || 'אני';
+            chat.viewerImage = viewerImage || window.chatViewer.image || '/images/no_photo.jpg';
+            chat.minimized = false;
+
+            loadMessageHistory(userId, true, true);
+
+            elements.text.focus();
+
+            if (chat.timer) {
+                clearInterval(chat.timer);
+            }
+
+            chat.timer = setInterval(() => {
+                if (!chat.minimized) {
+                    loadMessageHistory(userId, false, false);
+                }
+                refreshMessagesBadge();
+            }, 2000);
+
+            refreshDefaultWindowPositions();
+
+            if (persistState) {
+                saveChatWindowsState();
+            }
+        }
+
+        function closeMessageModal(userId) {
+            const chat = window.chatWindows[userId];
+            const elements = getChatWindowElements(userId);
+
+            if (chat && chat.timer) {
+                clearInterval(chat.timer);
+                chat.timer = null;
+            }
+
+            if (elements) {
+                elements.root.remove();
+            }
+
+            delete window.chatWindows[userId];
+            refreshDefaultWindowPositions();
+            saveChatWindowsState();
+        }
+
+        function toggleMessageWindowMinimize(userId, persistState = true) {
+            const chat = window.chatWindows[userId];
+            const elements = getChatWindowElements(userId);
+
+            if (!chat || !elements) return;
+
+            chat.minimized = !chat.minimized;
+
+            if (chat.minimized) {
+                elements.root.classList.add('is-minimized');
+                elements.body.style.display = 'none';
+            } else {
+                elements.root.classList.remove('is-minimized');
+                elements.body.style.display = 'block';
+                loadMessageHistory(userId, false, false);
+                scrollHistoryToBottom(elements.history);
+            }
+
+            if (persistState) {
+                saveChatWindowsState();
+            }
+        }
+
+        async function loadMessageHistory(userId, forceScrollToBottom = false, firstLoad = false) {
+            const chat = window.chatWindows[userId];
+            const elements = getChatWindowElements(userId);
+
+            if (!chat || !elements) return;
+
+            const history = elements.history;
+            const nearBottomBefore = isHistoryNearBottom(history);
+
+            try {
+                const response = await fetch(
+                    'get_messages.php?user_id=' + encodeURIComponent(userId) + '&last_id=0', {
+                        cache: 'no-store'
+                    }
+                );
+
+                const result = await response.json();
+
+                if (!result.ok) {
+                    if (firstLoad) {
+                        history.innerHTML = '<div class="message-history-empty">לא ניתן לטעון הודעות</div>';
+                    }
+                    return;
+                }
+
+                const messages = Array.isArray(result.messages) ? result.messages : [];
+                history.innerHTML = '';
+
+                if (messages.length === 0) {
+                    history.innerHTML = '<div class="message-history-empty">עדיין אין הודעות ביניכם</div>';
+                } else {
+                    messages.forEach(msg => {
+                        history.appendChild(buildMessageRow(msg, chat));
+                    });
+                }
+
+                if (typeof result.last_id !== 'undefined') {
+                    chat.lastMessageId = parseInt(result.last_id, 10) || 0;
+                }
+
+                if (firstLoad || forceScrollToBottom || nearBottomBefore) {
+                    scrollHistoryToBottom(history);
+                }
+
+                saveChatWindowsState();
+            } catch (err) {
+                if (firstLoad) {
+                    history.innerHTML = '<div class="message-history-empty">שגיאה בטעינת ההודעות</div>';
+                }
+                console.error(err);
+            }
+        }
+
+        async function sendProfileMessage(userId) {
+            const chat = window.chatWindows[userId];
+            const elements = getChatWindowElements(userId);
+
+            if (!chat || !elements) return;
+
+            const msg = elements.text.value.trim();
+
+            if (msg === '') {
+                elements.status.textContent = 'יש לכתוב הודעה';
+                return;
+            }
+
+            elements.status.textContent = 'שולח...';
+
+            try {
+                const response = await fetch('send_message.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                    },
+                    body: new URLSearchParams({
+                        to_id: userId,
+                        message: msg
+                    }).toString()
+                });
+
+                const result = await response.json();
+
+                if (!result.ok) {
+                    elements.status.textContent = result.message || 'שליחה נכשלה';
+                    return;
+                }
+
+                elements.text.value = '';
+                elements.status.textContent = '';
+                await loadMessageHistory(userId, true, false);
+                refreshMessagesBadge();
+            } catch (err) {
+                elements.status.textContent = 'אירעה שגיאה בשליחה';
+                console.error(err);
+            }
+        }
+
+        function restoreChatWindowsState() {
+            const raw = localStorage.getItem(getChatStorageKey());
+            if (!raw) return;
+
+            let data = [];
+            try {
+                data = JSON.parse(raw);
+            } catch (e) {
+                return;
+            }
+
+            if (!Array.isArray(data)) return;
+
+            data.forEach(chat => {
+                openMessageModal(
+                    chat.userId,
+                    chat.userName || 'משתמש',
+                    chat.userImage || '/images/no_photo.jpg',
+                    window.chatViewer.name,
+                    window.chatViewer.image,
+                    false
+                );
+
+                const state = window.chatWindows[chat.userId];
+                const elements = getChatWindowElements(chat.userId);
+
+                if (!state || !elements) return;
+
+                state.lastMessageId = parseInt(chat.lastMessageId || 0, 10) || 0;
+
+                if (chat.dragged) {
+                    state.dragged = true;
+                    elements.root.style.left = chat.left || '';
+                    elements.root.style.top = chat.top || '';
+                    elements.root.style.right = 'auto';
+                    elements.root.style.bottom = 'auto';
+                } else {
+                    state.dragged = false;
+                    elements.root.style.right = chat.right || elements.root.style.right;
+                    elements.root.style.bottom = chat.bottom || elements.root.style.bottom;
+                }
+
+                if (chat.zIndex) {
+                    elements.root.style.zIndex = chat.zIndex;
+                }
+
+                if (chat.minimized && !state.minimized) {
+                    toggleMessageWindowMinimize(chat.userId, false);
                 }
             });
         }
 
-        if (typeof result.last_id !== 'undefined') {
-            chat.lastMessageId = parseInt(result.last_id, 10) || chat.lastMessageId;
-        }
-
-        if (firstLoad || forceScrollToBottom || nearBottomBefore) {
-            scrollHistoryToBottom(history);
-        }
-
-        saveChatWindowsState();
-    } catch (err) {
-        if (firstLoad) {
-            history.innerHTML = '<div class="message-history-empty">שגיאה בטעינת ההודעות</div>';
-        }
-        console.error(err);
-    }
-}
-
-async function sendProfileMessage(userId) {
-    const chat = window.chatWindows[userId];
-    const elements = getChatWindowElements(userId);
-
-    if (!chat || !elements) return;
-
-    const msg = elements.text.value.trim();
-
-    if (msg === '') {
-        elements.status.textContent = 'יש לכתוב הודעה';
-        return;
-    }
-
-    elements.status.textContent = 'שולח...';
-
-    try {
-        const response = await fetch('send_message.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-            },
-            body: new URLSearchParams({
-                to_id: userId,
-                message: msg
-            }).toString()
-        });
-
-        const result = await response.json();
-
-        if (!result.ok) {
-            elements.status.textContent = result.message || 'שליחה נכשלה';
-            return;
-        }
-
-        elements.text.value = '';
-        elements.status.textContent = '';
-        await loadMessageHistory(userId, true, false);
-    } catch (err) {
-        elements.status.textContent = 'אירעה שגיאה בשליחה';
-        console.error(err);
-    }
-}
-
-function restoreChatWindowsState() {
-    const raw = localStorage.getItem(getChatStorageKey());
-    if (!raw) return;
-
-    let data = [];
-    try {
-        data = JSON.parse(raw);
-    } catch (e) {
-        return;
-    }
-
-    if (!Array.isArray(data)) return;
-
-    data.forEach(chat => {
-        openMessageModal(
-            chat.userId,
-            chat.userName || 'משתמש',
-            chat.userImage || '/images/no_photo.jpg',
-            window.chatViewer.name,
-            window.chatViewer.image,
-            false
-        );
-
-        const state = window.chatWindows[chat.userId];
-        const elements = getChatWindowElements(chat.userId);
-
-        if (!state || !elements) return;
-
-        state.lastMessageId = parseInt(chat.lastMessageId || 0, 10) || 0;
-
-        if (chat.dragged) {
-            state.dragged = true;
-            elements.root.style.left = chat.left || '';
-            elements.root.style.top = chat.top || '';
-            elements.root.style.right = 'auto';
-            elements.root.style.bottom = 'auto';
-        } else {
-            state.dragged = false;
-            elements.root.style.right = chat.right || elements.root.style.right;
-            elements.root.style.bottom = chat.bottom || elements.root.style.bottom;
-        }
-
-        if (chat.zIndex) {
-            elements.root.style.zIndex = chat.zIndex;
-        }
-
-        if (chat.minimized && !state.minimized) {
-            toggleMessageWindowMinimize(chat.userId, false);
-        }
-    });
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-    refreshMessagesBadge();
-    refreshViewsBadge();
-    restoreChatWindowsState();
-
-    if (!window.chatBadgeRefreshTimer) {
-        window.chatBadgeRefreshTimer = setInterval(() => {
+        document.addEventListener('DOMContentLoaded', function() {
             refreshMessagesBadge();
             refreshViewsBadge();
-        }, 5000);
-    }
-});
+            restoreChatWindowsState();
 
-window.addEventListener('beforeunload', function () {
-    saveChatWindowsState();
-});
-</script>
+            if (!window.chatBadgeRefreshTimer) {
+                window.chatBadgeRefreshTimer = setInterval(() => {
+                    refreshMessagesBadge();
+                    refreshViewsBadge();
+                }, 5000);
+            }
+        });
+
+        window.addEventListener('beforeunload', function() {
+            saveChatWindowsState();
+        });
+    </script>
 <?php endif; ?>
