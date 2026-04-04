@@ -137,7 +137,10 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                         </div>
 
-                        <a class="view-card-link" href="/?page=messages&user_id=<?= $id ?>">
+                        <a
+                            href="#"
+                            class="view-card-link open-chat-btn"
+                            data-user-id="<?= $id ?>">
                             פתח צ'אט
                         </a>
 

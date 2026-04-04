@@ -1273,7 +1273,7 @@ footer {
 
 .message-modal-window {
     position: fixed;
-    width: 380px;
+    width: 320px;
     max-width: calc(100vw - 24px);
     pointer-events: auto;
 }
@@ -2675,4 +2675,72 @@ footer {
     padding: 4px 10px;
     border-radius: 999px;
     z-index: 20;
+}
+
+
+/* ===== HEADER FINAL FIX ===== */
+
+/* מבנה כללי */
+.site-header {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    padding: 0 25px;
+}
+
+/* לוגו בימין */
+.logo {
+    justify-self: end;
+}
+
+/* תפריט באמצע */
+.links {
+    justify-self: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+}
+
+/* כל פריט - אנכי */
+.menu-link {
+    display: flex;
+    flex-direction: column;
+    /* 🔥 אנכי */
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-width: 80px;
+    text-align: center;
+}
+
+/* אייקון */
+.menu-link-icon {
+    font-size: 22px;
+}
+
+/* טקסט */
+.menu-link-text {
+    font-size: 17px;
+}
+
+/* אזור משתמש (שמאל) */
+.auth {
+    justify-self: start;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* 🔥 הזזת האווטאר שמאלה */
+.header-avatar-link {
+    margin-left: 18px;
+}
+
+/* תמונת משתמש */
+.header-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
 }

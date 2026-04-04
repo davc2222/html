@@ -724,5 +724,23 @@ if (!empty($_SESSION['user_main_pic'])) {
         window.addEventListener('beforeunload', function() {
             saveChatWindowsState();
         });
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('.open-chat-btn');
+            if (!btn) return;
+
+            e.preventDefault();
+
+            const userId = btn.dataset.userId;
+            if (!userId) return;
+
+            // 🔥 כאן אנחנו מפעילים את הצ'אט
+            openMessageModal(
+                userId,
+                btn.dataset.userName || 'משתמש',
+                btn.dataset.userImage || '/images/no_photo.jpg',
+                window.chatViewer.name,
+                window.chatViewer.image
+            );
+        });
     </script>
 <?php endif; ?>
