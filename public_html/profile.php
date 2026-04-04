@@ -363,20 +363,26 @@ foreach ($rightFields as $field => $cfg) {
 
                             $label = $cfg['label'] ?? $field;
                             $type = $cfg['type'] ?? 'input';
-                            $rawValue = profile_value($user, $field);
-                            $isPlaceholder = ($rawValue === '');
+                            $rawValue = trim((string) profile_value($user, $field));
+                            $options = ($type === 'select') ? get_options($pdo, $cfg) : [];
+                            $normalizedOptions = array_map(
+                                static fn($v) => trim((string)$v),
+                                $options
+                            );
+                            $hasValidOption = in_array($rawValue, $normalizedOptions, true);
+                            $isPlaceholder = ($rawValue === '' || ($type === 'select' && !$hasValidOption));
                             ?>
                             <div class="profile-right-edit-row">
                                 <label class="profile-right-edit-label"><?= e($label) ?>:</label>
 
                                 <div class="profile-right-edit-control">
                                     <?php if ($type === 'select'): ?>
-                                        <?php $options = get_options($pdo, $cfg); ?>
                                         <select name="<?= e($field) ?>" class="profile-right-select" <?= $isPlaceholder ? 'required' : '' ?>>
                                             <option value="" disabled <?= $isPlaceholder ? 'selected' : '' ?> hidden>בחר</option>
                                             <?php foreach ($options as $option): ?>
-                                                <option value="<?= e($option) ?>" <?= ($rawValue === (string)$option ? 'selected' : '') ?>>
-                                                    <?= e($option) ?>
+                                                <?php $optionValue = trim((string)$option); ?>
+                                                <option value="<?= e($optionValue) ?>" <?= ($rawValue === $optionValue ? 'selected' : '') ?>>
+                                                    <?= e($optionValue) ?>
                                                 </option>
                                             <?php endforeach; ?>
                                         </select>

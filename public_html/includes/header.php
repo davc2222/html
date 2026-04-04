@@ -21,10 +21,11 @@ if (!empty($_SESSION['user_main_pic'])) {
 }
 
 $menu = [
-    'home'     => ['label' => 'בית', 'icon' => '🏠'],
-    'search'   => ['label' => 'חיפוש', 'icon' => '🔎'],
-    'messages' => ['label' => 'הודעות', 'icon' => '💌'],
-    'views'    => ['label' => 'צפיות', 'icon' => '👁']
+    'home'            => ['label' => 'בית', 'icon' => '🏠'],
+    'search'          => ['label' => 'חיפוש', 'icon' => '🔎'],
+    'advanced_search' => ['label' => 'חיפוש מתקדם', 'icon' => '✨'],
+    'messages'        => ['label' => 'הודעות', 'icon' => '💌'],
+    'views'           => ['label' => 'צפיות', 'icon' => '👁']
 ];
 ?>
 
@@ -40,7 +41,7 @@ $menu = [
     <nav class="links">
         <?php foreach ($menu as $p => $item): ?>
             <a href="?page=<?= htmlspecialchars($p, ENT_QUOTES, 'UTF-8') ?>"
-               class="menu-link <?= ($page === $p) ? 'active' : '' ?>">
+                class="menu-link <?= ($page === $p) ? 'active' : '' ?>">
 
                 <span class="menu-link-icon"><?= $item['icon'] ?></span>
                 <span class="menu-link-text"><?= htmlspecialchars($item['label'], ENT_QUOTES, 'UTF-8') ?></span>

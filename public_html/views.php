@@ -14,8 +14,7 @@ if (empty($_SESSION['user_id'])) {
 
 $session_user_id = (int)$_SESSION['user_id'];
 
-function h($v)
-{
+function h($v) {
     return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
 }
 
@@ -69,6 +68,8 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 $religion    = trim((string)($row['Religion_Str'] ?? ''));
                 $religionRef = trim((string)($row['Religion_Ref_Str'] ?? ''));
                 $height      = trim((string)($row['Height_Str'] ?? ''));
+                $smoking = trim((string)($row['Smoking_Habbit_Str'] ?? ''));
+
 
                 $img = '/images/no_photo.jpg';
 
@@ -84,31 +85,65 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <img
                             class="view-card-image"
                             src="<?= h($img) ?>"
-                            alt="<?= h($name) ?>"
-                        >
+                            alt="<?= h($name) ?>">
 
-                        <?php if ($time): ?>
-                            <div class="view-card-time"><?= h($time) ?></div>
-                        <?php endif; ?>
+
                     </div>
 
                     <div class="view-card-content">
 
+                        <!-- שם + גיל -->
                         <div class="view-card-name">
                             <?= h($name) ?>
                             <?= $age !== '' ? ', ' . h((string)$age) : '' ?>
                         </div>
 
+                        <!-- קו -->
                         <div class="view-card-divider"></div>
 
+                        <!-- פרטים -->
                         <div class="view-card-details">
-                            <?php if ($zone !== ''): ?><?= h($zone) ?><?php endif; ?>
-                            <?php if ($place !== ''): ?> | <?= h($place) ?><?php endif; ?>
-                            <?php if ($family !== ''): ?> | <?= h($family) ?><?php endif; ?>
-                            <?php if ($children !== ''): ?> | <?= h($children) ?><?php endif; ?>
-                            <?php if ($religion !== ''): ?> | <?= h($religion) ?><?php endif; ?>
-                            <?php if ($religionRef !== ''): ?> | <?= h($religionRef) ?><?php endif; ?>
-                            <?php if ($height !== ''): ?> | <?= h($height) ?><?php endif; ?>
+
+                            <?php if ($family !== ''): ?>
+                                <div>מצב משפחתי: <?= h($family) ?></div>
+                            <?php endif; ?>
+
+                            <div>
+                                ילדים:
+                                <?php
+                                if ($children === '' || $children === '0') {
+                                    echo 'ללא';
+                                } else {
+                                    echo h($children) . '+';
+                                }
+                                ?>
+                            </div>
+
+                            <!-- אזור + מקום באותה שורה -->
+                            <?php if ($zone !== '' || $place !== ''): ?>
+                                <div>
+                                    <?php if ($zone !== ''): ?>
+                                        אזור: <?= h($zone) ?>
+                                    <?php endif; ?>
+
+                                    <?php if ($zone !== '' && $place !== ''): ?>
+                                        |
+                                    <?php endif; ?>
+
+                                    <?php if ($place !== ''): ?>
+                                        מקום: <?= h($place) ?>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if ($height !== ''): ?>
+                                <div>גובה: <?= h($height) ?></div>
+                            <?php endif; ?>
+
+                            <?php if (!empty($row['Smoking_Habbit_Str'])): ?>
+                                <div>עישון: <?= h($row['Smoking_Habbit_Str']) ?></div>
+                            <?php endif; ?>
+
                         </div>
 
                         <a class="view-card-link" href="/?page=profile&id=<?= $id ?>">
