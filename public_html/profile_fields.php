@@ -157,7 +157,7 @@ return [
         'type'  => 'textarea',
     ],
 
-   
+
 
     'Hobbies' => [
         'side'  => 'left',
@@ -179,13 +179,19 @@ return [
 
     'Favorite_Books' => [
         'side'  => 'left',
-        'label' =>'ספרים אהובים',
+        'label' => 'ספרים אהובים',
+        'type'  => 'input',
+    ],
+
+    'Sport' => [
+        'side'  => 'left',
+        'label' => 'ספורט',
         'type'  => 'input',
     ],
 
 
-    
-  'I_Looking_For' => [
+
+    'I_Looking_For' => [
         'side'  => 'left',
         'label' => ' את מי אני מחפש/ת ',
         'type'  => 'textarea',
