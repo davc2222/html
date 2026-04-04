@@ -137,21 +137,29 @@ main {
 /* Badge בתפריט */
 .menu-badge {
     position: absolute;
-    top: -6px;
-    left: -8px;
+    top: -2px;
+    left: 12px;
+
     min-width: 18px;
     height: 18px;
-    padding: 0 5px;
+    padding: 0 6px;
+
     border-radius: 999px;
-    background: #ff2e63;
+    background: #281bdd;
     color: #fff;
+
     font-size: 11px;
-    font-weight: bold;
+    font-weight: 700;
+
     display: none;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+
+    line-height: 18px;
+    box-sizing: border-box;
+    z-index: 999;
 }
+
 
 .badge-pulse {
     animation: pulse 0.4s ease;
@@ -2541,6 +2549,7 @@ footer {
     color: #15b6c7;
     font-size: 13px;
 }
+
 /* ===== VIEW CARD FINAL FULL ===== */
 /* ===== UNIFIED CARD DESIGN: VIEWS + MESSAGES + ADVANCED SEARCH ===== */
 
@@ -2586,8 +2595,8 @@ footer {
     object-fit: cover;
     border-radius: 16px;
     display: block;
-    margin-left:  30px;
-        /* 🔥 רווח קטן מהקצה */
+    margin-left: 30px;
+    /* 🔥 רווח קטן מהקצה */
 }
 
 .view-card-content,
@@ -2641,27 +2650,62 @@ footer {
     position: relative;
 }
 
-.view-card-top-badge {
-    position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
+.view-card-content {
+    position: relative;
+    padding-top: 18px;
+    /* 🔥 פחות רווח */
+}
 
-    background: #ff2e63;
-    color: #fff;
 
-    font-size: 13px;
-    font-weight: 700;
-
-    padding: 4px 10px;
-    border-radius: 20px;
-
+.view-card-name {
     display: flex;
     align-items: center;
-    gap: 4px;
-
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    gap: 8px;
 }
+
+.view-card-badge-inline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 2px 6px;
+    border-radius: 999px;
+
+    background: #d91f4f;
+    color: #fff;
+
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+
+    white-space: nowrap;
+}
+
+
+.view-card-top-badge {
+    position: absolute;
+    top: -6px;
+    /* 🔥 מוריד אותו קצת למטה */
+    right: 0;
+
+    display: inline-block;
+    width: auto;
+    max-width: max-content;
+
+    padding: 3px 7px;
+    border-radius: 999px;
+
+    background: #d91f4f;
+    color: #fff;
+
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+
+    white-space: nowrap;
+}
+
+
 
 .view-card-top-badge {
     position: absolute;
@@ -2743,4 +2787,27 @@ footer {
     height: 42px;
     border-radius: 50%;
     object-fit: cover;
+}
+
+
+.view-card {
+    position: relative;
+}
+
+.view-card-top-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 20;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #d91f4f;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 10px;
+    border-radius: 999px;
+    line-height: 1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
 }

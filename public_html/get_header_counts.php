@@ -1,43 +1,49 @@
 <?php
-/* =========================
-   get_header_counts.php
-   ========================= */
-
-require_once __DIR__ . '/config/config.php';
-
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-header('Content-Type: application/json; charset=utf-8');
+require_once __DIR__ . '/config/config.php';
 
-$userId = $_SESSION['user_id'] ?? 0;
+header('Content-Type: application/json');
 
-if (!$userId) {
+$userId = (int)($_SESSION['user_id'] ?? 0);
+
+if ($userId <= 0) {
     echo json_encode([
-        'session_user_id' => null,
-        'views' => 0,
-        'messages' => 0
+        'messages' => 0,
+        'views' => 0
     ]);
     exit;
 }
 
-try {
-    $stmt = $pdo->prepare("
-        SELECT COUNT(DISTINCT ById)
-        FROM views
-        WHERE Id = :id
-          AND `New` = 1
-          AND (Deleted_By_Id IS NULL OR Deleted_By_Id = 0)
-    ");
-    $stmt->execute([':id' => $userId]);
-    $views = (int)$stmt->fetchColumn();
-} catch (Throwable $e) {
-    $views = 0;
-}
+// ==========================
+// הודעות שלא נקראו
+// ==========================
+$stmt = $pdo->prepare("
+    SELECT COUNT(*)
+    FROM messages
+    WHERE Id = :me
+      AND `New` = 1
+      AND Deleted_By_Id = 0
+");
+$stmt->execute([':me' => $userId]);
+$messages = (int)$stmt->fetchColumn();
+
+// ==========================
+// צפיות שלא נקראו
+// ==========================
+$stmt = $pdo->prepare("
+    SELECT COUNT(*)
+    FROM views
+    WHERE Id = :me
+      AND `New` = 1
+      AND Deleted_By_Id = 0
+");
+$stmt->execute([':me' => $userId]);
+$views = (int)$stmt->fetchColumn();
 
 echo json_encode([
-    'session_user_id' => $userId,
-    'views' => $views,
-    'messages' => 0
+    'messages' => $messages,
+    'views' => $views
 ]);

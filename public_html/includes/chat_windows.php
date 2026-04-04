@@ -64,8 +64,16 @@ if ($chatViewerId > 0) {
     <div class="chat-window-body" id="chatMessages"></div>
 
     <div class="chat-window-footer">
-        <textarea id="chatText" class="chat-window-textarea" rows="2" placeholder="כתוב הודעה..."></textarea>
-        <button type="button" class="chat-window-send" onclick="sendMessage()">שלח</button>
+        <textarea
+            id="chatText"
+            class="chat-window-textarea"
+            rows="2"
+            placeholder="כתוב הודעה..."></textarea>
+
+        <button
+            type="button"
+            class="chat-window-send"
+            onclick="sendMessage()">שלח</button>
     </div>
 
     <div class="chat-window-status" id="chatStatus"></div>
@@ -284,6 +292,7 @@ if ($chatViewerId > 0) {
     let typingHeartbeatTimer = null;
     let typingPollTimer = null;
     let messagePollTimer = null;
+    let messagesMarked = false;
 
     function chatScrollToBottom() {
         const box = document.getElementById('chatMessages');
@@ -301,11 +310,18 @@ if ($chatViewerId > 0) {
         currentChatUserId = Number(userId || 0);
         if (!currentChatUserId) return;
 
+        messagesMarked = false;
+
         document.getElementById('chatTargetName').textContent = userName || 'משתמש';
         document.getElementById('chatTargetImage').src = userImage || '/images/no_photo.jpg';
         document.getElementById('chatStatus').textContent = '';
         document.getElementById('chatText').value = '';
         setChatHeaderTyping(false);
+
+        const box = document.getElementById('chatMessages');
+        if (box) {
+            box.dataset.loadedOnce = '';
+        }
 
         document.getElementById('chatOverlay').style.display = 'block';
         document.getElementById('chatWindow').style.display = 'flex';
@@ -323,6 +339,7 @@ if ($chatViewerId > 0) {
         document.getElementById('chatStatus').textContent = '';
         setChatHeaderTyping(false);
         currentChatUserId = 0;
+        messagesMarked = false;
     }
 
     function loadChatMessages() {
@@ -336,6 +353,8 @@ if ($chatViewerId > 0) {
                 if (!data.ok) return;
 
                 const box = document.getElementById('chatMessages');
+                if (!box) return;
+
                 const nearBottom = (box.scrollHeight - box.scrollTop - box.clientHeight) < 80;
 
                 box.innerHTML = data.html || '';
@@ -455,6 +474,20 @@ if ($chatViewerId > 0) {
             .catch(function() {});
     }
 
+    function markMessagesAsRead() {
+        if (!currentChatUserId || messagesMarked) return;
+
+        messagesMarked = true;
+
+        const formData = new FormData();
+        formData.append('user_id', currentChatUserId);
+
+        fetch('/mark_messages_read.php', {
+            method: 'POST',
+            body: formData
+        }).catch(function() {});
+    }
+
     function startChatPolling() {
         stopChatPolling();
 
@@ -490,6 +523,10 @@ if ($chatViewerId > 0) {
         }
 
         if (textBox) {
+            textBox.addEventListener('focus', function() {
+                markMessagesAsRead();
+            });
+
             textBox.addEventListener('input', function() {
                 if (!currentChatUserId) return;
 

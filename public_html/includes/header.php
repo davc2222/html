@@ -47,11 +47,11 @@ $menu = [
                 <span class="menu-link-text"><?= htmlspecialchars($item['label'], ENT_QUOTES, 'UTF-8') ?></span>
 
                 <?php if ($p === 'messages'): ?>
-                    <span id="messagesBadge" class="menu-badge"></span>
+                    <span id="messagesBadge" class="menu-badge" style="display:none;"></span>
                 <?php endif; ?>
 
                 <?php if ($p === 'views'): ?>
-                    <span id="viewsBadge" class="menu-badge"></span>
+                    <span id="viewsBadge" class="menu-badge" style="display:none;"></span>
                 <?php endif; ?>
             </a>
         <?php endforeach; ?>
@@ -77,3 +77,41 @@ $menu = [
 </header>
 
 <?php include __DIR__ . '/chat_windows.php'; ?>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const messagesBadge = document.getElementById('messagesBadge');
+        const viewsBadge = document.getElementById('viewsBadge');
+
+        function setBadge(el, count) {
+            if (!el) return;
+
+            if (Number(count) > 0) {
+                el.textContent = count;
+                el.style.display = 'inline-flex';
+            } else {
+                el.textContent = '';
+                el.style.display = 'none';
+            }
+        }
+
+        function loadHeaderCounts() {
+            fetch('/get_header_counts.php', {
+                    cache: 'no-store'
+                })
+                .then(function(res) {
+                    return res.json();
+                })
+                .then(function(data) {
+                    setBadge(messagesBadge, data.messages || 0);
+                    setBadge(viewsBadge, data.views || 0);
+                })
+                .catch(function() {
+                    // silent
+                });
+        }
+
+        loadHeaderCounts();
+        setInterval(loadHeaderCounts, 3000);
+    });
+</script>

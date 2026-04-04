@@ -1,46 +1,37 @@
 <?php
 // ===== FILE: mark_messages_read.php =====
 
+require_once __DIR__ . '/config/config.php';
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
 header('Content-Type: application/json; charset=UTF-8');
 
-require_once __DIR__ . '/config/config.php';
+$me = (int)($_SESSION['user_id'] ?? 0);
+$otherId = (int)($_POST['user_id'] ?? 0);
 
-$me = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
-$other = isset($_POST['user_id']) ? (int)$_POST['user_id'] : 0;
-
-if ($me <= 0) {
-    echo json_encode([
-        'ok' => false,
-        'message' => 'לא מחובר'
-    ]);
+if ($me <= 0 || $otherId <= 0 || $me === $otherId) {
+    echo json_encode(['ok' => false], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
-if ($other <= 0) {
-    echo json_encode([
-        'ok' => false,
-        'message' => 'משתמש לא תקין'
+try {
+    $stmt = $pdo->prepare("
+        UPDATE messages
+        SET `New` = 0
+        WHERE Id = :me
+          AND ById = :other_id
+          AND `New` = 1
+    ");
+
+    $stmt->execute([
+        ':me' => $me,
+        ':other_id' => $otherId
     ]);
-    exit;
+
+    echo json_encode(['ok' => true], JSON_UNESCAPED_UNICODE);
+} catch (Throwable $e) {
+    echo json_encode(['ok' => false], JSON_UNESCAPED_UNICODE);
 }
-
-$stmt = $pdo->prepare("
-    UPDATE messages
-    SET `New` = 0
-    WHERE Id = :me
-      AND ById = :other
-      AND `New` = 1
-      AND (Deleted_By_Id = 0 OR Deleted_By_Id IS NULL)
-");
-$stmt->execute([
-    ':me' => $me,
-    ':other' => $other
-]);
-
-echo json_encode([
-    'ok' => true
-]);

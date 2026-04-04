@@ -25,18 +25,6 @@ function h($v): string {
 }
 
 try {
-    $markReadStmt = $pdo->prepare("
-        UPDATE messages
-        SET `New` = 0
-        WHERE Id = :me
-          AND ById = :other_id
-          AND `New` = 1
-    ");
-    $markReadStmt->execute([
-        ':me' => $me,
-        ':other_id' => $otherId
-    ]);
-
     $stmt = $pdo->prepare("
         SELECT Msg_Num, Id, ById, Date_Sent, Msg_Txt
         FROM messages
