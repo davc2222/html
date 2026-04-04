@@ -1,4 +1,6 @@
 <?php
+// ===== FILE: messages.php =====
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -54,44 +56,46 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <?php foreach ($results as $row): ?>
 
                 <?php
-                $id   = (int)$row['Id'];
-                $name = trim((string)$row['Name']);
+                $id   = (int)($row['Id'] ?? 0);
+                $name = trim((string)($row['Name'] ?? ''));
 
                 $age = '';
                 if (!empty($row['DOB'])) {
                     $age = date_diff(date_create($row['DOB']), date_create('today'))->y;
                 }
 
-                $zone     = trim((string)$row['Zone_Str']);
-                $place    = trim((string)$row['Place_Str']);
-                $family   = trim((string)$row['Family_Status_Str']);
-                $children = trim((string)$row['Childs_Num_Str']);
-                $height   = trim((string)$row['Height_Str']);
-                $smoking  = trim((string)$row['Smoking_Habbit_Str']);
+                $zone     = trim((string)($row['Zone_Str'] ?? ''));
+                $place    = trim((string)($row['Place_Str'] ?? ''));
+                $family   = trim((string)($row['Family_Status_Str'] ?? ''));
+                $children = trim((string)($row['Childs_Num_Str'] ?? ''));
+                $height   = trim((string)($row['Height_Str'] ?? ''));
+                $smoking  = trim((string)($row['Smoking_Habbit_Str'] ?? ''));
 
-                $unread = (int)$row['unread_count'];
+                $unread = (int)($row['unread_count'] ?? 0);
 
                 $img = '/images/no_photo.jpg';
                 ?>
 
                 <div class="view-card">
 
+                    <?php if ($unread > 0): ?>
+                        <div class="view-card-top-badge">
+                            💬 <?= $unread ?> חדשות
+                        </div>
+                    <?php endif; ?>
+
                     <div class="view-card-media">
-                        <img class="view-card-image" src="<?= h($img) ?>" alt="<?= h($name) ?>">
+                        <img
+                            class="view-card-image"
+                            src="<?= h($img) ?>"
+                            alt="<?= h($name) ?>">
                     </div>
 
                     <div class="view-card-content">
 
-                        <!-- שם -->
                         <div class="view-card-name">
                             <?= h($name) ?>
                             <?= $age !== '' ? ', ' . h((string)$age) : '' ?>
-
-                            <?php if ($unread > 0): ?>
-                                <span style="color:red;font-weight:700;">
-                                    (<?= $unread ?>)
-                                </span>
-                            <?php endif; ?>
                         </div>
 
                         <div class="view-card-divider"></div>
@@ -109,9 +113,17 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                             <?php if ($zone !== '' || $place !== ''): ?>
                                 <div>
-                                    <?= $zone !== '' ? 'אזור: ' . h($zone) : '' ?>
-                                    <?= ($zone !== '' && $place !== '') ? ' | ' : '' ?>
-                                    <?= $place !== '' ? 'מקום: ' . h($place) : '' ?>
+                                    <?php if ($zone !== ''): ?>
+                                        אזור: <?= h($zone) ?>
+                                    <?php endif; ?>
+
+                                    <?php if ($zone !== '' && $place !== ''): ?>
+                                        |
+                                    <?php endif; ?>
+
+                                    <?php if ($place !== ''): ?>
+                                        מקום: <?= h($place) ?>
+                                    <?php endif; ?>
                                 </div>
                             <?php endif; ?>
 
@@ -125,9 +137,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                         </div>
 
-                        <!-- לינקים -->
-                        <a class="view-card-link"
-                            href="/?page=messages&user_id=<?= $id ?>">
+                        <a class="view-card-link" href="/?page=messages&user_id=<?= $id ?>">
                             פתח צ'אט
                         </a>
 

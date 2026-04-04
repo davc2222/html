@@ -2633,3 +2633,46 @@ footer {
 .advanced-search-shell .view-card-link:hover {
     text-decoration: underline;
 }
+
+
+/* ===== MESSAGE BADGE ===== */
+
+.view-card {
+    position: relative;
+}
+
+.view-card-top-badge {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    background: #ff2e63;
+    color: #fff;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    padding: 4px 10px;
+    border-radius: 20px;
+
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.view-card-top-badge {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ff2e63;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    z-index: 20;
+}
