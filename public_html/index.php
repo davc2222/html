@@ -66,6 +66,9 @@ $page = $_GET['page'] ?? 'home';
 
     <?php include __DIR__ . '/includes/footer.php'; ?>
 
+    <script src="https://cdn.jsdelivr.net/npm/lightbox2@2/dist/js/lightbox.min.js"></script>
+
+
 </body>
 
 </html>
