@@ -168,13 +168,20 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                         </div>
 
-                        <a
-                            href="#"
-                            class="view-card-link open-chat-btn"
-                            data-user-id="<?= $otherUserId ?>">
-                            פתח צ'אט
-                        </a>
-
+                        <p>
+                            <a
+                                href="#"
+                                class="view-card-link open-chat-btn"
+                                data-user-id="<?= $otherUserId ?>">
+                                פתח צ'אט
+                            </a>
+                            |
+                            <a
+                                href="/?page=profile&id=<?= $otherUserId ?>"
+                                class="view-card-link">
+                                פתח פרופיל
+                            </a>
+                        </p>
                     </div>
 
                 </div>

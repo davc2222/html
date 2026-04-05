@@ -25,7 +25,8 @@ try {
         ORDER BY Gender_Id
     ");
     $genders = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (Throwable $e) {}
+} catch (Throwable $e) {
+}
 
 /* ===== אזורים ===== */
 $zones = [];
@@ -36,7 +37,8 @@ try {
         ORDER BY Zone_Id
     ");
     $zones = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (Throwable $e) {}
+} catch (Throwable $e) {
+}
 
 /* ===== קלט ===== */
 $gender_id = $_GET['gender_id'] ?? '';
@@ -145,18 +147,16 @@ if ($search_done) {
                         $age = date_diff(date_create($row['DOB']), date_create('today'))->y;
                     }
 
-                    $zone        = trim((string)($row['Zone_Str'] ?? ''));
-                    $place       = trim((string)($row['Place_Str'] ?? ''));
-                    $family      = trim((string)($row['Family_Status_Str'] ?? ''));
-                    $children    = trim((string)($row['Childs_Num_Str'] ?? ''));
-                    $religion    = trim((string)($row['Religion_Str'] ?? ''));
-                    $religionRef = trim((string)($row['Religion_Ref_Str'] ?? ''));
-                    $height      = trim((string)($row['Height_Str'] ?? ''));
+                    $zone     = trim((string)($row['Zone_Str'] ?? ''));
+                    $place    = trim((string)($row['Place_Str'] ?? ''));
+                    $family   = trim((string)($row['Family_Status_Str'] ?? ''));
+                    $children = trim((string)($row['Childs_Num_Str'] ?? ''));
+                    $height   = trim((string)($row['Height_Str'] ?? ''));
+                    $smoking  = trim((string)($row['Smoking_Habbit_Str'] ?? ''));
 
                     $img = '/images/no_photo.jpg';
                     ?>
 
-                    <!-- SAME AS VIEWS -->
                     <div class="view-card">
 
                         <div class="view-card-media">
@@ -176,13 +176,40 @@ if ($search_done) {
                             <div class="view-card-divider"></div>
 
                             <div class="view-card-details">
-                                <?php if ($zone !== ''): ?><?= htmlspecialchars($zone) ?><?php endif; ?>
-                                <?php if ($place !== ''): ?> | <?= htmlspecialchars($place) ?><?php endif; ?>
-                                <?php if ($family !== ''): ?> | <?= htmlspecialchars($family) ?><?php endif; ?>
-                                <?php if ($children !== ''): ?> | <?= htmlspecialchars($children) ?><?php endif; ?>
-                                <?php if ($religion !== ''): ?> | <?= htmlspecialchars($religion) ?><?php endif; ?>
-                                <?php if ($religionRef !== ''): ?> | <?= htmlspecialchars($religionRef) ?><?php endif; ?>
-                                <?php if ($height !== ''): ?> | <?= htmlspecialchars($height) ?><?php endif; ?>
+
+                                <?php if ($family !== ''): ?>
+                                    <div>מצב משפחתי: <?= htmlspecialchars($family) ?></div>
+                                <?php endif; ?>
+
+                                <div>
+                                    ילדים:
+                                    <?= ($children === '' || $children === '0') ? 'ללא' : htmlspecialchars($children) . '+' ?>
+                                </div>
+
+                                <?php if ($zone !== '' || $place !== ''): ?>
+                                    <div>
+                                        <?php if ($zone !== ''): ?>
+                                            אזור: <?= htmlspecialchars($zone) ?>
+                                        <?php endif; ?>
+
+                                        <?php if ($zone !== '' && $place !== ''): ?>
+                                            |
+                                        <?php endif; ?>
+
+                                        <?php if ($place !== ''): ?>
+                                            מקום: <?= htmlspecialchars($place) ?>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endif; ?>
+
+                                <?php if ($height !== ''): ?>
+                                    <div>גובה: <?= htmlspecialchars($height) ?></div>
+                                <?php endif; ?>
+
+                                <?php if ($smoking !== ''): ?>
+                                    <div>עישון: <?= htmlspecialchars($smoking) ?></div>
+                                <?php endif; ?>
+
                             </div>
 
                             <a class="view-card-link" href="/?page=profile&id=<?= $id ?>">

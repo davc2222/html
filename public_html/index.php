@@ -1,73 +1,66 @@
 <?php
-// ===== FILE: index.php =====
+// index.php
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+require_once __DIR__ . '/config/config.php';
+
 $page = $_GET['page'] ?? 'home';
 ?>
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
+<html lang="he">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LoveMatch</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <?php include __DIR__ . '/includes/chat_windows.php'; ?>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
     <?php include __DIR__ . '/includes/header.php'; ?>
 
-    <main class="site-main">
-        <?php
-        switch ($page) {
-            case 'home':
-                include __DIR__ . '/home.php';
-                break;
+    <?php
+    switch ($page) {
+        case 'home':
+            include 'home.php';
+            break;
 
-            case 'search':
-                include __DIR__ . '/search.php';
-                break;
+        case 'profile':
+            include 'profile.php';
+            break;
 
-            case 'advanced_search':
-                include __DIR__ . '/advanced_search.php';
-                break;
+        case 'search':
+            include 'search.php';
+            break;
 
-            case 'profile':
-                include __DIR__ . '/profile.php';
-                break;
+        case 'advanced_search':
+            include 'advanced_search.php';
+            break;
 
-            case 'messages':
-                include __DIR__ . '/messages.php';
-                break;
+        case 'messages':
+            include 'messages.php';
+            break;
 
-            case 'views':
-                include __DIR__ . '/views.php';
-                break;
+        case 'views':
+            include 'views.php';
+            break;
 
-            case 'login':
-                include __DIR__ . '/login.php';
-                break;
+        case 'login':
+            include 'login.php';
+            break;
 
-            case 'register':
-                include __DIR__ . '/register.php';
-                break;
+        case 'register':
+            include 'register.php';
+            break;
 
-            default:
-                include __DIR__ . '/home.php';
-                break;
-        }
-        ?>
-    </main>
-
-    <?php include __DIR__ . '/includes/footer.php'; ?>
-
-    <script src="https://cdn.jsdelivr.net/npm/lightbox2@2/dist/js/lightbox.min.js"></script>
-
+        default:
+            include 'home.php';
+            break;
+    }
+    ?>
 
 </body>
 

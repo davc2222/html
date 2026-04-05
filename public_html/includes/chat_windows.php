@@ -287,7 +287,9 @@ if ($chatViewerId > 0) {
         image: <?= json_encode($chatViewerImage, JSON_UNESCAPED_UNICODE) ?>
     };
 
-    let currentChatUserId = 0;
+  if (typeof window.currentChatUserId === 'undefined') {
+    window.currentChatUserId = 0;
+}
     let typingStopTimer = null;
     let typingHeartbeatTimer = null;
     let typingPollTimer = null;
