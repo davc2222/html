@@ -15,7 +15,7 @@ $page = $_GET['page'] ?? 'home';
 <head>
     <meta charset="UTF-8">
     <title>LoveMatch</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 
 <body>

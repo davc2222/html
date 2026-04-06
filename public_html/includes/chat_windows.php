@@ -608,6 +608,10 @@ if ($chatViewerId > 0) {
         const win = document.getElementById('chatWindow');
         const closeBtn = document.getElementById('chatCloseBtn');
 
+        win.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+
         if (win) {
             win.hidden = true;
             win.style.display = 'none';
