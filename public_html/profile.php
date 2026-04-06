@@ -25,7 +25,7 @@ if (!$user) {
 
 $isOwner = ($viewerId === (int)$user['Id']);
 
-/* 🔥 חישוב גיל מ-DOB */
+/* חישוב גיל מ-DOB */
 $age = null;
 if (!empty($user['DOB'])) {
     try {
@@ -88,9 +88,61 @@ $right = [];
 $left = [];
 
 foreach ($profileFields as $k => $cfg) {
-    if (($cfg['side'] ?? '') === 'right') $right[$k] = $cfg;
-    if (($cfg['side'] ?? '') === 'left')  $left[$k] = $cfg;
+    if (($cfg['side'] ?? '') === 'right') {
+        $right[$k] = $cfg;
+    }
+    if (($cfg['side'] ?? '') === 'left') {
+        $left[$k] = $cfg;
+    }
 }
+
+/* שליפת אפשרויות קומבו מהמסד עבור שדות צד ימין */
+$rightSelectOptions = [];
+
+foreach ($right as $field => $cfg) {
+    if (($cfg['type'] ?? '') !== 'select') {
+        continue;
+    }
+
+    $table  = $cfg['table']  ?? '';
+    $column = $cfg['column'] ?? '';
+
+    if ($table === '' || $column === '') {
+        $rightSelectOptions[$field] = [];
+        continue;
+    }
+
+    /* הגנה בסיסית על שמות טבלאות/עמודות */
+    if (!preg_match('/^[A-Za-z0-9_]+$/', $table) || !preg_match('/^[A-Za-z0-9_]+$/', $column)) {
+        $rightSelectOptions[$field] = [];
+        continue;
+    }
+
+    try {
+        $sql = "
+            SELECT DISTINCT `$column`
+            FROM `$table`
+            WHERE `$column` IS NOT NULL
+              AND TRIM(`$column`) <> ''
+            ORDER BY `$column`
+        ";
+
+        $stmt = $pdo->query($sql);
+        $options = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        if (!empty($cfg['zero_as_none'])) {
+            $options = array_map(function ($v) {
+                return trim((string)$v) === '0' ? 'ללא' : $v;
+            }, $options);
+        }
+
+        $rightSelectOptions[$field] = array_values(array_unique(array_map('strval', $options)));
+    } catch (Throwable $e) {
+        $rightSelectOptions[$field] = [];
+    }
+}
+
+$rightSelectOptionsJson = json_encode($rightSelectOptions, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 ?>
 
 <div class="page-shell profile-shell">
@@ -101,7 +153,7 @@ foreach ($profileFields as $k => $cfg) {
             <div class="profile-right-card">
 
                 <div class="profile-main-image-wrap">
-                    <img src="<?= e($profileImage) ?>" class="profile-main-image">
+                    <img src="<?= e($profileImage) ?>" class="profile-main-image" alt="">
                 </div>
 
                 <h2 class="profile-main-title">
@@ -125,22 +177,21 @@ foreach ($profileFields as $k => $cfg) {
 
                 <div class="profile-right-facts" id="profileRightFacts">
                     <?php foreach ($right as $field => $cfg): ?>
-                        <?php $val = trim((string)($user[$field] ?? '')); ?>
+                        <?php
+                        if (($cfg['type'] ?? '') === 'computed' && $field === 'Age_Computed') {
+                            $val = $age !== null ? (string)$age : '';
+                        } else {
+                            $val = trim((string)($user[$field] ?? ''));
+                            if (!empty($cfg['zero_as_none']) && $val === '0') {
+                                $val = 'ללא';
+                            }
+                        }
+                        ?>
 
                         <div class="profile-right-row" data-field="<?= e($field) ?>" data-label="<?= e($cfg['label']) ?>">
                             <span class="profile-right-label"><?= e($cfg['label']) ?>:</span>
-
-                            <span class="profile-right-value">
-                                <?php
-                                if (($cfg['label'] ?? '') === 'גיל') {
-                                    echo $age !== null ? e($age) : 'לא מולא';
-                                } else {
-                                    echo $val !== '' ? e($val) : 'לא מולא';
-                                }
-                                ?>
-                            </span>
+                            <span class="profile-right-value"><?= $val !== '' ? e($val) : 'לא מולא' ?></span>
                         </div>
-
                     <?php endforeach; ?>
                 </div>
 
@@ -174,6 +225,11 @@ foreach ($profileFields as $k => $cfg) {
 </div>
 
 <script>
+    const profileRightSelectOptions = <?= $rightSelectOptionsJson ?>;
+    let rightEditMode = false;
+    let rightOriginalValues = {};
+    let profileButtonsBound = false;
+
     function setMainPic(id) {
         fetch('/set_main_photo.php', {
             method: 'POST',
@@ -184,9 +240,6 @@ foreach ($profileFields as $k => $cfg) {
         }).then(() => location.reload());
     }
 
-    let rightEditMode = false;
-    let rightOriginalValues = {};
-
     function escapeHtml(str) {
         return String(str)
             .replaceAll('&', '&amp;')
@@ -194,6 +247,25 @@ foreach ($profileFields as $k => $cfg) {
             .replaceAll('>', '&gt;')
             .replaceAll('"', '&quot;')
             .replaceAll("'", '&#039;');
+    }
+
+    function buildRightFieldControl(field, value) {
+        const options = profileRightSelectOptions[field];
+
+        if (Array.isArray(options) && options.length > 0) {
+            let html = `<select class="profile-right-select js-right-input" data-field="${escapeHtml(field)}">`;
+            html += `<option value="">בחר</option>`;
+
+            options.forEach(function(opt) {
+                const selected = String(opt) === String(value) ? ' selected' : '';
+                html += `<option value="${escapeHtml(opt)}"${selected}>${escapeHtml(opt)}</option>`;
+            });
+
+            html += `</select>`;
+            return html;
+        }
+
+        return `<input type="text" class="profile-right-input js-right-input" data-field="${escapeHtml(field)}" value="${escapeHtml(value)}">`;
     }
 
     function restoreRightFields() {
@@ -205,16 +277,17 @@ foreach ($profileFields as $k => $cfg) {
             const value = rightOriginalValues[field] || '';
 
             row.innerHTML = `
-            <span class="profile-right-label">${escapeHtml(label)}:</span>
-            <span class="profile-right-value">${value === '' ? 'לא מולא' : escapeHtml(value)}</span>
-        `;
+                <span class="profile-right-label">${escapeHtml(label)}:</span>
+                <span class="profile-right-value">${value === '' ? 'לא מולא' : escapeHtml(value)}</span>
+            `;
         });
 
         const actions = document.querySelector('#profileRightFacts .profile-right-edit-actions');
-        if (actions) actions.remove();
+        if (actions) {
+            actions.remove();
+        }
 
         rightEditMode = false;
-        bindProfileButtons();
     }
 
     function openLeftEditor(field) {
@@ -228,30 +301,71 @@ foreach ($profileFields as $k => $cfg) {
         view.dataset.original = currentText;
 
         view.innerHTML = `
-        <textarea class="profile-edit-textarea js-inline-textarea">${escapeHtml(currentText)}</textarea>
-        <div class="profile-edit-actions">
-            <button type="button" class="profile-save-btn js-inline-save" data-field="${field}">שמור</button>
-            <button type="button" class="profile-cancel-btn js-inline-cancel" data-field="${field}">ביטול</button>
-        </div>
-    `;
-
-        bindProfileButtons();
+            <textarea class="profile-edit-textarea js-inline-textarea">${escapeHtml(currentText)}</textarea>
+            <div class="profile-edit-actions">
+                <button type="button" class="profile-save-btn js-inline-save" data-field="${field}">שמור</button>
+                <button type="button" class="profile-cancel-btn js-inline-cancel" data-field="${field}">ביטול</button>
+            </div>
+        `;
     }
 
+    function openRightEditor() {
+        if (rightEditMode) return;
 
-    function bindProfileButtons() {
-        document.querySelectorAll('.edit-btn').forEach(function(btn) {
-            btn.onclick = function(e) {
-                e.preventDefault();
-                const field = btn.getAttribute('data-field');
-                if (field) openLeftEditor(field);
-            };
+        const rows = document.querySelectorAll('#profileRightFacts .profile-right-row');
+        if (!rows.length) return;
+
+        rightOriginalValues = {};
+        rightEditMode = true;
+
+        rows.forEach(function(row) {
+            const field = row.getAttribute('data-field');
+            const label = row.getAttribute('data-label') || '';
+            const valueEl = row.querySelector('.profile-right-value');
+            const currentValue = valueEl ? valueEl.textContent.trim() : '';
+
+            rightOriginalValues[field] = currentValue === 'לא מולא' ? '' : currentValue;
+
+            row.innerHTML = `
+                <span class="profile-right-label">${escapeHtml(label)}:</span>
+                <span class="profile-right-edit-control">
+                    ${buildRightFieldControl(field, rightOriginalValues[field])}
+                </span>
+            `;
         });
 
-        document.querySelectorAll('.js-inline-cancel').forEach(function(btn) {
-            btn.onclick = function(e) {
+        const factsBox = document.getElementById('profileRightFacts');
+
+        if (factsBox && !factsBox.querySelector('.profile-right-edit-actions')) {
+            factsBox.insertAdjacentHTML('beforeend', `
+                <div class="profile-right-edit-actions">
+                    <button type="button" class="profile-right-save-btn" id="saveRightFieldsBtn">שמור</button>
+                    <button type="button" class="profile-right-cancel-btn" id="cancelRightFieldsBtn">ביטול</button>
+                </div>
+            `);
+        }
+    }
+
+    function bindProfileButtons() {
+        if (profileButtonsBound) return;
+        profileButtonsBound = true;
+
+        document.addEventListener('click', function(e) {
+            const editBtn = e.target.closest('.edit-btn');
+            if (editBtn) {
                 e.preventDefault();
-                const field = btn.getAttribute('data-field');
+                const field = editBtn.getAttribute('data-field');
+                if (field) {
+                    openLeftEditor(field);
+                }
+                return;
+            }
+
+            const inlineCancelBtn = e.target.closest('.js-inline-cancel');
+            if (inlineCancelBtn) {
+                e.preventDefault();
+
+                const field = inlineCancelBtn.getAttribute('data-field');
                 const view = document.querySelector('.profile-left-view[data-field="' + field + '"]');
                 if (!view) return;
 
@@ -265,16 +379,14 @@ foreach ($profileFields as $k => $cfg) {
                     view.classList.remove('is-empty');
                     view.innerHTML = escapeHtml(original).replace(/\n/g, '<br>');
                 }
+                return;
+            }
 
-                bindProfileButtons();
-            };
-        });
-
-        document.querySelectorAll('.js-inline-save').forEach(function(btn) {
-            btn.onclick = function(e) {
+            const inlineSaveBtn = e.target.closest('.js-inline-save');
+            if (inlineSaveBtn) {
                 e.preventDefault();
 
-                const field = btn.getAttribute('data-field');
+                const field = inlineSaveBtn.getAttribute('data-field');
                 const view = document.querySelector('.profile-left-view[data-field="' + field + '"]');
                 if (!view) return;
 
@@ -300,34 +412,29 @@ foreach ($profileFields as $k => $cfg) {
                             view.classList.remove('is-empty');
                             view.innerHTML = escapeHtml(newValue).replace(/\n/g, '<br>');
                         }
-
-                        bindProfileButtons();
                     })
                     .catch(function() {
                         alert('שגיאה בשמירה');
                     });
-            };
-        });
+                return;
+            }
 
-        const rightEditBtn = document.getElementById('profileRightEditBtn');
-        if (rightEditBtn) {
-            rightEditBtn.onclick = function(e) {
+            const rightEditBtn = e.target.closest('#profileRightEditBtn');
+            if (rightEditBtn) {
                 e.preventDefault();
                 openRightEditor();
-            };
-        }
+                return;
+            }
 
-        const cancelRightBtn = document.getElementById('cancelRightFieldsBtn');
-        if (cancelRightBtn) {
-            cancelRightBtn.onclick = function(e) {
+            const cancelRightBtn = e.target.closest('#cancelRightFieldsBtn');
+            if (cancelRightBtn) {
                 e.preventDefault();
                 restoreRightFields();
-            };
-        }
+                return;
+            }
 
-        const saveRightBtn = document.getElementById('saveRightFieldsBtn');
-        if (saveRightBtn) {
-            saveRightBtn.onclick = function(e) {
+            const saveRightBtn = e.target.closest('#saveRightFieldsBtn');
+            if (saveRightBtn) {
                 e.preventDefault();
 
                 const inputs = document.querySelectorAll('.js-right-input');
@@ -357,14 +464,14 @@ foreach ($profileFields as $k => $cfg) {
                     .catch(function() {
                         alert('שגיאה בשמירה');
                     });
-            };
-        }
+                return;
+            }
 
-        document.querySelectorAll('.open-chat-btn').forEach(function(btn) {
-            btn.onclick = function(e) {
+            const chatBtn = e.target.closest('.open-chat-btn');
+            if (chatBtn) {
                 e.preventDefault();
 
-                const userId = Number(btn.getAttribute('data-user-id'));
+                const userId = Number(chatBtn.getAttribute('data-user-id'));
                 if (!userId) return;
 
                 const nameEl = document.querySelector('.profile-main-title');
@@ -379,85 +486,11 @@ foreach ($profileFields as $k => $cfg) {
                 }
 
                 openMessageModal(userId, userName, userImage);
-            };
+            }
         });
     }
 
     document.addEventListener('DOMContentLoaded', function() {
         bindProfileButtons();
     });
-
-
-    function openRightEditor() {
-        if (rightEditMode) return;
-
-        const rows = document.querySelectorAll('#profileRightFacts .profile-right-row');
-        if (!rows.length) return;
-
-        rightOriginalValues = {};
-        rightEditMode = true;
-
-        const selectOptionsMap = {
-            Gender: ['', 'זכר', 'נקבה'],
-            Smoking: ['', 'לא מעשן', 'מעשן', 'מעשן לפעמים'],
-            Marital_Status: ['', 'רווק/ה', 'גרוש/ה', 'אלמן/ה', 'פרוד/ה'],
-            Children: ['', 'אין', 'יש'],
-            Vegitrain_Str: ['', 'לא', 'כן'],
-            Area: ['', 'צפון', 'מרכז', 'דרום', 'ירושלים', 'שרון', 'שפלה'],
-            Looking_For: ['', 'קשר רציני', 'נישואין', 'חברות', 'לא יודע/ת עדיין']
-        };
-
-        function buildSelectHtml(field, currentValue) {
-            const options = selectOptionsMap[field];
-            if (!options) return '';
-
-            let html = '<select class="profile-right-select js-right-input" data-field="' + escapeHtml(field) + '">';
-
-            options.forEach(function(optionValue) {
-                const optionLabel = optionValue === '' ? 'בחר' : optionValue;
-                const selected = String(optionValue) === String(currentValue) ? ' selected' : '';
-                html += '<option value="' + escapeHtml(optionValue) + '"' + selected + '>' + escapeHtml(optionLabel) + '</option>';
-            });
-
-            html += '</select>';
-            return html;
-        }
-
-        rows.forEach(function(row) {
-            const field = row.getAttribute('data-field');
-            const label = row.getAttribute('data-label') || '';
-            const valueEl = row.querySelector('.profile-right-value');
-            const currentValue = valueEl ? valueEl.textContent.trim() : '';
-
-            rightOriginalValues[field] = currentValue === 'לא מולא' ? '' : currentValue;
-
-            const selectHtml = buildSelectHtml(field, rightOriginalValues[field]);
-
-            if (selectHtml !== '') {
-                row.innerHTML =
-                    '<span class="profile-right-label">' + escapeHtml(label) + ':</span>' +
-                    '<span class="profile-right-edit-control">' +
-                    selectHtml +
-                    '</span>';
-            } else {
-                row.innerHTML =
-                    '<span class="profile-right-label">' + escapeHtml(label) + ':</span>' +
-                    '<span class="profile-right-edit-control">' +
-                    '<input type="text" class="profile-right-input js-right-input" data-field="' + escapeHtml(field) + '" value="' + escapeHtml(rightOriginalValues[field]) + '">' +
-                    '</span>';
-            }
-        });
-
-        const factsBox = document.getElementById('profileRightFacts');
-        if (factsBox && !factsBox.querySelector('.profile-right-edit-actions')) {
-            factsBox.insertAdjacentHTML('beforeend',
-                '<div class="profile-right-edit-actions">' +
-                '<button type="button" class="profile-right-save-btn" id="saveRightFieldsBtn">שמור</button>' +
-                '<button type="button" class="profile-right-cancel-btn" id="cancelRightFieldsBtn">ביטול</button>' +
-                '</div>'
-            );
-        }
-
-        bindProfileButtons();
-    }
 </script>

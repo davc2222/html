@@ -2645,3 +2645,62 @@ footer {
     background-size: 12px 12px !important;
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' fill='none' stroke='%23777' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg>") !important;
 }
+
+/* ===== PROFILE RIGHT EDIT ALIGN FIX ===== */
+
+#profileRightFacts .profile-right-row {
+    display: grid !important;
+    grid-template-columns: 86px 170px !important;
+    /* תווית | שדה */
+    align-items: center !important;
+    column-gap: 10px !important;
+    padding: 6px 0 !important;
+    border-bottom: 1px solid #ececec !important;
+}
+
+#profileRightFacts .profile-right-label {
+    width: auto !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    text-align: right !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+}
+
+#profileRightFacts .profile-right-value,
+#profileRightFacts .profile-right-edit-control {
+    width: 170px !important;
+    min-width: 170px !important;
+    max-width: 170px !important;
+    justify-self: start !important;
+}
+
+#profileRightFacts .profile-right-input,
+#profileRightFacts .profile-right-select {
+    display: block !important;
+    width: 170px !important;
+    min-width: 170px !important;
+    max-width: 170px !important;
+    height: 34px !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+}
+
+#profileRightFacts .profile-right-value {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    padding: 0 12px !important;
+    height: 34px !important;
+    border: 1px solid #d8d8d8 !important;
+    border-radius: 12px !important;
+    background: #fafafa !important;
+}
+
+#profileRightFacts .profile-right-edit-actions {
+    display: flex !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    margin-top: 14px !important;
+}
