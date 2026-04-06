@@ -2687,20 +2687,364 @@ footer {
     margin: 0 !important;
 }
 
-#profileRightFacts .profile-right-value {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: flex-start !important;
-    padding: 0 12px !important;
-    height: 34px !important;
-    border: 1px solid #d8d8d8 !important;
-    border-radius: 12px !important;
-    background: #fafafa !important;
-}
+
 
 #profileRightFacts .profile-right-edit-actions {
     display: flex !important;
     justify-content: center !important;
     gap: 10px !important;
     margin-top: 14px !important;
+}
+/* ===== PROFILE EDIT ALIGNMENT ===== */
+
+.profile-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.profile-label {
+    width: 120px;
+    text-align: right;
+    font-weight: bold;
+    color: #333;
+}
+
+.profile-field {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.profile-field select {
+    width: 200px;
+    height: 36px;
+    border-radius: 20px;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    padding: 0 10px;
+    text-align: center;
+}
+
+/* ===== PROFILE VIEW VS EDIT ===== */
+
+.profile-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ececec;
+}
+
+.profile-label {
+    width: 120px;
+    text-align: right;
+    font-weight: 700;
+    color: #111;
+}
+
+.profile-view-value {
+    flex: 1;
+    text-align: right;
+    font-style: italic;
+    color: #666;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+.profile-field {
+    flex: 1;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.profile-field select,
+.profile-field input,
+.profile-field textarea {
+    width: 200px;
+    height: 36px;
+    border-radius: 20px;
+    border: 1px solid #dcdcdc;
+    background: #fff;
+    padding: 0 12px;
+    text-align: right;
+}
+
+.profile-field textarea {
+    height: auto;
+    min-height: 90px;
+    padding: 10px 12px;
+    border-radius: 16px;
+}
+/* ===== PROFILE VIEW MODE ===== */
+
+.profile-view-value,
+.profile-left-view .profile-view-value,
+.profile-right-view .profile-view-value {
+    flex: 1;
+    text-align: right;
+    font-style: italic !important;
+    color: #666 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    min-height: auto !important;
+    height: auto !important;
+    display: block;
+}
+
+/* אם בטעות מצב צפייה עדיין עטוף בתוך profile-field */
+.profile-left-view .profile-field,
+.profile-right-view .profile-field {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+/* רק במצב עריכה השדות יקבלו מראה של קומבו/אינפוט */
+.profile-left-edit .profile-field select,
+.profile-left-edit .profile-field input,
+.profile-left-edit .profile-field textarea,
+.profile-right-edit .profile-field select,
+.profile-right-edit .profile-field input,
+.profile-right-edit .profile-field textarea {
+    width: 200px;
+    height: 36px;
+    border-radius: 20px;
+    border: 1px solid #dcdcdc;
+    background: #fff;
+    padding: 0 12px;
+    text-align: right;
+}
+
+.profile-left-edit .profile-field textarea,
+.profile-right-edit .profile-field textarea {
+    height: auto;
+    min-height: 90px;
+    padding: 10px 12px;
+    border-radius: 16px;
+}
+
+/* ===== FIX VIEW MODE (NO BOXES) ===== */
+
+/* צד ימין - ערכים */
+.profile-right-value {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    font-style: italic;
+    color: #666;
+}
+
+/* צד שמאל - טקסט */
+.profile-left-view {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    font-style: italic;
+    color: #666;
+}
+
+/* אם יש עטיפות נוספות */
+.profile-left-card,
+.profile-right-row {
+    background: transparent !important;
+}
+
+/* ===== PROFILE RIGHT VIEW ONLY ===== */
+
+.profile-right-value {
+    display: inline !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    font-style: italic !important;
+    color: #666 !important;
+}
+
+/* אם הקופסה עצמה נראית כמו שדה */
+.profile-right-row {
+    background: transparent !important;
+}
+
+/* ===== PROFILE RIGHT - VIEW MODE TEXT ONLY ===== */
+
+/* רק הערך במצב צפייה */
+.profile-right-row>.profile-right-value {
+    display: inline !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-style: italic !important;
+    font-size: inherit !important;
+    font-weight: 400 !important;
+    line-height: inherit !important;
+    color: #666 !important;
+}
+
+/* לא לגעת בשדות של מצב עריכה */
+.profile-right-edit-control select,
+.profile-right-edit-control input,
+.profile-right-select,
+.profile-right-input {
+    font-style: normal !important;
+}
+
+.profile-right-edit-control select,
+.profile-right-edit-control input,
+.profile-right-select,
+.profile-right-input {
+    font-style: normal !important;
+}
+/* right side - view mode */
+.profile-right-facts .profile-right-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 0 !important;
+    margin-bottom: 10px;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+.profile-right-facts .profile-right-label {
+    font-weight: 700;
+    color: #222;
+}
+
+.profile-right-facts .profile-right-value {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    font-style: italic !important;
+    color: #666 !important;
+}
+
+/* right side - edit mode only */
+.profile-right-edit-control select,
+.profile-right-edit-control input,
+.profile-right-select,
+.profile-right-input {
+    width: 200px;
+    height: 36px;
+    border-radius: 18px;
+    border: 1px solid #dcdcdc;
+    background: #fff;
+    padding: 0 12px;
+    text-align: right;
+}
+
+/* ===== PROFILE RIGHT / VIEW MODE OVERRIDE ===== */
+
+.profile-right-facts .profile-right-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 8px !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 0 10px 0 !important;
+    min-height: auto !important;
+    height: auto !important;
+}
+
+.profile-right-facts .profile-right-label {
+    display: inline !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-weight: 700 !important;
+    color: #222 !important;
+}
+
+.profile-right-facts .profile-right-value {
+    display: inline !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-height: auto !important;
+    height: auto !important;
+    line-height: inherit !important;
+    font-style: italic !important;
+    font-weight: 400 !important;
+    color: #666 !important;
+}
+
+/* לא לפגוע במצב עריכה */
+.profile-right-facts .profile-right-edit-control,
+.profile-right-facts .profile-right-edit-control * {
+    font-style: normal !important;
+}
+
+/* תמונת כרטיסים - חיפוש / צפיות / הודעות */
+/* קונטיינר של התמונה */
+/* =========================
+   מסגרת לתמונות בכרטיסים
+   חיפוש / צפיות / הודעות
+   ========================= */
+
+/* =========================
+   מסגרת לתמונות בכרטיסים
+   חיפוש / צפיות / הודעות
+   ========================= */
+.view-card {
+    display: flex !important;
+    align-items: stretch !important;
+    gap: 16px !important;
+}
+
+.view-card-media {
+    flex: 0 0 220px !important;
+    width: 220px !important;
+    max-width: 220px !important;
+    min-width: 220px !important;
+    height: 200px !important;
+    overflow: hidden !important;
+    border: 3px solid #dcdcdc !important;
+    border-radius: 18px !important;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14) !important;
+    background: #fff !important;
+    display: block !important;
+}
+
+.view-card-image {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+}
+
+.view-card-content {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
 }

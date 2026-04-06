@@ -561,10 +561,12 @@ function isChecked(array $saved, $value): string {
         </form>
     </div>
 
-    <div class="results">
+    <div class="views-list">
+
         <?php if (!$results): ?>
             <div class="no-results">לא נמצאו תוצאות</div>
         <?php else: ?>
+
             <?php foreach ($results as $user): ?>
                 <?php
                 $id   = (int)($user['Id'] ?? 0);
@@ -575,77 +577,126 @@ function isChecked(array $saved, $value): string {
                     try {
                         $age = date_diff(date_create((string)$user['DOB']), date_create('today'))->y;
                     } catch (Throwable $e) {
-                        $age = '';
                     }
                 }
 
                 $img = getMainProfileImage($pdo, $id);
+
+                $family   = $user['Family_Status_Str'] ?? '';
+                $children = $user['Childs_Num_Str'] ?? '';
+                $zone     = $user['Zone_Str'] ?? '';
+                $height   = $user['Height_Str'] ?? '';
+                $smoking  = $user['Smoking_Habbit_Str'] ?? '';
                 ?>
-                <div class="search-card-compact">
-                    <img src="<?= e($img) ?>" class="search-card-image" alt="<?= e($name) ?>">
-                    <div class="search-card-content">
-                        <a href="/?page=profile&id=<?= $id ?>">
-                            <?= e($name) ?><?= $age !== '' ? ', ' . e((string)$age) : '' ?>
-                        </a>
+
+                <div class="view-card">
+
+                    <div class="view-card-media">
+                        <img class="view-card-image"
+                            src="<?= e($img) ?>"
+                            alt="<?= e($name) ?>">
                     </div>
+
+                    <div class="view-card-content">
+
+                        <div class="view-card-name">
+                            <?= e($name) ?><?= $age !== '' ? ', ' . e((string)$age) : '' ?>
+                        </div>
+
+                        <div class="view-card-divider"></div>
+
+                        <div class="view-card-details">
+
+                            <?php if ($family !== ''): ?>
+                                <div>מצב משפחתי: <?= e($family) ?></div>
+                            <?php endif; ?>
+
+                            <div>
+                                ילדים:
+                                <?= ($children === '' || $children === '0') ? 'ללא' : e($children) . '+' ?>
+                            </div>
+
+                            <?php if ($zone !== ''): ?>
+                                <div>אזור: <?= e($zone) ?></div>
+                            <?php endif; ?>
+
+                            <?php if ($height !== ''): ?>
+                                <div>גובה: <?= e($height) ?></div>
+                            <?php endif; ?>
+
+                            <?php if ($smoking !== ''): ?>
+                                <div>עישון: <?= e($smoking) ?></div>
+                            <?php endif; ?>
+
+                        </div>
+
+                        <a class="view-card-link"
+                            href="/?page=profile&id=<?= $id ?>">
+                            צפייה בפרופיל
+                        </a>
+
+                    </div>
+
                 </div>
+
             <?php endforeach; ?>
+
         <?php endif; ?>
+
     </div>
-</div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const panel = document.getElementById('advancedSearchPanel');
-        const openBtn = document.getElementById('openAdvancedSearchBtn');
-        const cancelBtn = document.getElementById('cancelAdvancedSearchBtn');
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const panel = document.getElementById('advancedSearchPanel');
+            const openBtn = document.getElementById('openAdvancedSearchBtn');
+            const cancelBtn = document.getElementById('cancelAdvancedSearchBtn');
 
-        if (openBtn && panel) {
-            openBtn.addEventListener('click', function() {
-                panel.classList.toggle('is-open');
-            });
-        }
-
-        if (cancelBtn && panel) {
-            cancelBtn.addEventListener('click', function() {
-                panel.classList.remove('is-open');
-            });
-        }
-
-        function bindDualRange(minId, maxId, minOutId, maxOutId) {
-            const minEl = document.getElementById(minId);
-            const maxEl = document.getElementById(maxId);
-            const minOut = document.getElementById(minOutId);
-            const maxOut = document.getElementById(maxOutId);
-
-            if (!minEl || !maxEl || !minOut || !maxOut) {
-                return;
+            if (openBtn && panel) {
+                openBtn.addEventListener('click', function() {
+                    panel.classList.toggle('is-open');
+                });
             }
 
-            function sync() {
-                let minVal = parseInt(minEl.value, 10);
-                let maxVal = parseInt(maxEl.value, 10);
+            if (cancelBtn && panel) {
+                cancelBtn.addEventListener('click', function() {
+                    panel.classList.remove('is-open');
+                });
+            }
 
-                if (minVal > maxVal) {
-                    if (document.activeElement === minEl) {
-                        maxEl.value = minVal;
-                        maxVal = minVal;
-                    } else {
-                        minEl.value = maxVal;
-                        minVal = maxVal;
-                    }
+            function bindDualRange(minId, maxId, minOutId, maxOutId) {
+                const minEl = document.getElementById(minId);
+                const maxEl = document.getElementById(maxId);
+                const minOut = document.getElementById(minOutId);
+                const maxOut = document.getElementById(maxOutId);
+
+                if (!minEl || !maxEl || !minOut || !maxOut) {
+                    return;
                 }
 
-                minOut.textContent = minVal;
-                maxOut.textContent = maxVal;
+                function sync() {
+                    let minVal = parseInt(minEl.value, 10);
+                    let maxVal = parseInt(maxEl.value, 10);
+
+                    if (minVal > maxVal) {
+                        if (document.activeElement === minEl) {
+                            maxEl.value = minVal;
+                            maxVal = minVal;
+                        } else {
+                            minEl.value = maxVal;
+                            minVal = maxVal;
+                        }
+                    }
+
+                    minOut.textContent = minVal;
+                    maxOut.textContent = maxVal;
+                }
+
+                minEl.addEventListener('input', sync);
+                maxEl.addEventListener('input', sync);
+                sync();
             }
 
-            minEl.addEventListener('input', sync);
-            maxEl.addEventListener('input', sync);
-            sync();
-        }
-
-        bindDualRange('age_min', 'age_max', 'ageMinValue', 'ageMaxValue');
-        bindDualRange('height_min', 'height_max', 'heightMinValue', 'heightMaxValue');
-    });
-</script>
+            bindDualRange('age_min', 'age_max', 'ageMinValue', 'ageMaxValue');
+            bindDualRange('height_min', 'height_max', 'heightMinValue', 'heightMaxValue');
+        });
+    </script>
