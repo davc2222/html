@@ -1,4 +1,4 @@
-```php
+
 <?php
 require_once __DIR__ . '/config/config.php';
 
@@ -175,6 +175,251 @@ foreach ($profileFields as $k => $cfg) {
 </div>
 
 <script>
-    /* הקוד JS שלך נשאר כמו שהוא — לא נגעתי */
+    function setMainPic(id) {
+        fetch('/set_main_photo.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: 'pic_num=' + encodeURIComponent(id)
+        }).then(() => location.reload());
+    }
+
+    let rightEditMode = false;
+    let rightOriginalValues = {};
+
+    function escapeHtml(str) {
+        return String(str)
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+    }
+
+    function restoreRightFields() {
+        const rows = document.querySelectorAll('#profileRightFacts .profile-right-row');
+
+        rows.forEach(function(row) {
+            const field = row.getAttribute('data-field');
+            const label = row.getAttribute('data-label') || '';
+            const value = rightOriginalValues[field] || '';
+
+            row.innerHTML = `
+            <span class="profile-right-label">${escapeHtml(label)}:</span>
+            <span class="profile-right-value">${value === '' ? 'לא מולא' : escapeHtml(value)}</span>
+        `;
+        });
+
+        const actions = document.querySelector('#profileRightFacts .profile-right-edit-actions');
+        if (actions) actions.remove();
+
+        rightEditMode = false;
+        bindProfileButtons();
+    }
+
+    function openLeftEditor(field) {
+        const view = document.querySelector('.profile-left-view[data-field="' + field + '"]');
+        if (!view) return;
+        if (view.dataset.editing === '1') return;
+
+        const currentText = view.innerText.trim() === 'לא מולא' ? '' : view.innerText.trim();
+
+        view.dataset.editing = '1';
+        view.dataset.original = currentText;
+
+        view.innerHTML = `
+        <textarea class="profile-edit-textarea js-inline-textarea">${escapeHtml(currentText)}</textarea>
+        <div class="profile-edit-actions">
+            <button type="button" class="profile-save-btn js-inline-save" data-field="${field}">שמור</button>
+            <button type="button" class="profile-cancel-btn js-inline-cancel" data-field="${field}">ביטול</button>
+        </div>
+    `;
+
+        bindProfileButtons();
+    }
+
+    function openRightEditor() {
+        if (rightEditMode) return;
+
+        const rows = document.querySelectorAll('#profileRightFacts .profile-right-row');
+        if (!rows.length) return;
+
+        rightOriginalValues = {};
+        rightEditMode = true;
+
+        rows.forEach(function(row) {
+            const field = row.getAttribute('data-field');
+            const label = row.getAttribute('data-label') || '';
+            const valueEl = row.querySelector('.profile-right-value');
+            const currentValue = valueEl ? valueEl.textContent.trim() : '';
+
+            rightOriginalValues[field] = currentValue === 'לא מולא' ? '' : currentValue;
+
+            row.innerHTML = `
+            <span class="profile-right-label">${escapeHtml(label)}:</span>
+            <input type="text" class="profile-right-input js-right-input" data-field="${escapeHtml(field)}" value="${escapeHtml(rightOriginalValues[field])}">
+        `;
+        });
+
+        const factsBox = document.getElementById('profileRightFacts');
+        if (factsBox && !factsBox.querySelector('.profile-right-edit-actions')) {
+            factsBox.insertAdjacentHTML('beforeend', `
+            <div class="profile-right-edit-actions">
+                <button type="button" class="profile-right-save-btn" id="saveRightFieldsBtn">שמור</button>
+                <button type="button" class="profile-right-cancel-btn" id="cancelRightFieldsBtn">ביטול</button>
+            </div>
+        `);
+        }
+
+        bindProfileButtons();
+    }
+
+    function bindProfileButtons() {
+        document.querySelectorAll('.edit-btn').forEach(function(btn) {
+            btn.onclick = function(e) {
+                e.preventDefault();
+                const field = btn.getAttribute('data-field');
+                if (field) openLeftEditor(field);
+            };
+        });
+
+        document.querySelectorAll('.js-inline-cancel').forEach(function(btn) {
+            btn.onclick = function(e) {
+                e.preventDefault();
+                const field = btn.getAttribute('data-field');
+                const view = document.querySelector('.profile-left-view[data-field="' + field + '"]');
+                if (!view) return;
+
+                const original = view.dataset.original || '';
+                view.dataset.editing = '0';
+
+                if (original === '') {
+                    view.classList.add('is-empty');
+                    view.innerHTML = 'לא מולא';
+                } else {
+                    view.classList.remove('is-empty');
+                    view.innerHTML = escapeHtml(original).replace(/\n/g, '<br>');
+                }
+
+                bindProfileButtons();
+            };
+        });
+
+        document.querySelectorAll('.js-inline-save').forEach(function(btn) {
+            btn.onclick = function(e) {
+                e.preventDefault();
+
+                const field = btn.getAttribute('data-field');
+                const view = document.querySelector('.profile-left-view[data-field="' + field + '"]');
+                if (!view) return;
+
+                const textarea = view.querySelector('.js-inline-textarea');
+                if (!textarea) return;
+
+                const newValue = textarea.value.trim();
+
+                fetch('/save_profile_field.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: 'field=' + encodeURIComponent(field) + '&value=' + encodeURIComponent(newValue)
+                    })
+                    .then(function() {
+                        view.dataset.editing = '0';
+
+                        if (newValue === '') {
+                            view.classList.add('is-empty');
+                            view.innerHTML = 'לא מולא';
+                        } else {
+                            view.classList.remove('is-empty');
+                            view.innerHTML = escapeHtml(newValue).replace(/\n/g, '<br>');
+                        }
+
+                        bindProfileButtons();
+                    })
+                    .catch(function() {
+                        alert('שגיאה בשמירה');
+                    });
+            };
+        });
+
+        const rightEditBtn = document.getElementById('profileRightEditBtn');
+        if (rightEditBtn) {
+            rightEditBtn.onclick = function(e) {
+                e.preventDefault();
+                openRightEditor();
+            };
+        }
+
+        const cancelRightBtn = document.getElementById('cancelRightFieldsBtn');
+        if (cancelRightBtn) {
+            cancelRightBtn.onclick = function(e) {
+                e.preventDefault();
+                restoreRightFields();
+            };
+        }
+
+        const saveRightBtn = document.getElementById('saveRightFieldsBtn');
+        if (saveRightBtn) {
+            saveRightBtn.onclick = function(e) {
+                e.preventDefault();
+
+                const inputs = document.querySelectorAll('.js-right-input');
+                const requests = [];
+
+                inputs.forEach(function(input) {
+                    const field = input.getAttribute('data-field');
+                    const value = input.value.trim();
+
+                    requests.push(
+                        fetch('/save_profile_field.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            },
+                            body: 'field=' + encodeURIComponent(field) + '&value=' + encodeURIComponent(value)
+                        })
+                    );
+
+                    rightOriginalValues[field] = value;
+                });
+
+                Promise.all(requests)
+                    .then(function() {
+                        restoreRightFields();
+                    })
+                    .catch(function() {
+                        alert('שגיאה בשמירה');
+                    });
+            };
+        }
+
+        document.querySelectorAll('.open-chat-btn').forEach(function(btn) {
+            btn.onclick = function(e) {
+                e.preventDefault();
+
+                const userId = Number(btn.getAttribute('data-user-id'));
+                if (!userId) return;
+
+                const nameEl = document.querySelector('.profile-main-title');
+                const imgEl = document.querySelector('.profile-main-image');
+
+                const userName = nameEl ? nameEl.textContent.trim() : 'משתמש';
+                const userImage = imgEl ? imgEl.getAttribute('src') : '/images/no_photo.jpg';
+
+                if (typeof openMessageModal !== 'function') {
+                    window.location.href = '/?page=messages&id=' + userId;
+                    return;
+                }
+
+                openMessageModal(userId, userName, userImage);
+            };
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        bindProfileButtons();
+    });
 </script>
-```

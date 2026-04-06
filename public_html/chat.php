@@ -335,7 +335,7 @@ $otherImage = get_profile_image($pdo, $otherId);
                 </div>
             </div>
 
-            <div class="chat-messages-box" id="chatMessagesBox">
+            <div class="chat-messages-box" id="chatPageMessagesBox">
                 <?php if (!$messages): ?>
                     <div class="chat-empty">אין עדיין הודעות. אפשר להתחיל 🙂</div>
                 <?php else: ?>
@@ -364,21 +364,21 @@ $otherImage = get_profile_image($pdo, $otherId);
             </div>
 
             <div class="chat-compose">
-                <textarea id="chatText" class="chat-textarea" placeholder="כתוב הודעה..."></textarea>
-                <button id="chatSendBtn" class="chat-send-btn" type="button">שלח</button>
+                <textarea id="chatchatPageText" class="chat-textarea" placeholder="כתוב הודעה..."></textarea>
+                <button id="chatPageSendBtn" class="chat-send-btn" type="button">שלח</button>
             </div>
 
-            <div class="chat-status" id="chatStatus"></div>
+            <div class="chat-status" id="chatPageStatus"></div>
 
         </div>
     </div>
 
     <script>
         (function() {
-            const messagesBox = document.getElementById('chatMessagesBox');
-            const textBox = document.getElementById('chatText');
-            const sendBtn = document.getElementById('chatSendBtn');
-            const statusBox = document.getElementById('chatStatus');
+            const messagesBox = document.getElementById('chatPageMessagesBox');
+            const textBox = document.getElementById('chatPageText');
+            const sendBtn = document.getElementById('chatPageSendBtn');
+            const statusBox = document.getElementById('chatPageStatus');
             const otherUserId = <?= (int)$otherId ?>;
 
             function scrollToBottom() {

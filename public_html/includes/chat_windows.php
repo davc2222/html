@@ -345,11 +345,11 @@ if ($chatViewerId > 0) {
         window.currentChatUserId = 0;
     }
 
-    let typingStopTimer = null;
-    let typingHeartbeatTimer = null;
-    let typingPollTimer = null;
-    let messagePollTimer = null;
-    let messagesMarked = false;
+    window.typingStopTimer = window.typingStopTimer || null;
+    window.typingHeartbeatTimer = window.typingHeartbeatTimer || null;
+    window.typingPollTimer = window.typingPollTimer || null;
+    window.messagePollTimer = window.messagePollTimer || null;
+    window.messagesMarked = window.messagesMarked || false;
 
     function chatScrollToBottom() {
         const box = document.getElementById('chatMessages');
