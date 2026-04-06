@@ -2244,6 +2244,7 @@ footer {
     width: 82px;
     margin: 0;
     font-style: normal !important;
+    flex-shrink: 0;
 }
 
 .profile-right-edit-control {
@@ -2256,9 +2257,7 @@ footer {
     display: block;
     width: 100%;
     height: 36px;
-    padding-right: 10px;
-    padding-left: 28px;
-    /* מקום לחץ בצד שמאל */
+    padding: 0 10px;
     border: 1px solid #d8d8d8;
     border-radius: 10px;
     background: #fafafa;
@@ -2268,29 +2267,20 @@ footer {
     font-style: normal !important;
     line-height: normal;
     text-align: right;
-    text-align-last: right;
     direction: rtl;
     box-sizing: border-box;
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    background-image: none !important;
-}
 
-.profile-right-select::-ms-expand {
-    display: none;
+    appearance: auto;
+    -webkit-appearance: menulist;
+    -moz-appearance: menulist;
 }
 
 .profile-right-edit-control::after {
-    content: "▾";
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 11px;
-    color: #777;
-    pointer-events: none;
-    line-height: 1;
+    content: none;
+}
+
+.profile-right-select::-ms-expand {
+    display: block;
 }
 
 .profile-right-select option {
@@ -2635,3 +2625,23 @@ footer {
     color: #aaa;
 }
 
+
+/* ===== PROFILE SELECT FINAL (REAL FIX) ===== */
+
+.profile-right-edit-control::after {
+    content: none !important;
+    display: none !important;
+}
+
+.profile-right-select {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+
+    padding-left: 34px !important;
+
+    background-repeat: no-repeat !important;
+    background-position: left 10px center !important;
+    background-size: 12px 12px !important;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' fill='none' stroke='%23777' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg>") !important;
+}

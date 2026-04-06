@@ -1,4 +1,3 @@
-
 <?php
 require_once __DIR__ . '/config/config.php';
 
@@ -239,41 +238,6 @@ foreach ($profileFields as $k => $cfg) {
         bindProfileButtons();
     }
 
-    function openRightEditor() {
-        if (rightEditMode) return;
-
-        const rows = document.querySelectorAll('#profileRightFacts .profile-right-row');
-        if (!rows.length) return;
-
-        rightOriginalValues = {};
-        rightEditMode = true;
-
-        rows.forEach(function(row) {
-            const field = row.getAttribute('data-field');
-            const label = row.getAttribute('data-label') || '';
-            const valueEl = row.querySelector('.profile-right-value');
-            const currentValue = valueEl ? valueEl.textContent.trim() : '';
-
-            rightOriginalValues[field] = currentValue === 'לא מולא' ? '' : currentValue;
-
-            row.innerHTML = `
-            <span class="profile-right-label">${escapeHtml(label)}:</span>
-            <input type="text" class="profile-right-input js-right-input" data-field="${escapeHtml(field)}" value="${escapeHtml(rightOriginalValues[field])}">
-        `;
-        });
-
-        const factsBox = document.getElementById('profileRightFacts');
-        if (factsBox && !factsBox.querySelector('.profile-right-edit-actions')) {
-            factsBox.insertAdjacentHTML('beforeend', `
-            <div class="profile-right-edit-actions">
-                <button type="button" class="profile-right-save-btn" id="saveRightFieldsBtn">שמור</button>
-                <button type="button" class="profile-right-cancel-btn" id="cancelRightFieldsBtn">ביטול</button>
-            </div>
-        `);
-        }
-
-        bindProfileButtons();
-    }
 
     function bindProfileButtons() {
         document.querySelectorAll('.edit-btn').forEach(function(btn) {
@@ -422,4 +386,78 @@ foreach ($profileFields as $k => $cfg) {
     document.addEventListener('DOMContentLoaded', function() {
         bindProfileButtons();
     });
+
+
+    function openRightEditor() {
+        if (rightEditMode) return;
+
+        const rows = document.querySelectorAll('#profileRightFacts .profile-right-row');
+        if (!rows.length) return;
+
+        rightOriginalValues = {};
+        rightEditMode = true;
+
+        const selectOptionsMap = {
+            Gender: ['', 'זכר', 'נקבה'],
+            Smoking: ['', 'לא מעשן', 'מעשן', 'מעשן לפעמים'],
+            Marital_Status: ['', 'רווק/ה', 'גרוש/ה', 'אלמן/ה', 'פרוד/ה'],
+            Children: ['', 'אין', 'יש'],
+            Vegitrain_Str: ['', 'לא', 'כן'],
+            Area: ['', 'צפון', 'מרכז', 'דרום', 'ירושלים', 'שרון', 'שפלה'],
+            Looking_For: ['', 'קשר רציני', 'נישואין', 'חברות', 'לא יודע/ת עדיין']
+        };
+
+        function buildSelectHtml(field, currentValue) {
+            const options = selectOptionsMap[field];
+            if (!options) return '';
+
+            let html = '<select class="profile-right-select js-right-input" data-field="' + escapeHtml(field) + '">';
+
+            options.forEach(function(optionValue) {
+                const optionLabel = optionValue === '' ? 'בחר' : optionValue;
+                const selected = String(optionValue) === String(currentValue) ? ' selected' : '';
+                html += '<option value="' + escapeHtml(optionValue) + '"' + selected + '>' + escapeHtml(optionLabel) + '</option>';
+            });
+
+            html += '</select>';
+            return html;
+        }
+
+        rows.forEach(function(row) {
+            const field = row.getAttribute('data-field');
+            const label = row.getAttribute('data-label') || '';
+            const valueEl = row.querySelector('.profile-right-value');
+            const currentValue = valueEl ? valueEl.textContent.trim() : '';
+
+            rightOriginalValues[field] = currentValue === 'לא מולא' ? '' : currentValue;
+
+            const selectHtml = buildSelectHtml(field, rightOriginalValues[field]);
+
+            if (selectHtml !== '') {
+                row.innerHTML =
+                    '<span class="profile-right-label">' + escapeHtml(label) + ':</span>' +
+                    '<span class="profile-right-edit-control">' +
+                    selectHtml +
+                    '</span>';
+            } else {
+                row.innerHTML =
+                    '<span class="profile-right-label">' + escapeHtml(label) + ':</span>' +
+                    '<span class="profile-right-edit-control">' +
+                    '<input type="text" class="profile-right-input js-right-input" data-field="' + escapeHtml(field) + '" value="' + escapeHtml(rightOriginalValues[field]) + '">' +
+                    '</span>';
+            }
+        });
+
+        const factsBox = document.getElementById('profileRightFacts');
+        if (factsBox && !factsBox.querySelector('.profile-right-edit-actions')) {
+            factsBox.insertAdjacentHTML('beforeend',
+                '<div class="profile-right-edit-actions">' +
+                '<button type="button" class="profile-right-save-btn" id="saveRightFieldsBtn">שמור</button>' +
+                '<button type="button" class="profile-right-cancel-btn" id="cancelRightFieldsBtn">ביטול</button>' +
+                '</div>'
+            );
+        }
+
+        bindProfileButtons();
+    }
 </script>
