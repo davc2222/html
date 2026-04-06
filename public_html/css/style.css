@@ -2709,3 +2709,105 @@ width: 180px;
     border-radius: 50%;
     object-fit: cover;
 }
+
+.menu-link {
+    position: relative;
+}
+
+.menu-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: #d91f4f;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+/* =========================
+   PROFILE LAYOUT
+========================= */
+
+.profile-container {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+}
+
+/* צד שמאל */
+.profile-left {
+    width: 260px;
+    text-align: center;
+}
+
+/* תמונה */
+.profile-left img {
+    width: 140px;
+    height: 140px;
+    border-radius: 20px;
+    object-fit: cover;
+}
+
+/* שם */
+.profile-left h2 {
+    margin-top: 10px;
+    font-size: 20px;
+}
+
+/* כפתור */
+.profile-left .send-msg-btn {
+    margin-top: 10px;
+    background: #ff4d6d;
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 20px;
+    display: inline-block;
+}
+
+/* פרטים קטנים */
+.profile-left .profile-details {
+    margin-top: 15px;
+    text-align: right;
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+/* =========================
+   צד ימין
+========================= */
+
+.profile-right {
+    flex: 1;
+}
+
+/* בלוק */
+.profile-section {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+/* כותרת */
+.profile-section-title {
+    font-weight: bold;
+    font-size: 16px;
+    margin-bottom: 6px;
+}
+
+/* תוכן */
+.profile-section-content {
+    color: #555;
+    font-size: 14px;
+}
+
+/* לא מולא */
+.profile-empty {
+    color: #aaa;
+}

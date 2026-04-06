@@ -46,19 +46,20 @@ if ($chatViewerId > 0) {
 }
 ?>
 
-<div class="chat-modal-overlay" id="chatOverlay" style="display:none;"></div>
-
-<div class="chat-window" id="chatWindow" style="display:none;">
+<div class="chat-window" id="chatWindow" hidden>
     <div class="chat-window-header">
         <div class="chat-window-user">
             <img id="chatTargetImage" class="chat-window-avatar" src="/images/no_photo.jpg" alt="">
+
             <div class="chat-window-user-text">
-                <div id="chatTargetName" class="chat-window-name">צ'אט</div>
+                <a id="chatTargetNameLink" class="chat-window-name-link" href="#">
+                    <div id="chatTargetName" class="chat-window-name">צ'אט</div>
+                </a>
                 <div id="chatHeaderTitle" class="chat-window-subtitle">היסטוריית הודעות</div>
             </div>
         </div>
 
-        <button type="button" class="chat-window-close" onclick="closeChat()">✕</button>
+        <button type="button" class="chat-window-close" id="chatCloseBtn">✕</button>
     </div>
 
     <div class="chat-window-body" id="chatMessages"></div>
@@ -80,18 +81,23 @@ if ($chatViewerId > 0) {
 </div>
 
 <style>
-    .chat-modal-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.18);
-        z-index: 9998;
+    /* =========================
+   בסיס
+========================= */
+
+    .chat-window[hidden] {
+        display: none !important;
     }
+
+    /* =========================
+   חלון ראשי
+========================= */
 
     .chat-window {
         position: fixed;
         right: 24px;
         bottom: 24px;
-        width: 360px;
+        width: 380px;
         max-width: calc(100vw - 24px);
         height: 520px;
         background: #fff;
@@ -104,13 +110,19 @@ if ($chatViewerId > 0) {
         direction: rtl;
     }
 
+    /* =========================
+   HEADER
+========================= */
+
     .chat-window-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 14px 14px 10px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.14);
         background: linear-gradient(135deg, #d91f4f, #b9153f);
+        border-top-right-radius: 18px;
+        border-top-left-radius: 18px;
+        overflow: hidden;
     }
 
     .chat-window-user {
@@ -133,6 +145,19 @@ if ($chatViewerId > 0) {
         min-width: 0;
     }
 
+    /* לינק לשם */
+    .chat-window-name-link {
+        color: inherit;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .chat-window-name-link:hover .chat-window-name {
+        text-decoration: underline;
+        cursor: pointer;
+    }
+
+    /* שם */
     .chat-window-name {
         font-size: 16px;
         font-weight: 700;
@@ -142,14 +167,16 @@ if ($chatViewerId > 0) {
         text-overflow: ellipsis;
     }
 
+    /* "מקליד..." */
     .chat-window-subtitle {
         min-height: 18px;
         font-size: 12px;
         color: #fff;
         margin-top: 2px;
-        opacity: 0.96;
+        opacity: 0.95;
     }
 
+    /* כפתור סגירה */
     .chat-window-close {
         border: none;
         background: transparent;
@@ -161,12 +188,89 @@ if ($chatViewerId > 0) {
         border-radius: 50%;
     }
 
+    /* =========================
+   BODY (הודעות)
+========================= */
+
     .chat-window-body {
         flex: 1;
         overflow-y: auto;
         background: #f7f7f8;
         padding: 14px;
     }
+
+    /* אין הודעות */
+    .cw-empty {
+        text-align: center;
+        color: #777;
+        padding: 24px 10px;
+        font-size: 14px;
+    }
+
+    /* שורה */
+    .cw-row {
+        display: flex;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    /* שלי */
+    .cw-row-me {
+        justify-content: flex-start;
+    }
+
+    /* של השני */
+    .cw-row-other {
+        justify-content: flex-end;
+    }
+
+    /* עטיפה */
+    .cw-bubble-wrap {
+        max-width: 78%;
+    }
+
+    /* בועה */
+    .cw-bubble {
+        padding: 10px 12px;
+        border-radius: 16px;
+        line-height: 1.55;
+        word-break: break-word;
+        white-space: pre-wrap;
+        font-size: 14px;
+        color: #222;
+    }
+
+    /* שלי */
+    .cw-row-me .cw-bubble {
+        background: #e5e7eb;
+        border-bottom-left-radius: 6px;
+    }
+
+    /* של השני */
+    .cw-row-other .cw-bubble {
+        background: #ffd7e2;
+        border-bottom-right-radius: 6px;
+    }
+
+    /* זמן */
+    .cw-time {
+        margin-top: 4px;
+        font-size: 11px;
+        color: #888;
+    }
+
+    /* יישור זמן */
+    .cw-row-me .cw-time {
+        text-align: right;
+    }
+
+    .cw-row-other .cw-time {
+        text-align: left;
+    }
+
+    /* =========================
+   FOOTER (שליחה)
+========================= */
 
     .chat-window-footer {
         border-top: 1px solid #ececec;
@@ -203,6 +307,10 @@ if ($chatViewerId > 0) {
         cursor: pointer;
     }
 
+    /* =========================
+   STATUS
+========================= */
+
     .chat-window-status {
         min-height: 18px;
         padding: 0 12px 10px;
@@ -211,63 +319,9 @@ if ($chatViewerId > 0) {
         background: #fff;
     }
 
-    .cw-empty {
-        text-align: center;
-        color: #777;
-        padding: 24px 10px;
-        font-size: 14px;
-    }
-
-    .cw-row {
-        display: flex;
-        margin-bottom: 10px;
-    }
-
-    .cw-row-me {
-        justify-content: flex-start;
-    }
-
-    .cw-row-other {
-        justify-content: flex-end;
-    }
-
-    .cw-bubble-wrap {
-        max-width: 78%;
-    }
-
-    .cw-bubble {
-        padding: 10px 12px;
-        border-radius: 16px;
-        line-height: 1.55;
-        word-break: break-word;
-        white-space: pre-wrap;
-        font-size: 14px;
-        color: #222;
-    }
-
-    .cw-row-me .cw-bubble {
-        background: #e5e7eb;
-        border-bottom-left-radius: 6px;
-    }
-
-    .cw-row-other .cw-bubble {
-        background: #ffd7e2;
-        border-bottom-right-radius: 6px;
-    }
-
-    .cw-time {
-        margin-top: 4px;
-        font-size: 11px;
-        color: #888;
-    }
-
-    .cw-row-me .cw-time {
-        text-align: right;
-    }
-
-    .cw-row-other .cw-time {
-        text-align: left;
-    }
+    /* =========================
+   מובייל
+========================= */
 
     @media (max-width: 768px) {
         .chat-window {
@@ -287,9 +341,10 @@ if ($chatViewerId > 0) {
         image: <?= json_encode($chatViewerImage, JSON_UNESCAPED_UNICODE) ?>
     };
 
-  if (typeof window.currentChatUserId === 'undefined') {
-    window.currentChatUserId = 0;
-}
+    if (typeof window.currentChatUserId === 'undefined') {
+        window.currentChatUserId = 0;
+    }
+
     let typingStopTimer = null;
     let typingHeartbeatTimer = null;
     let typingPollTimer = null;
@@ -314,19 +369,38 @@ if ($chatViewerId > 0) {
 
         messagesMarked = false;
 
-        document.getElementById('chatTargetName').textContent = userName || 'משתמש';
-        document.getElementById('chatTargetImage').src = userImage || '/images/no_photo.jpg';
-        document.getElementById('chatStatus').textContent = '';
-        document.getElementById('chatText').value = '';
+        const targetName = document.getElementById('chatTargetName');
+        const targetNameLink = document.getElementById('chatTargetNameLink');
+        const targetImage = document.getElementById('chatTargetImage');
+        const statusBox = document.getElementById('chatStatus');
+        const textBox = document.getElementById('chatText');
+        const box = document.getElementById('chatMessages');
+        const win = document.getElementById('chatWindow');
+
+        if (targetName) {
+            targetName.textContent = userName || 'משתמש';
+        }
+
+        if (targetNameLink) {
+            targetNameLink.href = '/?page=profile&id=' + encodeURIComponent(currentChatUserId);
+        }
+
+        if (targetImage) {
+            targetImage.src = userImage || '/images/no_photo.jpg';
+        }
+
+        if (statusBox) statusBox.textContent = '';
+        if (textBox) textBox.value = '';
         setChatHeaderTyping(false);
 
-        const box = document.getElementById('chatMessages');
         if (box) {
             box.dataset.loadedOnce = '';
         }
 
-        document.getElementById('chatOverlay').style.display = 'block';
-        document.getElementById('chatWindow').style.display = 'flex';
+        if (win) {
+            win.hidden = false;
+            win.style.display = 'flex';
+        }
 
         loadChatMessages();
         startChatPolling();
@@ -336,9 +410,20 @@ if ($chatViewerId > 0) {
         stopChatPolling();
         clearTypingState();
 
-        document.getElementById('chatOverlay').style.display = 'none';
-        document.getElementById('chatWindow').style.display = 'none';
-        document.getElementById('chatStatus').textContent = '';
+        const win = document.getElementById('chatWindow');
+        const statusBox = document.getElementById('chatStatus');
+        const textBox = document.getElementById('chatText');
+        const messagesBox = document.getElementById('chatMessages');
+
+        if (win) {
+            win.hidden = true;
+            win.style.display = 'none';
+        }
+
+        if (statusBox) statusBox.textContent = '';
+        if (textBox) textBox.value = '';
+        if (messagesBox) messagesBox.innerHTML = '';
+
         setChatHeaderTyping(false);
         currentChatUserId = 0;
         messagesMarked = false;
@@ -375,8 +460,10 @@ if ($chatViewerId > 0) {
 
         const textBox = document.getElementById('chatText');
         const statusBox = document.getElementById('chatStatus');
-        const text = textBox.value.trim();
 
+        if (!textBox || !statusBox) return;
+
+        const text = textBox.value.trim();
         if (!text) return;
 
         statusBox.textContent = 'שולח...';
@@ -518,10 +605,20 @@ if ($chatViewerId > 0) {
 
     document.addEventListener('DOMContentLoaded', function() {
         const textBox = document.getElementById('chatText');
-        const overlay = document.getElementById('chatOverlay');
+        const win = document.getElementById('chatWindow');
+        const closeBtn = document.getElementById('chatCloseBtn');
 
-        if (overlay) {
-            overlay.addEventListener('click', closeChat);
+        if (win) {
+            win.hidden = true;
+            win.style.display = 'none';
+        }
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                closeChat();
+            });
         }
 
         if (textBox) {

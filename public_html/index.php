@@ -62,6 +62,13 @@ $page = $_GET['page'] ?? 'home';
     }
     ?>
 
+    <?php if (!empty($_SESSION['user_id'])): ?>
+        <?php include __DIR__ . '/includes/chat_windows.php'; ?>
+    <?php endif; ?>
+
+    <?php if (!empty($_SESSION['user_id'])): ?>
+        <?php include __DIR__ . '/includes/chat_windows.php'; ?>
+    <?php endif; ?>
 </body>
 
 </html>

@@ -45,6 +45,14 @@ $menu = [
 
                 <span class="menu-link-icon"><?= $item['icon'] ?></span>
                 <span class="menu-link-text"><?= htmlspecialchars($item['label'], ENT_QUOTES, 'UTF-8') ?></span>
+
+                <?php if ($sessionUserId > 0 && $p === 'messages'): ?>
+                    <span id="headerMessagesBadge" class="menu-badge" style="display:none;">0</span>
+                <?php endif; ?>
+
+                <?php if ($sessionUserId > 0 && $p === 'views'): ?>
+                    <span id="headerViewsBadge" class="menu-badge" style="display:none;">0</span>
+                <?php endif; ?>
             </a>
         <?php endforeach; ?>
     </nav>
@@ -56,7 +64,7 @@ $menu = [
             </span>
 
             <a href="?page=profile&id=<?= $sessionUserId ?>&edit=1" class="header-avatar-link">
-                <img src="<?= htmlspecialchars($headerAvatar, ENT_QUOTES, 'UTF-8') ?>" class="header-avatar">
+                <img src="<?= htmlspecialchars($headerAvatar, ENT_QUOTES, 'UTF-8') ?>" class="header-avatar" alt="תמונת משתמש">
             </a>
 
             <a href="logout.php" class="auth-btn logout-btn">התנתקות</a>
@@ -67,3 +75,38 @@ $menu = [
     </div>
 
 </header>
+
+<?php if ($sessionUserId > 0): ?>
+    <script>
+        function updateHeaderBadge(el, count) {
+            if (!el) return;
+
+            count = Number(count || 0);
+
+            if (count > 0) {
+                el.textContent = count > 99 ? '99+' : String(count);
+                el.style.display = 'inline-flex';
+            } else {
+                el.textContent = '0';
+                el.style.display = 'none';
+            }
+        }
+
+        function loadHeaderCounts() {
+            fetch('/get_header_counts.php')
+                .then(function(res) {
+                    return res.json();
+                })
+                .then(function(data) {
+                    updateHeaderBadge(document.getElementById('headerMessagesBadge'), data.messages || 0);
+                    updateHeaderBadge(document.getElementById('headerViewsBadge'), data.views || 0);
+                })
+                .catch(function() {});
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadHeaderCounts();
+            setInterval(loadHeaderCounts, 5000);
+        });
+    </script>
+<?php endif; ?>
