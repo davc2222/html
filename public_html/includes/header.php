@@ -110,6 +110,9 @@ $menu = [
                 <?php if ($sessionUserId > 0 && $p === 'messages'): ?>
                     <span id="headerMessagesBadge" class="menu-badge" style="display:none;">0</span>
                 <?php endif; ?>
+                <?php if ($sessionUserId > 0 && $p === 'inbox'): ?>
+                    <span id="headerInboxBadge" class="menu-badge" style="display:none;">0</span>
+                <?php endif; ?>
 
                 <?php if ($sessionUserId > 0 && $p === 'views'): ?>
                     <span id="headerViewsBadge" class="menu-badge" style="display:none;">0</span>
@@ -155,6 +158,16 @@ $menu = [
             .then(function(data) {
                 const msgBadge = document.getElementById('headerMessagesBadge');
                 const viewsBadge = document.getElementById('headerViewsBadge');
+                const inboxBadge = document.getElementById('headerInboxBadge');
+
+                if (inboxBadge) {
+                    if (Number(data.messages) > 0) {
+                        inboxBadge.textContent = data.messages;
+                        inboxBadge.style.display = 'inline-flex';
+                    } else {
+                        inboxBadge.style.display = 'none';
+                    }
+                }
 
                 if (msgBadge) {
                     if (Number(data.messages) > 0) {

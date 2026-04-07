@@ -85,5 +85,5 @@ $_SESSION['user_email'] = $user['Email'];
 ========================= */
 //header('Location: /?page=profile&id=' . (int)$user['Id']);
 
-header('Location: /?page=search');
+header('Location: /?page=יhome');
 exit;

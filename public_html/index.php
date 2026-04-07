@@ -57,6 +57,10 @@ $page = $_GET['page'] ?? 'home';
             include 'register.php';
             break;
 
+        case 'inbox':
+            include 'inbox.php';
+            break;
+
         default:
             include 'home.php';
             break;
