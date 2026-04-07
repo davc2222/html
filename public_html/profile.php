@@ -275,15 +275,14 @@ $rightSelectOptionsJson = json_encode($rightSelectOptions, JSON_UNESCAPED_UNICOD
                     <div class="profile-gallery-grid">
 
                         <?php if ($isOwner): ?>
-                            <form action="/upload_photo.php" method="POST" enctype="multipart/form-data" id="profileUploadForm" class="profile-upload-form">
-                                <label class="profile-gallery-upload-tile">
-                                    <span class="profile-gallery-upload-icon">＋</span>
-                                    <span class="profile-gallery-upload-text">הוספת תמונה</span>
-                                    <input type="file" name="photo" accept="image/*" hidden onchange="document.getElementById('profileUploadForm').submit();">
+                            <form action="/upload_photo.php" method="POST" enctype="multipart/form-data" class="profile-upload-form">
+                                <label class="profile-gallery-upload-btn">
+                                    <span class="profile-gallery-upload-btn-icon">＋</span>
+                                    <span class="profile-gallery-upload-btn-text">הוסף תמונה</span>
+                                    <input type="file" name="photo" accept="image/*" onchange="this.form.submit()" hidden>
                                 </label>
                             </form>
                         <?php endif; ?>
-
                         <?php foreach ($pics as $index => $pic): ?>
                             <?php
                             $picNum = (int)$pic['Pic_Num'];
