@@ -78,12 +78,15 @@ $isDefaultHeaderAvatar =
     str_contains($headerAvatar, 'default_male.svg') ||
     str_contains($headerAvatar, 'default_female.svg');
 
+
+
 $menu = [
     'home'            => ['label' => 'בית', 'icon' => '🏠'],
     'search'          => ['label' => 'חיפוש', 'icon' => '🔎'],
     'advanced_search' => ['label' => 'חיפוש מתקדם', 'icon' => '✨'],
     'messages'        => ['label' => 'הודעות', 'icon' => '💌'],
-    'views'           => ['label' => 'צפיות', 'icon' => '👁']
+    'inbox'           => ['label' => 'תיבת דואר', 'icon' => '💬'], // 👈 הוספה
+    'views' => ['label' => 'צפיות', 'icon' => '👀']
 ];
 ?>
 
@@ -141,3 +144,41 @@ $menu = [
     </div>
 
 </header>
+
+
+<script>
+    function updateHeaderBadges() {
+        fetch('/get_header_counts.php')
+            .then(function(res) {
+                return res.json();
+            })
+            .then(function(data) {
+                const msgBadge = document.getElementById('headerMessagesBadge');
+                const viewsBadge = document.getElementById('headerViewsBadge');
+
+                if (msgBadge) {
+                    if (Number(data.messages) > 0) {
+                        msgBadge.textContent = data.messages;
+                        msgBadge.style.display = 'inline-flex';
+                    } else {
+                        msgBadge.style.display = 'none';
+                    }
+                }
+
+                if (viewsBadge) {
+                    if (Number(data.views) > 0) {
+                        viewsBadge.textContent = data.views;
+                        viewsBadge.style.display = 'inline-flex';
+                    } else {
+                        viewsBadge.style.display = 'none';
+                    }
+                }
+            })
+            .catch(function() {});
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        updateHeaderBadges();
+        setInterval(updateHeaderBadges, 3000);
+    });
+</script>

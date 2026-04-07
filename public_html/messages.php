@@ -203,7 +203,10 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </div>
 
                         <p>
-                            <a href="#" class="view-card-link open-chat-btn" data-user-id="<?= $otherUserId ?>">
+                            <a
+                                href="#"
+                                class="view-card-link"
+                                onclick="openMessageModal(<?= (int)$otherUserId ?>, '<?= h($name) ?>', '<?= h($img) ?>'); return false;">
                                 פתח צ'אט
                             </a>
                             |

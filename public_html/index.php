@@ -67,9 +67,7 @@ $page = $_GET['page'] ?? 'home';
         <?php include __DIR__ . '/includes/chat_windows.php'; ?>
     <?php endif; ?>
 
-    <?php if (!empty($_SESSION['user_id'])): ?>
-        <?php include __DIR__ . '/includes/chat_windows.php'; ?>
-    <?php endif; ?>
+   
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.5/js/lightbox.min.js"></script>
     <script>
