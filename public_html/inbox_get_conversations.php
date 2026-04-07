@@ -141,7 +141,9 @@ try {
             <div class='inbox-conversation-date'>{$dateHtml}</div>
 
             <div class='inbox-conversation-main'>
-                <img src='{$avatarHtml}' alt='{$displayName}' class='inbox-conversation-avatar'>
+           <a href='/?page=profile&id={$userId}' onclick='event.stopPropagation()'>
+    <img src='{$avatarHtml}' alt='{$displayName}' class='inbox-conversation-avatar'>
+</a>
 
                 <div class='inbox-conversation-content'>
                     <div class='inbox-conversation-name'>{$displayName}</div>
