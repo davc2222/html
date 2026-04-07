@@ -3048,3 +3048,524 @@ footer {
     flex: 1 1 auto !important;
     min-width: 0 !important;
 }
+
+/* ==== PROFILE GALLERY FINAL ==== */
+/* ===============================
+   PROFILE GALLERY
+   =============================== */
+
+.profile-gallery-block {
+    margin-top: 10px;
+}
+
+.profile-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    width: 100%;
+}
+
+.profile-upload-form {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    margin: 0 0 6px;
+}
+
+.profile-gallery-upload-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 170px;
+    min-height: 82px;
+    padding: 12px 16px;
+    box-sizing: border-box;
+    border: none;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #ff5f7f, #ff7f50);
+    color: #fff;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.2s ease;
+    box-shadow: 0 8px 20px rgba(255, 95, 127, 0.22);
+}
+
+.profile-gallery-upload-tile:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px rgba(255, 95, 127, 0.28);
+}
+
+.profile-gallery-upload-icon {
+    font-size: 28px;
+    margin-bottom: 6px;
+    font-weight: 700;
+}
+
+.profile-gallery-upload-text {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.profile-gallery-item {
+    position: relative;
+    min-width: 0;
+}
+
+.profile-gallery-link {
+    display: block;
+    text-decoration: none;
+}
+
+.profile-gallery-thumb {
+    width: 100%;
+    min-width: 0;
+    height: 148px;
+    object-fit: cover;
+    display: block;
+    border-radius: 12px;
+    background: #ececec;
+}
+
+.profile-gallery-actions {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 3;
+}
+
+.profile-photo-number-btn {
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.72);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.profile-photo-main-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 3;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(214, 69, 69, 0.95);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.profile-photo-menu {
+    display: none;
+    position: absolute;
+    top: 40px;
+    right: 0;
+    min-width: 150px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+    padding: 6px;
+    z-index: 20;
+}
+
+.profile-photo-menu-form {
+    margin: 0;
+}
+
+.profile-photo-menu-btn {
+    width: 100%;
+    border: none;
+    background: transparent;
+    text-align: right;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #222;
+    font-weight: 600;
+}
+
+.profile-photo-menu-btn:hover {
+    background: #f5f5f5;
+}
+
+.profile-photo-menu-btn-delete {
+    color: #c62828;
+}
+
+@media (max-width: 900px) {
+    .profile-gallery-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 520px) {
+    .profile-gallery-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-gallery-thumb {
+        height: 220px;
+    }
+}
+
+
+.profile-btn-main {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 4;
+}
+
+.profile-btn-main button {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.72);
+    color: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.profile-btn-delete {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 4;
+}
+
+.profile-btn-delete button {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(198, 40, 40, 0.9);
+    color: #fff;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.profile-gallery-grid>* {
+    min-width: 0;
+}
+
+/* ===== PROFILE GALLERY FINAL FIX ===== */
+
+.profile-gallery-block {
+    width: 100%;
+}
+
+.profile-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    align-items: start;
+}
+
+.profile-upload-form {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 6px;
+}
+
+.profile-gallery-upload-tile {
+    width: 154px;
+    min-height: 106px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #ff5c7c, #ff7a59);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    text-align: center;
+    font-weight: 700;
+}
+
+.profile-gallery-upload-icon {
+    font-size: 34px;
+    line-height: 1;
+}
+
+.profile-gallery-upload-text {
+    font-size: 18px;
+    line-height: 1.2;
+}
+
+.profile-gallery-item {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #f3f3f3;
+    min-height: 135px;
+}
+
+.profile-gallery-link {
+    display: block;
+    width: 100%;
+    height: 135px;
+}
+
+.profile-gallery-thumb {
+    display: block;
+    width: 100%;
+    height: 135px;
+    object-fit: cover;
+    border-radius: 16px;
+}
+
+.profile-photo-main-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 3;
+    background: #ff5c5c;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: 999px;
+}
+
+.profile-gallery-actions {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 4;
+}
+
+.profile-photo-number-btn {
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(20, 20, 20, 0.86);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.profile-photo-menu {
+    display: none;
+    position: absolute;
+    top: 42px;
+    left: 0;
+    min-width: 140px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+    padding: 8px;
+}
+
+.profile-photo-menu-form {
+    margin: 0;
+}
+
+.profile-photo-menu-form+.profile-photo-menu-form {
+    margin-top: 8px;
+}
+
+.profile-photo-menu-btn {
+    width: 100%;
+    border: none;
+    background: #f4f4f4;
+    color: #222;
+    border-radius: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.profile-photo-menu-btn:hover {
+    background: #ececec;
+}
+
+.profile-photo-menu-btn-delete {
+    background: #ffe3e3;
+    color: #b30021;
+}
+
+.profile-photo-menu-btn-delete:hover {
+    background: #ffd2d2;
+}
+
+@media (max-width: 900px) {
+    .profile-gallery-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 560px) {
+    .profile-gallery-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-gallery-link,
+    .profile-gallery-thumb,
+    .profile-gallery-item {
+        height: 180px;
+        min-height: 180px;
+    }
+}
+
+.profile-photo-main-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    left: auto;
+    z-index: 3;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    max-width: 80px;
+    white-space: nowrap;
+
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: #ff5c5c;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+}
+.profile-set-main-btn {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    z-index: 10;
+}
+
+.profile-set-main-btn button {
+    background: rgba(255, 77, 109, 0.95);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+/* ===== FINAL GALLERY FIX ===== */
+
+.profile-gallery-item {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    min-height: 180px;
+    background: #f3f3f3;
+}
+
+.profile-gallery-link {
+    display: block;
+    width: 100%;
+    height: 180px;
+}
+
+.profile-gallery-thumb {
+    display: block;
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 16px;
+}
+
+/* ראשית - באמצע על התמונה */
+.profile-photo-main-badge {
+    position: absolute;
+    left: 50%;
+    bottom: 10px;
+    top: auto;
+    right: auto;
+    transform: translateX(-50%);
+    z-index: 12;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    white-space: nowrap;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(255, 77, 109, 0.95);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+/* קבע כראשית */
+.profile-set-main-btn {
+    position: absolute;
+    left: 50%;
+    bottom: 10px;
+    right: auto;
+    top: auto;
+    transform: translateX(-50%);
+    z-index: 13;
+}
+
+.profile-set-main-btn button {
+    background: rgba(255, 77, 109, 0.95);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+/* מספר התמונה */
+.profile-gallery-actions {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    left: auto;
+    z-index: 14;
+}
+
+.profile-photo-number-btn {
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(20, 20, 20, 0.86);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* אם רוצים עוד יותר גבוה */
+@media (min-width: 701px) {
+    .profile-gallery-item {
+        min-height: 210px;
+    }
+
+    .profile-gallery-link,
+    .profile-gallery-thumb {
+        height: 210px;
+    }
+}

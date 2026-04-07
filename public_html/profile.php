@@ -14,6 +14,15 @@ function e($v) {
 $id = (int)($_GET['id'] ?? 0);
 $viewerId = (int)($_SESSION['user_id'] ?? 0);
 
+if ($id <= 0) {
+    $id = $viewerId;
+}
+
+if ($id <= 0) {
+    echo "אין מזהה משתמש";
+    exit;
+}
+
 $stmt = $pdo->prepare("SELECT * FROM users_profile WHERE Id = :id LIMIT 1");
 $stmt->execute([':id' => $id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -75,11 +84,22 @@ $profileImage = '/images/no_photo.jpg';
 $stmt = $pdo->prepare("SELECT Pic_Name FROM user_pics WHERE Id = :id AND Main_Pic = 1 LIMIT 1");
 $stmt->execute([':id' => $id]);
 if ($pic = $stmt->fetchColumn()) {
-    $profileImage = '/uploads/' . $pic;
+    $profileImage = '/uploads/' . ltrim((string)$pic, '/');
+} else {
+    $stmt = $pdo->prepare("SELECT Pic_Name FROM user_pics WHERE Id = :id ORDER BY Pic_Num ASC LIMIT 1");
+    $stmt->execute([':id' => $id]);
+    if ($pic = $stmt->fetchColumn()) {
+        $profileImage = '/uploads/' . ltrim((string)$pic, '/');
+    }
 }
 
 /* גלריה */
-$stmt = $pdo->prepare("SELECT Pic_Num, Pic_Name, Main_Pic FROM user_pics WHERE Id = :id ORDER BY Main_Pic DESC, Pic_Num");
+$stmt = $pdo->prepare("
+    SELECT Pic_Num, Pic_Name, Main_Pic
+    FROM user_pics
+    WHERE Id = :id
+    ORDER BY Main_Pic DESC, Pic_Num
+");
 $stmt->execute([':id' => $id]);
 $pics = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -112,7 +132,6 @@ foreach ($right as $field => $cfg) {
         continue;
     }
 
-    /* הגנה בסיסית על שמות טבלאות/עמודות */
     if (!preg_match('/^[A-Za-z0-9_]+$/', $table) || !preg_match('/^[A-Za-z0-9_]+$/', $column)) {
         $rightSelectOptions[$field] = [];
         continue;
@@ -145,6 +164,8 @@ foreach ($right as $field => $cfg) {
 $rightSelectOptionsJson = json_encode($rightSelectOptions, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 ?>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css">
+
 <div class="page-shell profile-shell">
     <div class="profile-layout">
 
@@ -153,7 +174,7 @@ $rightSelectOptionsJson = json_encode($rightSelectOptions, JSON_UNESCAPED_UNICOD
             <div class="profile-right-card">
 
                 <div class="profile-main-image-wrap">
-                    <img src="<?= e($profileImage) ?>" class="profile-main-image" alt="">
+                    <img src="<?= e($profileImage) ?>" class="profile-main-image" id="profileMainImage" alt="">
                 </div>
 
                 <h2 class="profile-main-title">
@@ -219,26 +240,94 @@ $rightSelectOptionsJson = json_encode($rightSelectOptions, JSON_UNESCAPED_UNICOD
                 </div>
             <?php endforeach; ?>
 
+            <div class="profile-left-card">
+                <div class="profile-gallery-block">
+                    <div class="profile-gallery-grid">
+
+                        <?php if ($isOwner): ?>
+                            <form action="/upload_photo.php" method="POST" enctype="multipart/form-data" id="profileUploadForm" class="profile-upload-form">
+                                <label class="profile-gallery-upload-tile">
+                                    <span class="profile-gallery-upload-icon">＋</span>
+                                    <span class="profile-gallery-upload-text">הוספת תמונה</span>
+                                    <input type="file" name="photo" accept="image/*" hidden onchange="document.getElementById('profileUploadForm').submit();">
+                                </label>
+                            </form>
+                        <?php endif; ?>
+
+                        <?php foreach ($pics as $index => $pic): ?>
+                            <?php
+                            $picNum = (int)$pic['Pic_Num'];
+                            $picUrl = '/uploads/' . ltrim((string)$pic['Pic_Name'], '/');
+                            $isMainPic = !empty($pic['Main_Pic']);
+                            $imgNo = $index + 1;
+                            ?>
+
+                            <div class="profile-gallery-item">
+                                <a
+                                    href="<?= e($picUrl) ?>"
+                                    data-lightbox="profile-gallery"
+                                    data-title="תמונה <?= $imgNo ?>"
+                                    class="profile-gallery-link js-gallery-link"
+                                    data-full="<?= e($picUrl) ?>">
+                                    <img src="<?= e($picUrl) ?>" alt="תמונה <?= $imgNo ?>" class="profile-gallery-thumb">
+                                </a>
+                                <?php if ($isOwner && !$isMainPic): ?>
+                                    <form action="/set_main_photo.php" method="POST" class="profile-set-main-btn">
+                                        <input type="hidden" name="pic_num" value="<?= $picNum ?>">
+                                        <button type="submit">קבע כראשית</button>
+                                    </form>
+                                <?php endif; ?>
+                                <?php if ($isMainPic): ?>
+                                    <div class="profile-photo-main-badge">ראשית</div>
+                                <?php endif; ?>
+
+                                <?php if ($isOwner): ?>
+                                    <div class="profile-gallery-actions">
+                                        <button
+                                            type="button"
+                                            class="profile-photo-number-btn"
+                                            onclick="togglePhotoMenu(<?= $picNum ?>)"
+                                            aria-label="אפשרויות תמונה <?= $imgNo ?>">
+                                            <?= $imgNo ?>
+                                        </button>
+
+                                        <div class="profile-photo-menu" id="photo-menu-<?= $picNum ?>">
+                                            <?php if (!$isMainPic): ?>
+                                                <form action="/set_main_photo.php" method="POST" class="profile-photo-menu-form">
+                                                    <input type="hidden" name="pic_num" value="<?= $picNum ?>">
+                                                    <button type="submit" class="profile-photo-menu-btn">קבע כראשית</button>
+                                                </form>
+
+                                                <form action="/delete_photo.php" method="POST" class="profile-photo-menu-form" onsubmit="return confirm('למחוק את התמונה?');">
+                                                    <input type="hidden" name="pic_num" value="<?= $picNum ?>">
+                                                    <button type="submit" class="profile-photo-menu-btn profile-photo-menu-btn-delete">מחק</button>
+                                                </form>
+                                            <?php else: ?>
+                                                <div class="profile-photo-menu-btn" style="cursor: default; color: #777;">
+                                                    תמונה ראשית
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+
+                    </div>
+                </div>
+            </div>
+
         </div>
 
     </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox.min.js"></script>
 <script>
     const profileRightSelectOptions = <?= $rightSelectOptionsJson ?>;
     let rightEditMode = false;
     let rightOriginalValues = {};
     let profileButtonsBound = false;
-
-    function setMainPic(id) {
-        fetch('/set_main_photo.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: 'pic_num=' + encodeURIComponent(id)
-        }).then(() => location.reload());
-    }
 
     function escapeHtml(str) {
         return String(str)
@@ -344,6 +433,20 @@ $rightSelectOptionsJson = json_encode($rightSelectOptions, JSON_UNESCAPED_UNICOD
                 </div>
             `);
         }
+    }
+
+    function togglePhotoMenu(picNum) {
+        document.querySelectorAll('.profile-photo-menu').forEach(function(menu) {
+            if (menu.id !== 'photo-menu-' + picNum) {
+                menu.style.display = 'none';
+            }
+        });
+
+        const currentMenu = document.getElementById('photo-menu-' + picNum);
+        if (!currentMenu) return;
+
+        currentMenu.style.display =
+            currentMenu.style.display === 'block' ? 'none' : 'block';
     }
 
     function bindProfileButtons() {
@@ -486,7 +589,25 @@ $rightSelectOptionsJson = json_encode($rightSelectOptions, JSON_UNESCAPED_UNICOD
                 }
 
                 openMessageModal(userId, userName, userImage);
+                return;
             }
+
+            if (!e.target.closest('.profile-photo-number-btn') &&
+                !e.target.closest('.profile-photo-menu')) {
+                document.querySelectorAll('.profile-photo-menu').forEach(function(menu) {
+                    menu.style.display = 'none';
+                });
+            }
+        });
+
+        document.querySelectorAll('.js-gallery-link').forEach(function(link) {
+            link.addEventListener('click', function() {
+                const full = this.getAttribute('data-full');
+                const mainImg = document.getElementById('profileMainImage');
+                if (full && mainImg) {
+                    mainImg.src = full;
+                }
+            });
         });
     }
 

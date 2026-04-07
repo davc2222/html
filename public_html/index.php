@@ -16,6 +16,7 @@ $page = $_GET['page'] ?? 'home';
     <meta charset="UTF-8">
     <title>LoveMatch</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.5/css/lightbox.min.css">
 </head>
 
 <body>
@@ -69,6 +70,15 @@ $page = $_GET['page'] ?? 'home';
     <?php if (!empty($_SESSION['user_id'])): ?>
         <?php include __DIR__ . '/includes/chat_windows.php'; ?>
     <?php endif; ?>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.5/js/lightbox.min.js"></script>
+    <script>
+        lightbox.option({
+            'resizeDuration': 200,
+            'wrapAround': true,
+            'albumLabel': 'תמונה %1 מתוך %2'
+        });
+    </script>
 </body>
 
 </html>
