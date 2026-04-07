@@ -9,16 +9,74 @@ require_once __DIR__ . '/../config/config.php';
 
 $page = $_GET['page'] ?? 'home';
 
-$sessionUserId   = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
+$sessionUserId   = (int)($_SESSION['user_id'] ?? 0);
 $sessionUserName = trim((string)($_SESSION['user_name'] ?? ($_SESSION['username'] ?? '')));
 
-$headerAvatar = '/images/no_photo.jpg';
+$headerAvatar = '/images/default_male.svg';
 
-if (!empty($_SESSION['user_main_pic'])) {
-    $headerAvatar = (string)$_SESSION['user_main_pic'];
-} elseif (!empty($_SESSION['user_image'])) {
-    $headerAvatar = '/images/' . $_SESSION['user_image'];
+/* =========================
+   1) fallback לפי מין
+   ========================= */
+if ($sessionUserId > 0) {
+    try {
+        $stmt = $pdo->prepare("
+            SELECT Gender_Str
+            FROM users_profile
+            WHERE Id = :id
+            LIMIT 1
+        ");
+        $stmt->execute([':id' => $sessionUserId]);
+
+        $gender = trim((string)$stmt->fetchColumn());
+
+        if ($gender === 'אישה') {
+            $headerAvatar = '/images/default_female.svg';
+        }
+    } catch (Throwable $e) {
+        $headerAvatar = '/images/default_male.svg';
+    }
 }
+
+/* =========================
+   2) תמונה אמיתית
+   ========================= */
+if ($sessionUserId > 0) {
+    try {
+        $stmt = $pdo->prepare("
+            SELECT Pic_Name
+            FROM user_pics
+            WHERE Id = :id
+              AND Main_Pic = 1
+              AND Pic_Status = 1
+            LIMIT 1
+        ");
+        $stmt->execute([':id' => $sessionUserId]);
+        $pic = $stmt->fetchColumn();
+
+        if (!$pic) {
+            $stmt = $pdo->prepare("
+                SELECT Pic_Name
+                FROM user_pics
+                WHERE Id = :id
+                  AND Pic_Status = 1
+                ORDER BY Main_Pic DESC, Pic_Num ASC
+                LIMIT 1
+            ");
+            $stmt->execute([':id' => $sessionUserId]);
+            $pic = $stmt->fetchColumn();
+        }
+
+        if ($pic) {
+            $headerAvatar = '/uploads/' . ltrim((string)$pic, '/');
+        }
+    } catch (Throwable $e) {
+        // נשאר fallback
+    }
+}
+
+$isDefaultHeaderAvatar =
+    str_contains($headerAvatar, 'default_male.svg') ||
+    str_contains($headerAvatar, 'default_female.svg');
 
 $menu = [
     'home'            => ['label' => 'בית', 'icon' => '🏠'],
@@ -53,60 +111,33 @@ $menu = [
                 <?php if ($sessionUserId > 0 && $p === 'views'): ?>
                     <span id="headerViewsBadge" class="menu-badge" style="display:none;">0</span>
                 <?php endif; ?>
+
             </a>
         <?php endforeach; ?>
     </nav>
 
     <div class="auth">
         <?php if ($sessionUserId > 0): ?>
+
             <span class="welcome-user">
                 שלום <?= htmlspecialchars($sessionUserName ?: 'משתמש', ENT_QUOTES, 'UTF-8') ?>
             </span>
 
-            <a href="?page=profile&id=<?= $sessionUserId ?>&edit=1" class="header-avatar-link">
-                <img src="<?= htmlspecialchars($headerAvatar, ENT_QUOTES, 'UTF-8') ?>" class="header-avatar" alt="תמונת משתמש">
+            <a href="/?page=profile&id=<?= $sessionUserId ?>&edit=1" class="header-avatar-link">
+                <img
+                    src="<?= htmlspecialchars($headerAvatar, ENT_QUOTES, 'UTF-8') ?>"
+                    class="header-avatar<?= $isDefaultHeaderAvatar ? ' header-avatar-default' : '' ?>"
+                    alt="תמונת משתמש">
             </a>
 
             <a href="logout.php" class="auth-btn logout-btn">התנתקות</a>
+
         <?php else: ?>
+
             <a href="?page=login" class="auth-btn">התחברות</a>
             <a href="?page=register" class="auth-btn">הרשמה</a>
+
         <?php endif; ?>
     </div>
 
 </header>
-
-<?php if ($sessionUserId > 0): ?>
-    <script>
-        function updateHeaderBadge(el, count) {
-            if (!el) return;
-
-            count = Number(count || 0);
-
-            if (count > 0) {
-                el.textContent = count > 99 ? '99+' : String(count);
-                el.style.display = 'inline-flex';
-            } else {
-                el.textContent = '0';
-                el.style.display = 'none';
-            }
-        }
-
-        function loadHeaderCounts() {
-            fetch('/get_header_counts.php')
-                .then(function(res) {
-                    return res.json();
-                })
-                .then(function(data) {
-                    updateHeaderBadge(document.getElementById('headerMessagesBadge'), data.messages || 0);
-                    updateHeaderBadge(document.getElementById('headerViewsBadge'), data.views || 0);
-                })
-                .catch(function() {});
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            loadHeaderCounts();
-            setInterval(loadHeaderCounts, 5000);
-        });
-    </script>
-<?php endif; ?>

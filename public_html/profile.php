@@ -79,18 +79,38 @@ if ($viewerId > 0 && !$isOwner) {
 }
 
 /* תמונה ראשית */
-$profileImage = '/images/no_photo.jpg';
+$genderValue = trim((string)($user['Gender_Str'] ?? ''));
+$isFemale = ($genderValue === 'אישה');
 
-$stmt = $pdo->prepare("SELECT Pic_Name FROM user_pics WHERE Id = :id AND Main_Pic = 1 LIMIT 1");
+$defaultProfileImage = $isFemale
+    ? '/images/default_female.svg'
+    : '/images/default_male.svg';
+$profileImage = $defaultProfileImage;
+
+/* ניסיון להביא תמונה אמיתית */
+$stmt = $pdo->prepare("
+    SELECT Pic_Name 
+    FROM user_pics 
+    WHERE Id = :id AND Main_Pic = 1 
+    LIMIT 1
+");
 $stmt->execute([':id' => $id]);
-if ($pic = $stmt->fetchColumn()) {
-    $profileImage = '/uploads/' . ltrim((string)$pic, '/');
-} else {
-    $stmt = $pdo->prepare("SELECT Pic_Name FROM user_pics WHERE Id = :id ORDER BY Pic_Num ASC LIMIT 1");
+$pic = $stmt->fetchColumn();
+
+if (!$pic) {
+    $stmt = $pdo->prepare("
+        SELECT Pic_Name 
+        FROM user_pics 
+        WHERE Id = :id 
+        ORDER BY Pic_Num ASC 
+        LIMIT 1
+    ");
     $stmt->execute([':id' => $id]);
-    if ($pic = $stmt->fetchColumn()) {
-        $profileImage = '/uploads/' . ltrim((string)$pic, '/');
-    }
+    $pic = $stmt->fetchColumn();
+}
+
+if ($pic) {
+    $profileImage = '/uploads/' . ltrim((string)$pic, '/');
 }
 
 /* גלריה */
@@ -174,7 +194,17 @@ $rightSelectOptionsJson = json_encode($rightSelectOptions, JSON_UNESCAPED_UNICOD
             <div class="profile-right-card">
 
                 <div class="profile-main-image-wrap">
-                    <img src="<?= e($profileImage) ?>" class="profile-main-image" id="profileMainImage" alt="">
+                    <a
+                        href="<?= e($profileImage) ?>"
+                        id="profileMainImageLink"
+                        class="profile-main-image-link"
+                        data-lightbox="profile-gallery"
+                        data-title="תמונה ראשית">
+
+                        <img src="<?= e($profileImage) ?>" class="profile-main-image" id="profileMainImage" alt="">
+
+                        <span class="profile-main-zoom">⌕</span>
+                    </a>
                 </div>
 
                 <h2 class="profile-main-title">
@@ -271,12 +301,7 @@ $rightSelectOptionsJson = json_encode($rightSelectOptions, JSON_UNESCAPED_UNICOD
                                     data-full="<?= e($picUrl) ?>">
                                     <img src="<?= e($picUrl) ?>" alt="תמונה <?= $imgNo ?>" class="profile-gallery-thumb">
                                 </a>
-                                <?php if ($isOwner && !$isMainPic): ?>
-                                    <form action="/set_main_photo.php" method="POST" class="profile-set-main-btn">
-                                        <input type="hidden" name="pic_num" value="<?= $picNum ?>">
-                                        <button type="submit">קבע כראשית</button>
-                                    </form>
-                                <?php endif; ?>
+
                                 <?php if ($isMainPic): ?>
                                     <div class="profile-photo-main-badge">ראשית</div>
                                 <?php endif; ?>
@@ -292,21 +317,19 @@ $rightSelectOptionsJson = json_encode($rightSelectOptions, JSON_UNESCAPED_UNICOD
                                         </button>
 
                                         <div class="profile-photo-menu" id="photo-menu-<?= $picNum ?>">
+
                                             <?php if (!$isMainPic): ?>
                                                 <form action="/set_main_photo.php" method="POST" class="profile-photo-menu-form">
                                                     <input type="hidden" name="pic_num" value="<?= $picNum ?>">
                                                     <button type="submit" class="profile-photo-menu-btn">קבע כראשית</button>
                                                 </form>
-
-                                                <form action="/delete_photo.php" method="POST" class="profile-photo-menu-form" onsubmit="return confirm('למחוק את התמונה?');">
-                                                    <input type="hidden" name="pic_num" value="<?= $picNum ?>">
-                                                    <button type="submit" class="profile-photo-menu-btn profile-photo-menu-btn-delete">מחק</button>
-                                                </form>
-                                            <?php else: ?>
-                                                <div class="profile-photo-menu-btn" style="cursor: default; color: #777;">
-                                                    תמונה ראשית
-                                                </div>
                                             <?php endif; ?>
+
+                                            <form action="/delete_photo.php" method="POST" class="profile-photo-menu-form" onsubmit="return confirm('למחוק את התמונה?');">
+                                                <input type="hidden" name="pic_num" value="<?= $picNum ?>">
+                                                <button type="submit" class="profile-photo-menu-btn profile-photo-menu-btn-delete">מחק</button>
+                                            </form>
+
                                         </div>
                                     </div>
                                 <?php endif; ?>

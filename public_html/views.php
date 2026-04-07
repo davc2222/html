@@ -31,14 +31,44 @@ function get_profile_image(PDO $pdo, int $userId): string {
         $stmt->execute([':id' => $userId]);
         $picName = $stmt->fetchColumn();
 
+        if (!$picName) {
+            $stmt = $pdo->prepare("
+                SELECT Pic_Name
+                FROM user_pics
+                WHERE Id = :id
+                  AND Pic_Status = 1
+                ORDER BY Main_Pic DESC, Pic_Num ASC
+                LIMIT 1
+            ");
+            $stmt->execute([':id' => $userId]);
+            $picName = $stmt->fetchColumn();
+        }
+
         if ($picName) {
             return '/uploads/' . ltrim((string)$picName, '/');
         }
     } catch (Throwable $e) {
-        // ignore
+        // ממשיכים ל-fallback לפי מין
     }
 
-    return '/images/no_photo.jpg';
+    try {
+        $stmt = $pdo->prepare("
+            SELECT Gender_Str
+            FROM users_profile
+            WHERE Id = :id
+            LIMIT 1
+        ");
+        $stmt->execute([':id' => $userId]);
+        $genderValue = trim((string)$stmt->fetchColumn());
+
+        if ($genderValue === 'אישה') {
+            return '/images/default_female.svg';
+        }
+    } catch (Throwable $e) {
+        // אם גם זה נכשל, נופלים לברירת המחדל
+    }
+
+    return '/images/default_male.svg';
 }
 
 /* סימון צפיות כנקראו רק בכניסה לדף צפיות */

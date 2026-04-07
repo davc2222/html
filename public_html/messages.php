@@ -18,8 +18,10 @@ function h($v) {
     return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
 }
 
+/* 🔥 פונקציה מתוקנת */
 function get_profile_image(PDO $pdo, int $userId): string {
     try {
+        // ניסיון תמונה ראשית
         $stmt = $pdo->prepare("
             SELECT Pic_Name
             FROM user_pics
@@ -31,14 +33,46 @@ function get_profile_image(PDO $pdo, int $userId): string {
         $stmt->execute([':id' => $userId]);
         $picName = $stmt->fetchColumn();
 
+        // אם אין ראשית - מביא ראשונה
+        if (!$picName) {
+            $stmt = $pdo->prepare("
+                SELECT Pic_Name
+                FROM user_pics
+                WHERE Id = :id
+                  AND Pic_Status = 1
+                ORDER BY Main_Pic DESC, Pic_Num ASC
+                LIMIT 1
+            ");
+            $stmt->execute([':id' => $userId]);
+            $picName = $stmt->fetchColumn();
+        }
+
         if ($picName) {
             return '/uploads/' . ltrim((string)$picName, '/');
+        }
+    } catch (Throwable $e) {
+        // ממשיכים ל fallback
+    }
+
+    try {
+        // 🔥 fallback לפי מין
+        $stmt = $pdo->prepare("
+            SELECT Gender_Str
+            FROM users_profile
+            WHERE Id = :id
+            LIMIT 1
+        ");
+        $stmt->execute([':id' => $userId]);
+        $gender = trim((string)$stmt->fetchColumn());
+
+        if ($gender === 'אישה') {
+            return '/images/default_female.svg';
         }
     } catch (Throwable $e) {
         // ignore
     }
 
-    return '/images/no_photo.jpg';
+    return '/images/default_male.svg';
 }
 
 /* ===== שליפה ===== */
@@ -169,19 +203,15 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </div>
 
                         <p>
-                            <a
-                                href="#"
-                                class="view-card-link open-chat-btn"
-                                data-user-id="<?= $otherUserId ?>">
+                            <a href="#" class="view-card-link open-chat-btn" data-user-id="<?= $otherUserId ?>">
                                 פתח צ'אט
                             </a>
                             |
-                            <a
-                                href="/?page=profile&id=<?= $otherUserId ?>"
-                                class="view-card-link">
+                            <a href="/?page=profile&id=<?= $otherUserId ?>" class="view-card-link">
                                 פתח פרופיל
                             </a>
                         </p>
+
                     </div>
 
                 </div>
@@ -193,29 +223,3 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <?php endif; ?>
 
 </div>
-
-<script>
-    document.addEventListener('click', function(e) {
-        const btn = e.target.closest('.open-chat-btn');
-        if (!btn) return;
-
-        e.preventDefault();
-
-        const card = btn.closest('.view-card');
-        const userId = Number(btn.getAttribute('data-user-id'));
-        if (!userId) return;
-
-        const nameEl = card ? card.querySelector('.view-card-name') : null;
-        const imgEl = card ? card.querySelector('.view-card-image') : null;
-
-        const userName = nameEl ? nameEl.textContent.trim() : 'משתמש';
-        const userImage = imgEl ? imgEl.getAttribute('src') : '/images/no_photo.jpg';
-
-        if (typeof openMessageModal !== 'function') {
-            console.error('openMessageModal is not loaded');
-            return;
-        }
-
-        openMessageModal(userId, userName, userImage);
-    });
-</script>

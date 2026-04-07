@@ -205,20 +205,16 @@ main {
     font-weight: bold;
 }
 
-.header-avatar-link {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
 .header-avatar {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
+    width: 52px;
+    height: 52px;
+    border-radius: 18px;
     object-fit: cover;
     border: 2px solid rgba(255, 255, 255, 0.9);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
 }
+
+
 
 /* =======================================================
    3) LOGIN PAGE
@@ -2557,13 +2553,7 @@ footer {
     margin-left: 18px;
 }
 
-/* תמונת משתמש */
-.header-avatar {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    object-fit: cover;
-}
+
 
 .menu-link {
     position: relative;
@@ -3568,4 +3558,72 @@ footer {
     .profile-gallery-thumb {
         height: 210px;
     }
+}
+
+
+/* ===== ZOOM ICON ON MAIN IMAGE ONLY ===== */
+
+.profile-main-image-link {
+    position: relative;
+    display: inline-block;
+}
+
+.profile-main-zoom {
+    position: absolute;
+    bottom: 10px;
+    /* ⬅️ למטה */
+    left: 10px;
+    /* ⬅️ שמאל */
+    top: auto;
+    right: auto;
+    transform: none;
+
+    z-index: 50;
+
+    font-size: 30px;
+    color: #ffffff;
+
+    opacity: 1;
+    pointer-events: none;
+
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.profile-main-image {
+    background: #f5f5f5;
+    object-fit: contain;
+    padding: 20px;
+}
+
+.header-avatar {
+    background: #f5f5f5;
+    object-fit: contain;
+    padding: 6px;
+}
+
+.header-avatar-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.header-avatar {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+    object-fit: cover !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    background: transparent !important;
+}
+
+.header-avatar-default {
+    object-fit: contain !important;
+    padding: 6px !important;
+    background: #f5f5f5 !important;
 }
