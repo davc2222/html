@@ -1,4 +1,24 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+if (!empty($_SESSION['user_id'])) {
+    try {
+        $stmtPresence = $pdo->prepare("
+            UPDATE users
+            SET last_seen = NOW()
+            WHERE Id = :id
+            LIMIT 1
+        ");
+        $stmtPresence->execute([':id' => (int)$_SESSION['user_id']]);
+    } catch (Throwable $e) {
+        // לא להפיל דף בגלל נוכחות
+    }
+}
+?>
+
+<?php
 // ===== FILE: messages.php =====
 
 if (session_status() === PHP_SESSION_NONE) {

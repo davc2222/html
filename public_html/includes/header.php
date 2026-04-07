@@ -195,3 +195,18 @@ $menu = [
         setInterval(updateHeaderBadges, 3000);
     });
 </script>
+
+<script>
+    (function() {
+        function updatePresence() {
+            fetch('/update_presence.php', {
+                method: 'GET',
+                credentials: 'same-origin',
+                cache: 'no-store'
+            }).catch(function() {});
+        }
+
+        updatePresence(); // מייד בטעינת הדף
+        setInterval(updatePresence, 60000); // כל דקה
+    })();
+</script>

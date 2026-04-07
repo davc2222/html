@@ -1,4 +1,11 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+
+?>
+<?php
 // ===== FILE: views.php =====
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -12,6 +19,19 @@ if (empty($_SESSION['user_id'])) {
     exit;
 }
 
+if (!empty($_SESSION['user_id'])) {
+    try {
+        $stmtPresence = $pdo->prepare("
+            UPDATE users_profile
+            SET last_seen = NOW()
+            WHERE Id = :id
+            LIMIT 1
+        ");
+        $stmtPresence->execute([':id' => (int)$_SESSION['user_id']]);
+    } catch (Throwable $e) {
+        // לא להפיל דף בגלל נוכחות
+    }
+}
 $session_user_id = (int)$_SESSION['user_id'];
 
 function h($v) {
@@ -71,6 +91,31 @@ function get_profile_image(PDO $pdo, int $userId): string {
     return '/images/default_male.svg';
 }
 
+function is_user_online(PDO $pdo, int $userId): bool {
+    try {
+        $stmt = $pdo->prepare("
+            SELECT last_seen
+            FROM users_profile
+            WHERE Id = :id
+            LIMIT 1
+        ");
+        $stmt->execute([':id' => $userId]);
+        $lastSeen = $stmt->fetchColumn();
+
+        if (!$lastSeen) {
+            return false;
+        }
+
+        $lastSeenTs = strtotime((string)$lastSeen);
+        if ($lastSeenTs === false) {
+            return false;
+        }
+
+        return $lastSeenTs >= (time() - 120);
+    } catch (Throwable $e) {
+        return false;
+    }
+}
 /* סימון צפיות כנקראו רק בכניסה לדף צפיות */
 $pdo->prepare("
     UPDATE views
@@ -138,6 +183,8 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 $newViews = (int)($row['new_views_count'] ?? 0);
 
                 $img = get_profile_image($pdo, $id);
+
+                $isOnline = is_user_online($pdo, $id);
                 ?>
 
                 <div class="view-card">
@@ -153,6 +200,10 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             class="view-card-image"
                             src="<?= h($img) ?>"
                             alt="<?= h($name) ?>">
+
+                        <?php if ($isOnline): ?>
+                            <span class="online-badge" title="מחובר כעת"></span>
+                        <?php endif; ?>
                     </div>
 
                     <div class="view-card-content">
