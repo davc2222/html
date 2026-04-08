@@ -95,6 +95,10 @@ if (in_array($page, $protectedPages, true) && empty($_SESSION['user_id'])) {
             include __DIR__ . '/blocked_users.php';
             break;
 
+        case 'viewed_by_me':
+            require 'viewed_by_me.php';
+            break;
+
     }
     ?>
 

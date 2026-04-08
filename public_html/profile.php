@@ -54,6 +54,26 @@ function e($v) {
     return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
 }
 
+function is_user_online(PDO $pdo, int $userId): bool {
+    try {
+        $stmt = $pdo->prepare("
+            SELECT CASE
+                WHEN last_seen IS NOT NULL
+                 AND last_seen >= (NOW() - INTERVAL 120 SECOND)
+                THEN 1
+                ELSE 0
+            END
+            FROM users_profile
+            WHERE Id = :id
+            LIMIT 1
+        ");
+        $stmt->execute([':id' => $userId]);
+        return (bool)$stmt->fetchColumn();
+    } catch (Throwable $e) {
+        return false;
+    }
+}
+
 $stmt = $pdo->prepare("SELECT * FROM users_profile WHERE Id = :id LIMIT 1");
 $stmt->execute([':id' => $id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -64,6 +84,7 @@ if (!$user) {
 }
 
 $isOwner = ($viewerId === (int)$user['Id']);
+$isOnlineProfile = is_user_online($pdo, (int)$user['Id']);
 
 /* חישוב גיל מ-DOB */
 $age = null;
@@ -221,6 +242,13 @@ $rightSelectOptionsJson = json_encode($rightSelectOptions, JSON_UNESCAPED_UNICOD
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css">
 
 <div class="page-shell profile-shell">
+    <div class="profile-top-bar">
+        <a href="javascript:history.back()" class="profile-back-link">
+            <span class="profile-back-icon" aria-hidden="true">←</span>
+            <span>חזרה</span>
+        </a>
+    </div>
+
     <div class="profile-layout">
 
         <!-- RIGHT -->
@@ -236,6 +264,10 @@ $rightSelectOptionsJson = json_encode($rightSelectOptions, JSON_UNESCAPED_UNICOD
                         data-title="תמונה ראשית">
 
                         <img src="<?= e($profileImage) ?>" class="profile-main-image" id="profileMainImage" alt="">
+
+                        <?php if ($isOnlineProfile): ?>
+                            <span class="online-badge profile-online-badge" title="מחובר כעת"></span>
+                        <?php endif; ?>
 
                         <span class="profile-main-zoom">⌕</span>
                     </a>

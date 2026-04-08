@@ -1,4 +1,8 @@
 <?php
+// ===== FILE: messages.php =====
+
+require_once __DIR__ . '/config/config.php';
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -6,7 +10,7 @@ if (session_status() === PHP_SESSION_NONE) {
 if (!empty($_SESSION['user_id'])) {
     try {
         $stmtPresence = $pdo->prepare("
-            UPDATE users
+            UPDATE users_profile
             SET last_seen = NOW()
             WHERE Id = :id
             LIMIT 1
@@ -16,14 +20,6 @@ if (!empty($_SESSION['user_id'])) {
         // לא להפיל דף בגלל נוכחות
     }
 }
-?>
-
-<?php
-// ===== FILE: messages.php =====
-
-
-
-require_once __DIR__ . '/config/config.php';
 
 if (empty($_SESSION['user_id'])) {
     header('Location: ?page=login');
@@ -37,6 +33,26 @@ function h($v) {
 }
 
 /* 🔥 פונקציה מתוקנת */
+function is_user_online(PDO $pdo, int $userId): bool {
+    try {
+        $stmt = $pdo->prepare("
+            SELECT CASE
+                WHEN last_seen IS NOT NULL
+                 AND last_seen >= (NOW() - INTERVAL 120 SECOND)
+                THEN 1
+                ELSE 0
+            END
+            FROM users_profile
+            WHERE Id = :id
+            LIMIT 1
+        ");
+        $stmt->execute([':id' => $userId]);
+        return (bool)$stmt->fetchColumn();
+    } catch (Throwable $e) {
+        return false;
+    }
+}
+
 function get_profile_image(PDO $pdo, int $userId): string {
     try {
         // ניסיון תמונה ראשית
@@ -157,6 +173,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 $unread = (int)($row['unread_count'] ?? 0);
 
                 $img = get_profile_image($pdo, $otherUserId);
+                $isOnline = is_user_online($pdo, $otherUserId);
                 ?>
 
                 <div class="view-card">
@@ -172,9 +189,18 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             class="view-card-image"
                             src="<?= h($img) ?>"
                             alt="<?= h($name) ?>">
+
+                        <?php if ($isOnline): ?>
+                            <span class="online-badge" title="מחובר כעת"></span>
+                        <?php endif; ?>
                     </div>
 
                     <div class="view-card-content">
+
+                        <div class="view-card-icons">
+                            <span class="vc-icon vc-message" title="שיחה"></span>
+                            <span class="view-card-status-text">יש שיחה</span>
+                        </div>
 
                         <div class="view-card-name">
                             <?= h($name) ?>

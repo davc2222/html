@@ -4147,3 +4147,78 @@ body.modal-open {
     /* קצת פחות נפוח */
 }
 
+
+
+/* ===== CARD ICONS + PROFILE BACK + PROFILE ONLINE ===== */
+.view-card-icons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.view-card-status-text {
+    font-size: 13px;
+    color: #7a7a7a;
+    line-height: 1;
+}
+
+.vc-icon {
+    width: 18px;
+    height: 18px;
+    display: inline-block;
+    opacity: 0.8;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+
+.vc-eye {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M2 12s4-6 10-6 10 6 10 6-4 6-10 6-10-6-10-6Z'/><circle cx='12' cy='12' r='3'/></svg>");
+}
+
+.vc-eye-reverse {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M22 12s-4 6-10 6S2 12 2 12s4-6 10-6 10 6 10 6Z'/><circle cx='12' cy='12' r='3'/></svg>");
+}
+
+.vc-message {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 15a4 4 0 0 1-4 4H7l-4 4V5a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z'/></svg>");
+}
+
+.vc-search {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='11' cy='11' r='7'/><path d='m20 20-3.5-3.5'/></svg>");
+}
+
+.profile-top-bar {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 14px;
+}
+
+.profile-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #666;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.profile-back-link:hover {
+    color: #111;
+}
+
+.profile-back-icon {
+    font-size: 16px;
+    line-height: 1;
+}
+
+.profile-main-image-link {
+    position: relative;
+    display: inline-block;
+}
+
+.profile-online-badge {
+    right: 10px;
+    bottom: 10px;
+}

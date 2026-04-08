@@ -14,6 +14,26 @@ function e($v) {
     return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
 }
 
+function is_user_online(PDO $pdo, int $userId): bool {
+    try {
+        $stmt = $pdo->prepare("
+            SELECT CASE
+                WHEN last_seen IS NOT NULL
+                 AND last_seen >= (NOW() - INTERVAL 120 SECOND)
+                THEN 1
+                ELSE 0
+            END
+            FROM users_profile
+            WHERE Id = :id
+            LIMIT 1
+        ");
+        $stmt->execute([':id' => $userId]);
+        return (bool)$stmt->fetchColumn();
+    } catch (Throwable $e) {
+        return false;
+    }
+}
+
 function getMainProfileImage(PDO $pdo, int $id): string {
     try {
         $stmt = $pdo->prepare("
@@ -212,6 +232,7 @@ if ($search_done) {
                     $smoking  = trim((string)($row['Smoking_Habbit_Str'] ?? ''));
 
                     $img = getMainProfileImage($pdo, $id);
+                    $isOnline = is_user_online($pdo, $id);
                     ?>
 
                     <div class="view-card">
@@ -221,9 +242,18 @@ if ($search_done) {
                                 class="view-card-image"
                                 src="<?= e($img) ?>"
                                 alt="<?= e($name) ?>">
+
+                            <?php if ($isOnline): ?>
+                                <span class="online-badge" title="מחובר כעת"></span>
+                            <?php endif; ?>
                         </div>
 
                         <div class="view-card-content">
+
+                            <div class="view-card-icons">
+                                <span class="vc-icon vc-search" title="תוצאת חיפוש"></span>
+                                <span class="view-card-status-text">תוצאת חיפוש</span>
+                            </div>
 
                             <div class="view-card-name">
                                 <?= e($name) ?>

@@ -211,6 +211,11 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                             <div class="view-card-content">
 
+                                <div class="view-card-icons">
+                                    <span class="vc-icon vc-eye" title="צפה בי"></span>
+                                    <span class="view-card-status-text">צפה בי</span>
+                                </div>
+
                                 <div class="view-card-name">
                                     <?= h($name) ?>
                                     <?= $age !== '' ? ', ' . h((string)$age) : '' ?>
@@ -285,7 +290,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <span class="views-side-text">צפו בפרופיל שלי</span>
                     </a>
 
-                    <a href="/?page=views_by_me" class="views-side-link">
+                    <a href="/?page=viewed_by_me" class="views-side-link">
                         <span class="views-side-icon" aria-hidden="true">
                             <svg viewBox="0 0 24 24" fill="none">
                                 <path d="M12 5a7 7 0 1 0 0 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
