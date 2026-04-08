@@ -22,8 +22,8 @@ if ($id <= 0) {
 $stmt = $pdo->prepare("
     SELECT 1
     FROM blocked_users
-    WHERE (Id = :profile AND Blocked_ById = :viewer)
-       OR (Id = :viewer AND Blocked_ById = :profile)
+    WHERE Id = :profile
+      AND Blocked_ById = :viewer
     LIMIT 1
 ");
 
@@ -33,7 +33,22 @@ $stmt->execute([
 ]);
 
 if ($stmt->fetch()) {
-    echo '<div style="padding:40px;text-align:center;">פרופיל זה אינו זמין</div>';
+
+    echo '
+    <div class="blocked-profile-box">
+
+        <div class="blocked-profile-icon">🚫</div>
+
+        <div class="blocked-profile-title">
+            פרופיל זה נמצא ברשימת החסומים שלך
+        </div>
+
+        <a href="?page=blocked_users" class="blocked-profile-back">
+            לרשימת החסומים
+        </a>
+
+    </div>
+    ';
     exit;
 }
 

@@ -3934,3 +3934,49 @@ body.modal-open {
         font-size: 24px;
     }
 }
+
+
+.unblock-link {
+    color: #dc2626;
+    /* אדום עדין */
+}
+
+.unblock-link:hover {
+    text-decoration: underline;
+}
+
+.blocked-profile-box {
+    max-width: 420px;
+    margin: 80px auto;
+    padding: 30px;
+    background: #fff;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.blocked-profile-icon {
+    font-size: 42px;
+    margin-bottom: 12px;
+}
+
+.blocked-profile-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 18px;
+    color: #111827;
+}
+
+.blocked-profile-back {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 10px;
+    background: #f3f4f6;
+    text-decoration: none;
+    color: #111827;
+    font-weight: 600;
+}
+
+.blocked-profile-back:hover {
+    background: #e5e7eb;
+}
