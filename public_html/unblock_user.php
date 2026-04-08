@@ -18,17 +18,29 @@ try {
     $blockerId = (int)$_SESSION['user_id'];
     $blockedId = (int)($_POST['blocked_id'] ?? 0);
 
+    if ($blockedId <= 0) {
+        throw new RuntimeException('משתמש לא תקין');
+    }
+
     $stmt = $pdo->prepare("
         DELETE FROM blocked_users
-        WHERE Id = :blocked AND Blocked_ById = :blocker
+        WHERE Id = :blocked
+          AND Blocked_ById = :blocker
+        LIMIT 1
     ");
     $stmt->execute([
         ':blocked' => $blockedId,
         ':blocker' => $blockerId
     ]);
 
-    echo json_encode(['ok' => true]);
+    echo json_encode([
+        'ok'  => true,
+        'msg' => 'בוטלה חסימה'
+    ]);
 } catch (Throwable $e) {
     http_response_code(400);
-    echo json_encode(['ok' => false]);
+    echo json_encode([
+        'ok'    => false,
+        'error' => $e->getMessage()
+    ]);
 }

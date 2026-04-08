@@ -91,6 +91,10 @@ if (in_array($page, $protectedPages, true) && empty($_SESSION['user_id'])) {
         default:
             include 'home.php';
             break;
+        case 'blocked_users':
+            include __DIR__ . '/blocked_users.php';
+            break;
+
     }
     ?>
 

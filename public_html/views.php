@@ -150,121 +150,165 @@ $stmt->execute([':id' => $session_user_id]);
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
-<div class="page-shell">
+<div class="page-shell views-page-shell">
 
-    <h2 class="views-page-title">מי צפה בי</h2>
+    <div class="views-layout">
 
-    <?php if (!$results): ?>
-        <div class="no-views-box">אין צפיות עדיין</div>
-    <?php else: ?>
+        <div class="views-main-col">
+            <h2 class="views-page-title">צפיות</h2>
 
-        <div class="views-list">
+            <?php if (!$results): ?>
+                <div class="no-views-box">אין צפיות עדיין</div>
+            <?php else: ?>
 
-            <?php foreach ($results as $row): ?>
+                <div class="views-list">
 
-                <?php
-                $id   = (int)($row['Id'] ?? 0);
-                $name = trim((string)($row['Name'] ?? ''));
+                    <?php foreach ($results as $row): ?>
 
-                $age = '';
-                if (!empty($row['DOB'])) {
-                    try {
-                        $age = date_diff(date_create($row['DOB']), date_create('today'))->y;
-                    } catch (Throwable $e) {
+                        <?php
+                        $id   = (int)($row['Id'] ?? 0);
+                        $name = trim((string)($row['Name'] ?? ''));
+
                         $age = '';
-                    }
-                }
+                        if (!empty($row['DOB'])) {
+                            try {
+                                $age = date_diff(date_create($row['DOB']), date_create('today'))->y;
+                            } catch (Throwable $e) {
+                                $age = '';
+                            }
+                        }
 
-                $zone     = trim((string)($row['Zone_Str'] ?? ''));
-                $place    = trim((string)($row['Place_Str'] ?? ''));
-                $family   = trim((string)($row['Family_Status_Str'] ?? ''));
-                $children = trim((string)($row['Childs_Num_Str'] ?? ''));
-                $height   = trim((string)($row['Height_Str'] ?? ''));
-                $smoking  = trim((string)($row['Smoking_Habbit_Str'] ?? ''));
-                $newViews = (int)($row['new_views_count'] ?? 0);
+                        $zone     = trim((string)($row['Zone_Str'] ?? ''));
+                        $place    = trim((string)($row['Place_Str'] ?? ''));
+                        $family   = trim((string)($row['Family_Status_Str'] ?? ''));
+                        $children = trim((string)($row['Childs_Num_Str'] ?? ''));
+                        $height   = trim((string)($row['Height_Str'] ?? ''));
+                        $smoking  = trim((string)($row['Smoking_Habbit_Str'] ?? ''));
+                        $newViews = (int)($row['new_views_count'] ?? 0);
 
-                $img = get_profile_image($pdo, $id);
+                        $img = get_profile_image($pdo, $id);
+                        $isOnline = is_user_online($pdo, $id);
+                        ?>
 
-                $isOnline = is_user_online($pdo, $id);
-                ?>
+                        <div class="view-card">
 
-                <div class="view-card">
-
-                    <?php if ($newViews > 0): ?>
-                        <div class="view-card-top-badge">
-                            👁 <?= $newViews ?> חדשות
-                        </div>
-                    <?php endif; ?>
-
-                    <div class="view-card-media">
-                        <img
-                            class="view-card-image"
-                            src="<?= h($img) ?>"
-                            alt="<?= h($name) ?>">
-
-                        <?php if ($isOnline): ?>
-                            <span class="online-badge" title="מחובר כעת"></span>
-                        <?php endif; ?>
-                    </div>
-
-                    <div class="view-card-content">
-
-                        <div class="view-card-name">
-                            <?= h($name) ?>
-                            <?= $age !== '' ? ', ' . h((string)$age) : '' ?>
-                        </div>
-
-                        <div class="view-card-divider"></div>
-
-                        <div class="view-card-details">
-
-                            <?php if ($family !== ''): ?>
-                                <div>מצב משפחתי: <?= h($family) ?></div>
-                            <?php endif; ?>
-
-                            <div>
-                                ילדים:
-                                <?= ($children === '' || $children === '0') ? 'ללא' : h($children) . '+' ?>
-                            </div>
-
-                            <?php if ($zone !== '' || $place !== ''): ?>
-                                <div>
-                                    <?php if ($zone !== ''): ?>
-                                        אזור: <?= h($zone) ?>
-                                    <?php endif; ?>
-
-                                    <?php if ($zone !== '' && $place !== ''): ?>
-                                        |
-                                    <?php endif; ?>
-
-                                    <?php if ($place !== ''): ?>
-                                        מקום: <?= h($place) ?>
-                                    <?php endif; ?>
+                            <?php if ($newViews > 0): ?>
+                                <div class="view-card-top-badge">
+                                    👁 <?= $newViews ?> חדשות
                                 </div>
                             <?php endif; ?>
 
-                            <?php if ($height !== ''): ?>
-                                <div>גובה: <?= h($height) ?></div>
-                            <?php endif; ?>
+                            <div class="view-card-media">
+                                <img
+                                    class="view-card-image"
+                                    src="<?= h($img) ?>"
+                                    alt="<?= h($name) ?>">
 
-                            <?php if ($smoking !== ''): ?>
-                                <div>עישון: <?= h($smoking) ?></div>
-                            <?php endif; ?>
+                                <?php if ($isOnline): ?>
+                                    <span class="online-badge" title="מחובר כעת"></span>
+                                <?php endif; ?>
+                            </div>
+
+                            <div class="view-card-content">
+
+                                <div class="view-card-name">
+                                    <?= h($name) ?>
+                                    <?= $age !== '' ? ', ' . h((string)$age) : '' ?>
+                                </div>
+
+                                <div class="view-card-divider"></div>
+
+                                <div class="view-card-details">
+
+                                    <?php if ($family !== ''): ?>
+                                        <div>מצב משפחתי: <?= h($family) ?></div>
+                                    <?php endif; ?>
+
+                                    <div>
+                                        ילדים:
+                                        <?= ($children === '' || $children === '0') ? 'ללא' : h($children) . '+' ?>
+                                    </div>
+
+                                    <?php if ($zone !== '' || $place !== ''): ?>
+                                        <div>
+                                            <?php if ($zone !== ''): ?>
+                                                אזור: <?= h($zone) ?>
+                                            <?php endif; ?>
+
+                                            <?php if ($zone !== '' && $place !== ''): ?>
+                                                |
+                                            <?php endif; ?>
+
+                                            <?php if ($place !== ''): ?>
+                                                מקום: <?= h($place) ?>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endif; ?>
+
+                                    <?php if ($height !== ''): ?>
+                                        <div>גובה: <?= h($height) ?></div>
+                                    <?php endif; ?>
+
+                                    <?php if ($smoking !== ''): ?>
+                                        <div>עישון: <?= h($smoking) ?></div>
+                                    <?php endif; ?>
+
+                                </div>
+
+                                <a class="view-card-link" href="/?page=profile&id=<?= $id ?>">
+                                    צפייה בפרופיל
+                                </a>
+
+                            </div>
 
                         </div>
 
-                        <a class="view-card-link" href="/?page=profile&id=<?= $id ?>">
-                            צפייה בפרופיל
-                        </a>
-
-                    </div>
+                    <?php endforeach; ?>
 
                 </div>
 
-            <?php endforeach; ?>
-
+            <?php endif; ?>
         </div>
 
-    <?php endif; ?>
+        <aside class="views-side-col">
+            <div class="views-side-card">
+                <h3 class="views-side-title">צפיות</h3>
+
+                <nav class="views-side-nav">
+                    <a href="/?page=views" class="views-side-link is-active">
+                        <span class="views-side-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8" />
+                            </svg>
+                        </span>
+                        <span class="views-side-text">צפו בפרופיל שלי</span>
+                    </a>
+
+                    <a href="/?page=views_by_me" class="views-side-link">
+                        <span class="views-side-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M12 5a7 7 0 1 0 0 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                                <path d="M9 12h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                                <path d="m17 8 4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </span>
+                        <span class="views-side-text">פרופילים שצפיתי</span>
+                    </a>
+
+                    <a href="/?page=blocked_users" class="views-side-link">
+                        <span class="views-side-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" />
+                                <path d="M8 8l8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                            </svg>
+                        </span>
+                        <span class="views-side-text">פרופילים שחסמתי</span>
+                    </a>
+                </nav>
+            </div>
+        </aside>
+
+    </div>
 
 </div>

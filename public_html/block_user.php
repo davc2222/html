@@ -26,7 +26,7 @@ try {
         throw new RuntimeException('לא ניתן לחסום את עצמך');
     }
 
-    // בדיקה אם כבר חסום
+    /* בדיקה אם כבר חסום */
     $stmt = $pdo->prepare("
         SELECT 1 FROM blocked_users
         WHERE Id = :blocked AND Blocked_ById = :blocker
@@ -42,10 +42,10 @@ try {
         exit;
     }
 
-    // הכנסת חסימה
+    /* הכנסת חסימה עם זמן */
     $stmt = $pdo->prepare("
-        INSERT INTO blocked_users (Id, Blocked_ById)
-        VALUES (:blocked, :blocker)
+        INSERT INTO blocked_users (Id, Blocked_ById, Created_At)
+        VALUES (:blocked, :blocker, NOW())
     ");
     $stmt->execute([
         ':blocked' => $blockedId,
@@ -55,5 +55,8 @@ try {
     echo json_encode(['ok' => true, 'msg' => 'נחסם בהצלחה']);
 } catch (Throwable $e) {
     http_response_code(400);
-    echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
+    echo json_encode([
+        'ok' => false,
+        'error' => $e->getMessage()
+    ]);
 }
