@@ -33,20 +33,15 @@ $stmt->execute([
 ]);
 
 if ($stmt->fetch()) {
-
     echo '
     <div class="blocked-profile-box">
-
         <div class="blocked-profile-icon">🚫</div>
-
         <div class="blocked-profile-title">
             פרופיל זה נמצא ברשימת החסומים שלך
         </div>
-
         <a href="?page=blocked_users" class="blocked-profile-back">
             לרשימת החסומים
         </a>
-
     </div>
     ';
     exit;
@@ -428,7 +423,6 @@ $rightSelectOptionsJson = json_encode($rightSelectOptions, JSON_UNESCAPED_UNICOD
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox.min.js"></script>
 
-
 <script>
     const PROFILE_ID = <?= (int)$id ?>;
 </script>
@@ -792,28 +786,47 @@ $rightSelectOptionsJson = json_encode($rightSelectOptions, JSON_UNESCAPED_UNICOD
     }
 
     function confirmBlockUser() {
-        if (!currentBlockedUserId) return;
+        if (!currentBlockedUserId) {
+            closeBlockModal();
+            return;
+        }
 
         const formData = new FormData();
         formData.append('blocked_id', currentBlockedUserId);
+        formData.append('user_id', currentBlockedUserId);
 
         fetch('/block_user.php', {
                 method: 'POST',
                 body: formData
             })
-            .then(r => r.json())
-            .then(data => {
-                if (!data.ok) {
-                    alert(data.error || 'שגיאה');
+            .then(function(r) {
+                return r.text();
+            })
+            .then(function(text) {
+                let data = null;
+
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    console.error('Invalid JSON from block_user.php:', text);
+                    closeBlockModal();
+                    alert('תגובה לא תקינה מהשרת');
                     return;
                 }
 
                 closeBlockModal();
-                alert('המשתמש נחסם');
-                window.location.href = '?page=search';
+
+                if (!data.ok) {
+                    alert(data.error || 'שגיאה בחסימה');
+                    return;
+                }
+
+                window.location.href = '/?page=search';
             })
-            .catch(() => {
-                alert('שגיאה');
+            .catch(function(err) {
+                console.error(err);
+                closeBlockModal();
+                alert('שגיאת רשת');
             });
     }
 

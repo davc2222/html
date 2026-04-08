@@ -11,12 +11,15 @@ require_once __DIR__ . '/config/config.php';
 header('Content-Type: application/json; charset=utf-8');
 
 try {
+    /* ========= בדיקת התחברות ========= */
     if (empty($_SESSION['user_id'])) {
         throw new RuntimeException('לא מחובר');
     }
 
     $blockerId = (int)$_SESSION['user_id'];
-    $blockedId = (int)($_POST['blocked_id'] ?? 0);
+
+    /* ========= קבלת המשתמש לחסימה ========= */
+    $blockedId = (int)($_POST['blocked_id'] ?? $_POST['user_id'] ?? 0);
 
     if ($blockedId <= 0) {
         throw new RuntimeException('משתמש לא תקין');
@@ -26,10 +29,12 @@ try {
         throw new RuntimeException('לא ניתן לחסום את עצמך');
     }
 
-    /* בדיקה אם כבר חסום */
+    /* ========= בדיקה אם כבר חסום ========= */
     $stmt = $pdo->prepare("
-        SELECT 1 FROM blocked_users
-        WHERE Id = :blocked AND Blocked_ById = :blocker
+        SELECT 1
+        FROM blocked_users
+        WHERE Id = :blocked
+          AND Blocked_ById = :blocker
         LIMIT 1
     ");
     $stmt->execute([
@@ -38,25 +43,35 @@ try {
     ]);
 
     if ($stmt->fetch()) {
-        echo json_encode(['ok' => true, 'msg' => 'כבר חסום']);
+        echo json_encode([
+            'ok' => true,
+            'msg' => 'כבר חסום'
+        ], JSON_UNESCAPED_UNICODE);
         exit;
     }
 
-    /* הכנסת חסימה עם זמן */
+    /* ========= הכנסת חסימה ========= */
     $stmt = $pdo->prepare("
         INSERT INTO blocked_users (Id, Blocked_ById, Created_At)
         VALUES (:blocked, :blocker, NOW())
     ");
+
     $stmt->execute([
         ':blocked' => $blockedId,
         ':blocker' => $blockerId
     ]);
 
-    echo json_encode(['ok' => true, 'msg' => 'נחסם בהצלחה']);
+    echo json_encode([
+        'ok' => true,
+        'msg' => 'נחסם בהצלחה'
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
 } catch (Throwable $e) {
     http_response_code(400);
+
     echo json_encode([
         'ok' => false,
         'error' => $e->getMessage()
-    ]);
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
 }

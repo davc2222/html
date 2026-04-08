@@ -16,7 +16,6 @@ function h($v) {
     return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
 }
 
-/* 🔥 פונקציית תמונה כמו בכל האתר */
 function get_profile_image(PDO $pdo, int $userId): string {
     try {
         $stmt = $pdo->prepare("
@@ -52,7 +51,6 @@ function get_profile_image(PDO $pdo, int $userId): string {
     return '/images/no_photo.jpg';
 }
 
-/* שליפה */
 $stmt = $pdo->prepare("
     SELECT up.*
     FROM blocked_users bu
@@ -101,14 +99,14 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <div class="view-card" id="blocked-card-<?= $id ?>">
 
                     <div class="view-card-media">
-                        <img src="<?= h($img) ?>" class="view-card-image">
+                        <img src="<?= h($img) ?>" class="view-card-image" alt="<?= h($name) ?>">
                     </div>
 
                     <div class="view-card-content">
 
                         <div class="view-card-name">
                             <?= h($name) ?>
-                            <?= $age ? ', ' . $age : '' ?>
+                            <?= $age !== '' ? ', ' . h((string)$age) : '' ?>
                         </div>
 
                         <div class="view-card-divider"></div>
@@ -126,9 +124,9 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                             <?php if ($zone !== '' || $place !== ''): ?>
                                 <div>
-                                    <?= $zone ? 'אזור: ' . h($zone) : '' ?>
-                                    <?= ($zone && $place) ? ' | ' : '' ?>
-                                    <?= $place ? 'מקום: ' . h($place) : '' ?>
+                                    <?= $zone !== '' ? 'אזור: ' . h($zone) : '' ?>
+                                    <?= ($zone !== '' && $place !== '') ? ' | ' : '' ?>
+                                    <?= $place !== '' ? 'מקום: ' . h($place) : '' ?>
                                 </div>
                             <?php endif; ?>
 
@@ -152,7 +150,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                             <a href="#"
                                 class="view-card-link unblock-link"
-                                onclick="unblockUser(<?= $id ?>); return false;">
+                                onclick="openUnblockConfirm(<?= $id ?>); return false;">
                                 בטל חסימה
                             </a>
 
@@ -170,31 +168,127 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 </div>
 
-<script>
-    function unblockUser(userId) {
+<div id="unblockConfirmModal" class="unblock-modal" style="display:none;">
+    <div class="unblock-modal-box">
+        <div class="unblock-modal-title">לבטל חסימה?</div>
+        <div class="unblock-modal-text">המשתמש יוסר מרשימת החסומים שלך.</div>
 
-        if (!confirm('לבטל חסימה למשתמש זה?')) {
+        <div class="unblock-modal-actions">
+            <a href="#" class="unblock-modal-cancel" onclick="closeUnblockConfirm(); return false;">ביטול</a>
+            <a href="#" class="unblock-modal-ok" onclick="confirmUnblock(); return false;">אשר</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.pendingUnblockUserId = 0;
+
+    window.showToast = function(message, isError = false) {
+        let toast = document.getElementById('siteToast');
+
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'siteToast';
+            toast.className = 'site-toast';
+            document.body.appendChild(toast);
+        }
+
+        toast.textContent = message;
+        toast.classList.remove('is-error', 'show');
+
+        if (isError) {
+            toast.classList.add('is-error');
+        }
+
+        requestAnimationFrame(() => {
+            toast.classList.add('show');
+        });
+
+        clearTimeout(window.siteToastTimer);
+        window.siteToastTimer = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2200);
+    };
+
+    window.openUnblockConfirm = function(userId) {
+        window.pendingUnblockUserId = Number(userId || 0);
+
+        const modal = document.getElementById('unblockConfirmModal');
+        if (!modal) {
+            console.error('unblockConfirmModal not found');
+            return;
+        }
+
+        modal.style.display = 'flex';
+    };
+
+    window.closeUnblockConfirm = function() {
+        window.pendingUnblockUserId = 0;
+
+        const modal = document.getElementById('unblockConfirmModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    };
+
+    window.confirmUnblock = function() {
+        const userId = window.pendingUnblockUserId;
+        if (!userId) {
+            window.closeUnblockConfirm();
+            return;
+        }
+
+        const card = document.getElementById('blocked-card-' + userId);
+        if (!card) {
+            window.closeUnblockConfirm();
+            window.showToast('הכרטיס לא נמצא', true);
             return;
         }
 
         const formData = new FormData();
         formData.append('blocked_id', userId);
 
-        fetch('unblock_user.php', {
+        fetch('/unblock_user.php', {
                 method: 'POST',
                 body: formData
             })
-            .then(r => r.json())
-            .then(data => {
-                if (!data.ok) {
-                    alert('שגיאה');
+            .then(response => response.text())
+            .then(text => {
+                let data = null;
+
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    console.error('Invalid JSON from unblock_user.php:', text);
+                    window.closeUnblockConfirm();
+                    window.showToast('תגובה לא תקינה מהשרת', true);
                     return;
                 }
 
-                document.getElementById('blocked-card-' + userId)?.remove();
+                window.closeUnblockConfirm();
+
+                if (!data.ok) {
+                    window.showToast(data.error || 'שגיאה בביטול החסימה', true);
+                    return;
+                }
+
+                card.classList.add('is-removing');
+
+                setTimeout(() => {
+                    card.remove();
+
+                    const list = document.querySelector('.views-list');
+                    if (list && !list.querySelector('.view-card')) {
+                        list.outerHTML = '<div class="no-views-box">אין חסומים עדיין</div>';
+                    }
+                }, 280);
+
+                window.showToast('החסימה בוטלה');
             })
-            .catch(() => alert('שגיאה'));
-    }
+            .catch(err => {
+                console.error(err);
+                window.closeUnblockConfirm();
+                window.showToast('שגיאה בשרת', true);
+            });
+    };
 </script>
-🚨 למה דווקא שם?
-אחרי כל ה־HTML ✔️

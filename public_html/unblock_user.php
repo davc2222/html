@@ -16,7 +16,7 @@ try {
     }
 
     $blockerId = (int)$_SESSION['user_id'];
-    $blockedId = (int)($_POST['blocked_id'] ?? 0);
+    $blockedId = (int)($_POST['blocked_id'] ?? $_POST['user_id'] ?? 0);
 
     if ($blockedId <= 0) {
         throw new RuntimeException('משתמש לא תקין');
@@ -28,19 +28,21 @@ try {
           AND Blocked_ById = :blocker
         LIMIT 1
     ");
+
     $stmt->execute([
         ':blocked' => $blockedId,
         ':blocker' => $blockerId
     ]);
 
     echo json_encode([
-        'ok'  => true,
-        'msg' => 'בוטלה חסימה'
-    ]);
+        'ok' => true
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
 } catch (Throwable $e) {
     http_response_code(400);
     echo json_encode([
-        'ok'    => false,
+        'ok' => false,
         'error' => $e->getMessage()
-    ]);
+    ], JSON_UNESCAPED_UNICODE);
+    exit;
 }
