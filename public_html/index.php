@@ -7,7 +7,30 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_once __DIR__ . '/config/config.php';
 
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 $page = $_GET['page'] ?? 'home';
+
+/*
+ * verify_email חייב לרוץ לפני כל פלט HTML
+ */
+if ($page === 'verify_email') {
+    require __DIR__ . '/verify_email.php';
+    exit;
+}
+
+/*
+ * דפים שמחייבים התחברות
+ * הבדיקה חייבת להיות לפני כל HTML ולפני header.php
+ */
+$protectedPages = ['profile', 'search', 'advanced_search', 'messages', 'views', 'inbox'];
+
+if (in_array($page, $protectedPages, true) && empty($_SESSION['user_id'])) {
+    header('Location: ?page=login');
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="he">
@@ -57,6 +80,10 @@ $page = $_GET['page'] ?? 'home';
             include 'register.php';
             break;
 
+        case 'verify_notice':
+            include 'verify_notice.php';
+            break;
+
         case 'inbox':
             include 'inbox.php';
             break;
@@ -71,7 +98,6 @@ $page = $_GET['page'] ?? 'home';
         <?php include __DIR__ . '/includes/chat_windows.php'; ?>
     <?php endif; ?>
 
-   
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.5/js/lightbox.min.js"></script>
     <script>

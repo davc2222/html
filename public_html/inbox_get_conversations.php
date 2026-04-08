@@ -6,7 +6,9 @@
  * שם, תמונה, הודעה אחרונה, זמן, וכמות הודעות שלא נקראו
  */
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require_once __DIR__ . '/config/config.php';
 
 header('Content-Type: text/html; charset=UTF-8');
@@ -82,6 +84,12 @@ try {
     ) t
     LEFT JOIN users_profile up
         ON up.Id = t.other_user_id
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM blocked_users bu
+        WHERE (bu.Id = t.other_user_id AND bu.Blocked_ById = :me)
+           OR (bu.Id = :me AND bu.Blocked_ById = t.other_user_id)
+    )
     ORDER BY last_date DESC
     ";
 
@@ -141,9 +149,9 @@ try {
             <div class='inbox-conversation-date'>{$dateHtml}</div>
 
             <div class='inbox-conversation-main'>
-           <a href='/?page=profile&id={$userId}' onclick='event.stopPropagation()'>
-    <img src='{$avatarHtml}' alt='{$displayName}' class='inbox-conversation-avatar'>
-</a>
+                <a href='/?page=profile&id={$userId}' onclick='event.stopPropagation()'>
+                    <img src='{$avatarHtml}' alt='{$displayName}' class='inbox-conversation-avatar'>
+                </a>
 
                 <div class='inbox-conversation-content'>
                     <div class='inbox-conversation-name'>{$displayName}</div>

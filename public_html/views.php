@@ -2,8 +2,6 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-
-
 ?>
 <?php
 // ===== FILE: views.php =====
@@ -94,28 +92,23 @@ function get_profile_image(PDO $pdo, int $userId): string {
 function is_user_online(PDO $pdo, int $userId): bool {
     try {
         $stmt = $pdo->prepare("
-            SELECT last_seen
+            SELECT CASE
+                WHEN last_seen IS NOT NULL
+                 AND last_seen >= (NOW() - INTERVAL 120 SECOND)
+                THEN 1
+                ELSE 0
+            END
             FROM users_profile
             WHERE Id = :id
             LIMIT 1
         ");
         $stmt->execute([':id' => $userId]);
-        $lastSeen = $stmt->fetchColumn();
-
-        if (!$lastSeen) {
-            return false;
-        }
-
-        $lastSeenTs = strtotime((string)$lastSeen);
-        if ($lastSeenTs === false) {
-            return false;
-        }
-
-        return $lastSeenTs >= (time() - 120);
+        return (bool)$stmt->fetchColumn();
     } catch (Throwable $e) {
         return false;
     }
 }
+
 /* סימון צפיות כנקראו רק בכניסה לדף צפיות */
 $pdo->prepare("
     UPDATE views
@@ -138,9 +131,17 @@ $stmt = $pdo->prepare("
             END
         ) AS new_views_count
     FROM views v
-    JOIN users_profile up ON up.Id = v.ById
+    JOIN users_profile up
+        ON up.Id = v.ById
     WHERE v.Id = :id
+      AND v.ById <> :id
       AND (v.Deleted_By_Id = 0 OR v.Deleted_By_Id IS NULL)
+      AND NOT EXISTS (
+            SELECT 1
+            FROM blocked_users bu
+            WHERE (bu.Id = up.Id AND bu.Blocked_ById = :id)
+               OR (bu.Id = :id AND bu.Blocked_ById = up.Id)
+      )
     GROUP BY up.Id
     ORDER BY last_view_date DESC
 ");

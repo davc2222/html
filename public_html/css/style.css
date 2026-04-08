@@ -3606,3 +3606,72 @@ footer {
 
     z-index: 10;
 }
+
+.profile-actions-bottom-right a {
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.profile-actions-bottom-right a:first-child {
+    color: #b45309;
+}
+
+.profile-actions-bottom-right a:last-child {
+    color: #b91c1c;
+}
+
+.profile-actions-bottom-right a:hover {
+    text-decoration: underline;
+}
+
+.profile-actions-bottom-right span {
+    margin: 0 6px;
+    color: #999;
+}
+
+.profile-actions-bottom-right a,
+.profile-actions-bottom-right a:visited {
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.profile-actions-bottom-right a:first-child,
+.profile-actions-bottom-right a:first-child:visited {
+    color: #b45309;
+}
+
+.profile-actions-bottom-right a:last-child,
+.profile-actions-bottom-right a:last-child:visited {
+    color: #b91c1c;
+}
+
+.profile-actions-bottom-right a:hover {
+    text-decoration: underline;
+}
+
+.profile-actions-bottom-right a,
+.profile-actions-bottom-right a:visited {
+    color: #6b7280;
+    /* 🔥 אפור יפה (Tailwind gray-500) */
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.profile-actions-bottom-right a:hover {
+    color: #111827;
+    /* כהה יותר בהובר */
+    text-decoration: underline;
+}
+
+
+.profile-actions-bottom-right a:link,
+.profile-actions-bottom-right a:visited,
+.profile-actions-bottom-right a:active {
+    color: #6b7280 !important;
+    text-decoration: none !important;
+    font-weight: 600;
+}
+
+.profile-actions-bottom-right a:hover {
+    color: #111827 !important;
+}

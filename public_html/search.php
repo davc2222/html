@@ -1,8 +1,8 @@
 <?php
-            // ===== FILE: search.php =====
+// ===== FILE: search.php =====
 
-            ini_set('display_errors', 0);
-            error_reporting(0);
+ini_set('display_errors', 0);
+error_reporting(0);
 
 require_once __DIR__ . '/config/config.php';
 
@@ -84,8 +84,22 @@ $search_done = ($gender_id !== '' || $age_from !== '' || $age_to !== '' || $zone
 
 /* ===== search ===== */
 if ($search_done) {
+    $me = (int)($_SESSION['user_id'] ?? 0);
+
     $sql = "SELECT * FROM {$mainTable} WHERE 1=1";
     $params = [];
+
+    if ($me > 0) {
+        $sql .= "
+            AND NOT EXISTS (
+                SELECT 1
+                FROM blocked_users bu
+                WHERE (bu.Id = {$mainTable}.Id AND bu.Blocked_ById = :me)
+                   OR (bu.Id = :me AND bu.Blocked_ById = {$mainTable}.Id)
+            )
+        ";
+        $params[':me'] = $me;
+    }
 
     if ($gender_id !== '') {
         $sql .= " AND {$fieldGenderId} = :gender_id";
