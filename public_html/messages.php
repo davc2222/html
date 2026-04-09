@@ -62,54 +62,57 @@ $stmt->execute([':me' => $me]);
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
-<div class="page-shell views-page-shell">
+<main class="page-shell">
+    <section class="search-container">
 
-    <div class="views-layout">
+        <h2 class="views-page-title">הודעות</h2>
 
-        <div class="views-main-col">
-            <h2 class="views-page-title">הודעות</h2>
+        <?php if (!$results): ?>
+            <div class="no-results">אין הודעות</div>
+        <?php else: ?>
 
-            <?php if (!$results): ?>
-                <div class="no-views-box">אין הודעות</div>
-            <?php else: ?>
+            <div class="results">
 
-                <div class="views-list">
+                <?php foreach ($results as $row): ?>
+                    <?php
+                    $user = $row;
+                    $otherUserId = (int)($row['other_user_id'] ?? 0);
+                    $user['Id'] = $otherUserId;
 
-                    <?php foreach ($results as $row): ?>
-                        <?php
-                        $user = $row;
-                        $otherUserId = (int)($row['other_user_id'] ?? 0);
-                        $user['Id'] = $otherUserId;
-
-                        $user['Age'] = '';
-                        if (!empty($user['DOB'])) {
-                            try {
-                                $user['Age'] = date_diff(date_create((string)$user['DOB']), date_create('today'))->y;
-                            } catch (Throwable $e) {
-                                $user['Age'] = '';
-                            }
+                    $user['Age'] = '';
+                    if (!empty($user['DOB'])) {
+                        try {
+                            $user['Age'] = date_diff(date_create((string)$user['DOB']), date_create('today'))->y;
+                        } catch (Throwable $e) {
+                            $user['Age'] = '';
                         }
+                    }
 
-                        $unread = (int)($row['unread_count'] ?? 0);
-                        $name = trim((string)($user['Name'] ?? ''));
-                        $img = getMainProfileImage($pdo, $otherUserId);
+                    $unread = (int)($row['unread_count'] ?? 0);
+                    $name = trim((string)($user['Name'] ?? ''));
+                    $img = getMainProfileImage($pdo, $otherUserId);
 
-                        $cardId = '';
-                        $cardIconClass = 'vc-message';
-                        $cardTopBadge = $unread > 0 ? '💬 ' . $unread . ' חדשות' : '';
-                        $cardSubline = '';
-                        $cardActionsHtml =
-                            '<a href="#" class="view-card-profile-link" onclick="openMessageModal(' . $otherUserId . ', \'' . h($name) . '\', \'' . h($img) . '\'); return false;">פתח צ\'אט</a>
-                     <span>|</span>
-                     <a href="/?page=profile&id=' . $otherUserId . '" class="view-card-profile-link">פתח פרופיל</a>';
-                        $user['Image'] = getMainProfileImage($pdo, (int)$user['Id']);
-                        $user['is_online'] = is_user_online($pdo, (int)$user['Id']);
-                        include __DIR__ . '/includes/view_card.php';
-                        ?>
-                    <?php endforeach; ?>
+                    $cardId = '';
+                    $cardIconClass = 'vc-message';
+                    $cardTopBadge = $unread > 0 ? '💬 ' . $unread . ' חדשות' : '';
+                    $cardSubline = '';
+                    $cardActionsHtml =
+                        '<a href="#" class="view-card-profile-link" onclick="openMessageModal(' . $otherUserId . ', \''
+                        . h($name) . '\', \''
+                        . h($img) . '\'); return false;">פתח צ\'אט</a>
+                         <span>|</span>
+                         <a href="/?page=profile&id=' . $otherUserId . '" class="view-card-profile-link">פתח פרופיל</a>';
 
-                </div>
+                    $user['Image'] = $img;
+                    $user['is_online'] = is_user_online($pdo, $otherUserId);
 
-            <?php endif; ?>
+                    include __DIR__ . '/includes/view_card.php';
+                    ?>
+                <?php endforeach; ?>
 
-        </div>
+            </div>
+
+        <?php endif; ?>
+
+    </section>
+</main>

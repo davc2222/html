@@ -541,7 +541,8 @@ try {
     }
 </style>
 
-<div class="page-shell">
+<main class="page-shell">
+    <section class="search-container">
 
     <div class="advanced-search-toggle-wrap">
         <button type="button" class="advanced-search-toggle-btn" id="openAdvancedSearchBtn">
@@ -699,7 +700,7 @@ try {
         </div>
     </div>
 
-    <div class="views-list">
+        <div class="results">
         <?php if (!$results): ?>
             <div class="no-results">לא נמצאו תוצאות</div>
         <?php else: ?>
@@ -718,8 +719,10 @@ try {
                 ?>
             <?php endforeach; ?>
         <?php endif; ?>
-    </div>
-</div>
+        </div>
+
+    </section>
+</main>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
