@@ -32,82 +32,6 @@ function h($v) {
     return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
 }
 
-/* 🔥 פונקציה מתוקנת */
-function is_user_online(PDO $pdo, int $userId): bool {
-    try {
-        $stmt = $pdo->prepare("
-            SELECT CASE
-                WHEN last_seen IS NOT NULL
-                 AND last_seen >= (NOW() - INTERVAL 120 SECOND)
-                THEN 1
-                ELSE 0
-            END
-            FROM users_profile
-            WHERE Id = :id
-            LIMIT 1
-        ");
-        $stmt->execute([':id' => $userId]);
-        return (bool)$stmt->fetchColumn();
-    } catch (Throwable $e) {
-        return false;
-    }
-}
-
-function get_profile_image(PDO $pdo, int $userId): string {
-    try {
-        // ניסיון תמונה ראשית
-        $stmt = $pdo->prepare("
-            SELECT Pic_Name
-            FROM user_pics
-            WHERE Id = :id
-              AND Main_Pic = 1
-              AND Pic_Status = 1
-            LIMIT 1
-        ");
-        $stmt->execute([':id' => $userId]);
-        $picName = $stmt->fetchColumn();
-
-        // אם אין ראשית - מביא ראשונה
-        if (!$picName) {
-            $stmt = $pdo->prepare("
-                SELECT Pic_Name
-                FROM user_pics
-                WHERE Id = :id
-                  AND Pic_Status = 1
-                ORDER BY Main_Pic DESC, Pic_Num ASC
-                LIMIT 1
-            ");
-            $stmt->execute([':id' => $userId]);
-            $picName = $stmt->fetchColumn();
-        }
-
-        if ($picName) {
-            return '/uploads/' . ltrim((string)$picName, '/');
-        }
-    } catch (Throwable $e) {
-        // ממשיכים ל fallback
-    }
-
-    try {
-        // 🔥 fallback לפי מין
-        $stmt = $pdo->prepare("
-            SELECT Gender_Str
-            FROM users_profile
-            WHERE Id = :id
-            LIMIT 1
-        ");
-        $stmt->execute([':id' => $userId]);
-        $gender = trim((string)$stmt->fetchColumn());
-
-        if ($gender === 'אישה') {
-            return '/images/default_female.svg';
-        }
-    } catch (Throwable $e) {
-        // ignore
-    }
-
-    return '/images/default_male.svg';
-}
 
 /* ===== שליפה ===== */
 $stmt = $pdo->prepare("
@@ -149,120 +73,36 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="views-list">
 
             <?php foreach ($results as $row): ?>
-
                 <?php
+                $user = $row;
                 $otherUserId = (int)($row['other_user_id'] ?? 0);
-                $name = trim((string)($row['Name'] ?? ''));
+                $user['Id'] = $otherUserId;
 
-                $age = '';
-                if (!empty($row['DOB'])) {
+                $user['Age'] = '';
+                if (!empty($user['DOB'])) {
                     try {
-                        $age = date_diff(date_create($row['DOB']), date_create('today'))->y;
+                        $user['Age'] = date_diff(date_create((string)$user['DOB']), date_create('today'))->y;
                     } catch (Throwable $e) {
-                        $age = '';
+                        $user['Age'] = '';
                     }
                 }
 
-                $zone     = trim((string)($row['Zone_Str'] ?? ''));
-                $place    = trim((string)($row['Place_Str'] ?? ''));
-                $family   = trim((string)($row['Family_Status_Str'] ?? ''));
-                $children = trim((string)($row['Childs_Num_Str'] ?? ''));
-                $height   = trim((string)($row['Height_Str'] ?? ''));
-                $smoking  = trim((string)($row['Smoking_Habbit_Str'] ?? ''));
-
                 $unread = (int)($row['unread_count'] ?? 0);
+                $name = trim((string)($user['Name'] ?? ''));
+                $img = getMainProfileImage($pdo, $otherUserId);
 
-                $img = get_profile_image($pdo, $otherUserId);
-                $isOnline = is_user_online($pdo, $otherUserId);
+                $cardId = '';
+                $cardIconClass = 'vc-message';
+                $cardTopBadge = $unread > 0 ? '💬 ' . $unread . ' חדשות' : '';
+                $cardSubline = '';
+                $cardActionsHtml =
+                    '<a href="#" class="view-card-profile-link" onclick="openMessageModal(' . $otherUserId . ', \'' . h($name) . '\', \'' . h($img) . '\'); return false;">פתח צ\'אט</a>
+                     <span>|</span>
+                     <a href="/?page=profile&id=' . $otherUserId . '" class="view-card-profile-link">פתח פרופיל</a>';
+                $user['Image'] = getMainProfileImage($pdo, (int)$user['Id']);
+                $user['is_online'] = is_user_online($pdo, (int)$user['Id']);
+                include __DIR__ . '/includes/view_card.php';
                 ?>
-
-                <div class="view-card">
-
-                    <?php if ($unread > 0): ?>
-                        <div class="view-card-top-badge">
-                            💬 <?= $unread ?> חדשות
-                        </div>
-                    <?php endif; ?>
-
-                    <div class="view-card-media">
-                        <img
-                            class="view-card-image"
-                            src="<?= h($img) ?>"
-                            alt="<?= h($name) ?>">
-
-                        <?php if ($isOnline): ?>
-                            <span class="online-badge" title="מחובר כעת"></span>
-                        <?php endif; ?>
-                    </div>
-
-                    <div class="view-card-content">
-
-                        <div class="view-card-icons">
-                            <span class="vc-icon vc-message" title="שיחה"></span>
-                            <span class="view-card-status-text">יש שיחה</span>
-                        </div>
-
-                        <div class="view-card-name">
-                            <?= h($name) ?>
-                            <?= $age !== '' ? ', ' . h((string)$age) : '' ?>
-                        </div>
-
-                        <div class="view-card-divider"></div>
-
-                        <div class="view-card-details">
-
-                            <?php if ($family !== ''): ?>
-                                <div>מצב משפחתי: <?= h($family) ?></div>
-                            <?php endif; ?>
-
-                            <div>
-                                ילדים:
-                                <?= ($children === '' || $children === '0') ? 'ללא' : h($children) . '+' ?>
-                            </div>
-
-                            <?php if ($zone !== '' || $place !== ''): ?>
-                                <div>
-                                    <?php if ($zone !== ''): ?>
-                                        אזור: <?= h($zone) ?>
-                                    <?php endif; ?>
-
-                                    <?php if ($zone !== '' && $place !== ''): ?>
-                                        |
-                                    <?php endif; ?>
-
-                                    <?php if ($place !== ''): ?>
-                                        מקום: <?= h($place) ?>
-                                    <?php endif; ?>
-                                </div>
-                            <?php endif; ?>
-
-                            <?php if ($height !== ''): ?>
-                                <div>גובה: <?= h($height) ?></div>
-                            <?php endif; ?>
-
-                            <?php if ($smoking !== ''): ?>
-                                <div>עישון: <?= h($smoking) ?></div>
-                            <?php endif; ?>
-
-                        </div>
-
-                        <p>
-                            <a
-                                href="#"
-                                class="view-card-link"
-                                onclick="openMessageModal(<?= (int)$otherUserId ?>, '<?= h($name) ?>', '<?= h($img) ?>'); return false;">
-                                פתח צ'אט
-                            </a>
-                            |
-                            <a href="/?page=profile&id=<?= $otherUserId ?>" class="view-card-link">
-                                פתח פרופיל
-                            </a>
-                        </p>
-
-                    </div>
-
-                </div>
-
             <?php endforeach; ?>
 
         </div>

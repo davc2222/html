@@ -137,21 +137,21 @@ main {
 /* Badge בתפריט */
 .menu-badge {
     position: absolute;
-    top: -4px;
-    right: -6px;
-    min-width: 18px;
-    height: 18px;
-    padding: 0 5px;
-    border-radius: 999px;
-    background: #ff2e63;
-    color: #fff;
-    font-size: 11px;
-    font-weight: bold;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
-    line-height: 18px;
+        top: -4px;
+        right: -6px;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 5px;
+        border-radius: 999px;
+        background: #ff2e63;
+        color: #fff;
+        font-size: 11px;
+        font-weight: bold;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+        line-height: 18px;
 }
 
 .badge-pulse {
@@ -824,7 +824,7 @@ footer {
     border-radius: 50%;
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
     z-index: 10;
-}
+    }
 
 .view-card-image {
     width: 245px;
@@ -1787,7 +1787,6 @@ footer {
         margin: 0 auto 10px;
     }
 }
-
 /* =======================================================
    14) ADVANCED SEARCH - CLEAN FINAL
 ======================================================= */
@@ -2123,30 +2122,6 @@ footer {
    ADVANCED SEARCH / PROFILE FIXES
 ======================================================= */
 
-.advanced-search-page-title {
-    font-size: 24px !important;
-    font-weight: 600 !important;
-}
-
-.advanced-search-toggle-btn,
-.advanced-search-reset-link,
-.advanced-search-clear-btn,
-.advanced-search-submit-btn {
-    font-size: 14px !important;
-}
-
-.advanced-search-tag {
-    font-size: 13px !important;
-    padding: 8px 12px !important;
-}
-
-.advanced-search-results-wrap,
-.advanced-search-shell .results,
-.advanced-search-shell .views-list {
-    gap: 16px;
-}
-
-
 .profile-right-edit-link {
     display: inline-flex !important;
     align-items: center !important;
@@ -2303,10 +2278,8 @@ footer {
     color: #15b6c7;
     font-size: 13px;
 }
-
 /* ===== VIEW CARD FINAL FULL ===== */
 /* ===== UNIFIED CARD DESIGN: VIEWS + MESSAGES + ADVANCED SEARCH ===== */
-
 
 
 /* ===== MESSAGE BADGE ===== */
@@ -2543,7 +2516,6 @@ footer {
     gap: 10px !important;
     margin-top: 14px !important;
 }
-
 /* ===== PROFILE EDIT ALIGNMENT ===== */
 
 .profile-row {
@@ -2629,7 +2601,6 @@ footer {
     padding: 10px 12px;
     border-radius: 16px;
 }
-
 /* ===== PROFILE VIEW MODE ===== */
 
 .profile-view-value,
@@ -2765,7 +2736,6 @@ footer {
 .profile-right-input {
     font-style: normal !important;
 }
-
 /* right side - view mode */
 .profile-right-facts .profile-right-row {
     display: flex;
@@ -3298,7 +3268,6 @@ footer {
     font-size: 12px;
     font-weight: 700;
 }
-
 .profile-set-main-btn {
     position: absolute;
     bottom: 8px;
@@ -4612,7 +4581,7 @@ body.match-table-open {
     border-radius: 22px;
     padding: 22px;
     border: 1px solid #e5e7eb;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.22);
 }
 
 /* title */
@@ -4810,100 +4779,4 @@ body.match-table-open {
     position: absolute !important;
     right: 8px !important;
     bottom: 8px !important;
-}
-
-/* ===== FINAL VIEW CARD CANONICAL STYLE ===== */
-.view-card {
-    display: flex;
-    flex-direction: row-reverse;
-    align-items: flex-start;
-    gap: 18px;
-    width: 100%;
-    background: #f8f8f8;
-    border-radius: 20px;
-    padding: 16px;
-    position: relative;
-}
-
-.view-card-media {
-    width: 220px;
-    min-width: 220px;
-    max-width: 220px;
-    height: 200px;
-    overflow: hidden;
-    border: 3px solid #dcdcdc;
-    border-radius: 18px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
-    background: #fff;
-    position: relative;
-    display: block;
-    transform: none;
-}
-
-.view-card-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    margin: 0;
-    border-radius: 0;
-}
-
-.view-card-content {
-    flex: 1 1 auto;
-    min-width: 0;
-    text-align: right;
-}
-
-.view-card-name {
-    font-size: 22px;
-    font-weight: 700;
-    color: #111;
-    margin-bottom: 8px;
-}
-
-.view-card-detail {
-    font-size: 15px;
-    color: #444;
-    line-height: 1.8;
-}
-
-.view-card-actions {
-    margin-top: 12px;
-}
-
-.view-card-profile-link {
-    display: inline-block;
-    margin-top: 0;
-    color: #15b6c7;
-    font-size: 16px;
-    font-weight: 700;
-}
-
-.view-card-profile-link:hover {
-    text-decoration: underline;
-}
-
-@media (max-width: 950px) {
-    .view-card {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .view-card-media {
-        width: 100%;
-        min-width: 0;
-        max-width: none;
-        height: auto;
-    }
-
-    .view-card-image {
-        width: 100%;
-        height: auto;
-        max-height: 420px;
-    }
-}
-
-.view-card-media {
-    align-self: flex-end;
 }

@@ -14,48 +14,6 @@ function e($v) {
     return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
 }
 
-function is_user_online(PDO $pdo, int $userId): bool {
-    try {
-        $stmt = $pdo->prepare("
-            SELECT CASE
-                WHEN last_seen IS NOT NULL
-                 AND last_seen >= (NOW() - INTERVAL 120 SECOND)
-                THEN 1
-                ELSE 0
-            END
-            FROM users_profile
-            WHERE Id = :id
-            LIMIT 1
-        ");
-        $stmt->execute([':id' => $userId]);
-        return (bool)$stmt->fetchColumn();
-    } catch (Throwable $e) {
-        return false;
-    }
-}
-
-function getMainProfileImage(PDO $pdo, int $id): string {
-    try {
-        $stmt = $pdo->prepare("
-            SELECT Pic_Name
-            FROM user_pics
-            WHERE Id = :id
-              AND Main_Pic = 1
-              AND Pic_Status = 1
-            LIMIT 1
-        ");
-        $stmt->execute([':id' => $id]);
-        $pic = $stmt->fetchColumn();
-
-        if ($pic) {
-            return '/uploads/' . ltrim((string)$pic, '/');
-        }
-    } catch (Throwable $e) {
-        // ignore
-    }
-
-    return '/images/no_photo.jpg';
-}
 
 /* =======================================================
    SEARCH PAGE
@@ -210,103 +168,27 @@ if ($search_done) {
 
             <?php else: ?>
                 <?php foreach ($results as $row): ?>
-
                     <?php
-                    $id   = (int)($row['Id'] ?? 0);
-                    $name = trim((string)($row['Name'] ?? ''));
+                    $user = $row;
 
-                    $age = '';
-                    if (!empty($row['DOB'])) {
+                    $user['Age'] = '';
+                    if (!empty($user['DOB'])) {
                         try {
-                            $age = date_diff(date_create((string)$row['DOB']), date_create('today'))->y;
+                            $user['Age'] = date_diff(date_create((string)$user['DOB']), date_create('today'))->y;
                         } catch (Throwable $e) {
-                            $age = '';
+                            $user['Age'] = '';
                         }
                     }
 
-                    $zone     = trim((string)($row['Zone_Str'] ?? ''));
-                    $place    = trim((string)($row['Place_Str'] ?? ''));
-                    $family   = trim((string)($row['Family_Status_Str'] ?? ''));
-                    $children = trim((string)($row['Childs_Num_Str'] ?? ''));
-                    $height   = trim((string)($row['Height_Str'] ?? ''));
-                    $smoking  = trim((string)($row['Smoking_Habbit_Str'] ?? ''));
-
-                    $img = getMainProfileImage($pdo, $id);
-                    $isOnline = is_user_online($pdo, $id);
+                    $cardId = '';
+                    $cardIconClass = 'vc-search';
+                    $cardTopBadge = '';
+                    $cardSubline = '';
+                    $cardActionsHtml = '<a href="/?page=profile&id=' . (int)$user['Id'] . '" class="view-card-profile-link">צפייה בפרופיל</a>';
+                    $user['Image'] = getMainProfileImage($pdo, (int)$user['Id']);
+                    $user['is_online'] = is_user_online($pdo, (int)$user['Id']);
+                    include __DIR__ . '/includes/view_card.php';
                     ?>
-
-                    <div class="view-card">
-
-                        <div class="view-card-media">
-                            <img
-                                class="view-card-image"
-                                src="<?= e($img) ?>"
-                                alt="<?= e($name) ?>">
-
-                            <?php if ($isOnline): ?>
-                                <span class="online-badge" title="מחובר כעת"></span>
-                            <?php endif; ?>
-                        </div>
-
-                        <div class="view-card-content">
-
-                            <div class="view-card-icons">
-                                <span class="vc-icon vc-search" title="תוצאת חיפוש"></span>
-                                <span class="view-card-status-text">תוצאת חיפוש</span>
-                            </div>
-
-                            <div class="view-card-name">
-                                <?= e($name) ?>
-                                <?= $age !== '' ? ', ' . e((string)$age) : '' ?>
-                            </div>
-
-                            <div class="view-card-divider"></div>
-
-                            <div class="view-card-details">
-
-                                <?php if ($family !== ''): ?>
-                                    <div>מצב משפחתי: <?= e($family) ?></div>
-                                <?php endif; ?>
-
-                                <div>
-                                    ילדים:
-                                    <?= ($children === '' || $children === '0') ? 'ללא' : e($children) . '+' ?>
-                                </div>
-
-                                <?php if ($zone !== '' || $place !== ''): ?>
-                                    <div>
-                                        <?php if ($zone !== ''): ?>
-                                            אזור: <?= e($zone) ?>
-                                        <?php endif; ?>
-
-                                        <?php if ($zone !== '' && $place !== ''): ?>
-                                            |
-                                        <?php endif; ?>
-
-                                        <?php if ($place !== ''): ?>
-                                            מקום: <?= e($place) ?>
-                                        <?php endif; ?>
-                                    </div>
-                                <?php endif; ?>
-
-                                <?php if ($height !== ''): ?>
-                                    <div>גובה: <?= e($height) ?></div>
-                                <?php endif; ?>
-
-                                <?php if ($smoking !== ''): ?>
-                                    <div>עישון: <?= e($smoking) ?></div>
-                                <?php endif; ?>
-
-                            </div>
-
-                            <a class="view-card-link" href="/?page=profile&id=<?= $id ?>">
-                                צפייה בפרופיל
-                            </a>
-
-                        </div>
-
-                    </div>
-
                 <?php endforeach; ?>
             <?php endif; ?>
 

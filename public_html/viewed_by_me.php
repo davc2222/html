@@ -98,113 +98,39 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="views-list">
 
             <?php foreach ($results as $row): ?>
-
                 <?php
-                $id   = (int)$row['Id'];
+                $user = $row;
                 $num  = (int)$row['Num'];
-                $name = trim((string)($row['Name'] ?? ''));
 
-                $age = '';
-                if (!empty($row['DOB'])) {
+                $user['Age'] = '';
+                if (!empty($user['DOB'])) {
                     try {
-                        $age = date_diff(date_create($row['DOB']), date_create('today'))->y;
+                        $user['Age'] = date_diff(date_create((string)$user['DOB']), date_create('today'))->y;
                     } catch (Throwable $e) {
+                        $user['Age'] = '';
                     }
                 }
-
-                $zone     = trim((string)($row['Zone_Str'] ?? ''));
-                $place    = trim((string)($row['Place_Str'] ?? ''));
-                $family   = trim((string)($row['Family_Status_Str'] ?? ''));
-                $children = trim((string)($row['Childs_Num_Str'] ?? ''));
-                $height   = trim((string)($row['Height_Str'] ?? ''));
-                $smoking  = trim((string)($row['Smoking_Habbit_Str'] ?? ''));
-                $img      = get_profile_image($pdo, $id);
-                $isOnline = is_user_online($pdo, $id);
 
                 $viewDate = '';
                 if (!empty($row['Date'])) {
                     try {
                         $viewDate = date('d/m/Y H:i', strtotime((string)$row['Date']));
                     } catch (Throwable $e) {
+                        $viewDate = '';
                     }
                 }
+
+                $cardId = 'viewed-card-' . $num;
+                $cardIconClass = 'vc-eye-reverse';
+                $cardTopBadge = '';
+                $cardSubline = $viewDate !== '' ? 'נצפה בתאריך: ' . $viewDate : '';
+                $cardActionsHtml =
+                    '<a href="/?page=profile&id=' . (int)$user['Id'] . '" class="view-card-profile-link">צפייה בפרופיל</a>
+                     <span>|</span>
+                     <a href="#" class="view-card-profile-link" onclick="deleteViewedCard(' . $num . '); return false;">הסר מהרשימה</a>';
+
+                include __DIR__ . '/includes/view_card.php';
                 ?>
-
-                <div class="view-card" id="viewed-card-<?= $num ?>">
-
-                    <div class="view-card-media">
-                        <img src="<?= h($img) ?>" class="view-card-image" alt="<?= h($name) ?>">
-
-                        <?php if ($isOnline): ?>
-                            <span class="online-badge" title="מחובר כעת"></span>
-                        <?php endif; ?>
-                    </div>
-
-                    <div class="view-card-content">
-
-                        <div class="view-card-icons">
-                            <span class="vc-icon vc-eye-reverse" title="צפיתי"></span>
-                            <span class="view-card-status-text">צפיתי</span>
-                        </div>
-
-                        <div class="view-card-name">
-                            <?= h($name) ?>
-                            <?= $age !== '' ? ', ' . h((string)$age) : '' ?>
-                        </div>
-
-                        <?php if ($viewDate !== ''): ?>
-                            <div class="view-card-date">נצפה בתאריך: <?= h($viewDate) ?></div>
-                        <?php endif; ?>
-
-                        <div class="view-card-divider"></div>
-
-                        <div class="view-card-details">
-
-                            <?php if ($family !== ''): ?>
-                                <div>מצב משפחתי: <?= h($family) ?></div>
-                            <?php endif; ?>
-
-                            <div>
-                                ילדים:
-                                <?= ($children === '' || $children === '0') ? 'ללא' : h($children) . '+' ?>
-                            </div>
-
-                            <?php if ($zone !== '' || $place !== ''): ?>
-                                <div>
-                                    <?= $zone !== '' ? 'אזור: ' . h($zone) : '' ?>
-                                    <?= ($zone !== '' && $place !== '') ? ' | ' : '' ?>
-                                    <?= $place !== '' ? 'מקום: ' . h($place) : '' ?>
-                                </div>
-                            <?php endif; ?>
-
-                            <?php if ($height !== ''): ?>
-                                <div>גובה: <?= h($height) ?></div>
-                            <?php endif; ?>
-
-                            <?php if ($smoking !== ''): ?>
-                                <div>עישון: <?= h($smoking) ?></div>
-                            <?php endif; ?>
-
-                        </div>
-
-                        <div class="blocked-card-actions">
-                            <a class="view-card-link" href="/?page=profile&id=<?= $id ?>">
-                                צפייה בפרופיל
-                            </a>
-
-                            <span>|</span>
-
-                            <a href="#"
-                                class="view-card-link"
-                                onclick="deleteViewedCard(<?= $num ?>); return false;">
-                                הסר מהרשימה
-                            </a>
-                        </div>
-
-                    </div>
-
-                </div>
-
             <?php endforeach; ?>
 
         </div>
