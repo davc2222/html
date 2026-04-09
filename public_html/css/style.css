@@ -827,8 +827,8 @@ footer {
 }
 
 .view-card-image {
-    width: 245px;
-    height: 145px;
+    width: 260px;
+    height: 170px;
     object-fit: cover;
     border-radius: 16px;
     display: block;

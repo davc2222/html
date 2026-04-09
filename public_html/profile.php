@@ -54,25 +54,7 @@ function e($v) {
     return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
 }
 
-function is_user_online(PDO $pdo, int $userId): bool {
-    try {
-        $stmt = $pdo->prepare("
-            SELECT CASE
-                WHEN last_seen IS NOT NULL
-                 AND last_seen >= (NOW() - INTERVAL 120 SECOND)
-                THEN 1
-                ELSE 0
-            END
-            FROM users_profile
-            WHERE Id = :id
-            LIMIT 1
-        ");
-        $stmt->execute([':id' => $userId]);
-        return (bool)$stmt->fetchColumn();
-    } catch (Throwable $e) {
-        return false;
-    }
-}
+
 
 $stmt = $pdo->prepare("SELECT * FROM users_profile WHERE Id = :id LIMIT 1");
 $stmt->execute([':id' => $id]);
