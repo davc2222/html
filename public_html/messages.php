@@ -62,51 +62,54 @@ $stmt->execute([':me' => $me]);
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
-<div class="page-shell">
+<div class="page-shell views-page-shell">
 
-    <h2 class="views-page-title">הודעות</h2>
+    <div class="views-layout">
 
-    <?php if (!$results): ?>
-        <div class="no-views-box">אין הודעות</div>
-    <?php else: ?>
+        <div class="views-main-col">
+            <h2 class="views-page-title">הודעות</h2>
 
-        <div class="views-list">
+            <?php if (!$results): ?>
+                <div class="no-views-box">אין הודעות</div>
+            <?php else: ?>
 
-            <?php foreach ($results as $row): ?>
-                <?php
-                $user = $row;
-                $otherUserId = (int)($row['other_user_id'] ?? 0);
-                $user['Id'] = $otherUserId;
+                <div class="views-list">
 
-                $user['Age'] = '';
-                if (!empty($user['DOB'])) {
-                    try {
-                        $user['Age'] = date_diff(date_create((string)$user['DOB']), date_create('today'))->y;
-                    } catch (Throwable $e) {
+                    <?php foreach ($results as $row): ?>
+                        <?php
+                        $user = $row;
+                        $otherUserId = (int)($row['other_user_id'] ?? 0);
+                        $user['Id'] = $otherUserId;
+
                         $user['Age'] = '';
-                    }
-                }
+                        if (!empty($user['DOB'])) {
+                            try {
+                                $user['Age'] = date_diff(date_create((string)$user['DOB']), date_create('today'))->y;
+                            } catch (Throwable $e) {
+                                $user['Age'] = '';
+                            }
+                        }
 
-                $unread = (int)($row['unread_count'] ?? 0);
-                $name = trim((string)($user['Name'] ?? ''));
-                $img = getMainProfileImage($pdo, $otherUserId);
+                        $unread = (int)($row['unread_count'] ?? 0);
+                        $name = trim((string)($user['Name'] ?? ''));
+                        $img = getMainProfileImage($pdo, $otherUserId);
 
-                $cardId = '';
-                $cardIconClass = 'vc-message';
-                $cardTopBadge = $unread > 0 ? '💬 ' . $unread . ' חדשות' : '';
-                $cardSubline = '';
-                $cardActionsHtml =
-                    '<a href="#" class="view-card-profile-link" onclick="openMessageModal(' . $otherUserId . ', \'' . h($name) . '\', \'' . h($img) . '\'); return false;">פתח צ\'אט</a>
+                        $cardId = '';
+                        $cardIconClass = 'vc-message';
+                        $cardTopBadge = $unread > 0 ? '💬 ' . $unread . ' חדשות' : '';
+                        $cardSubline = '';
+                        $cardActionsHtml =
+                            '<a href="#" class="view-card-profile-link" onclick="openMessageModal(' . $otherUserId . ', \'' . h($name) . '\', \'' . h($img) . '\'); return false;">פתח צ\'אט</a>
                      <span>|</span>
                      <a href="/?page=profile&id=' . $otherUserId . '" class="view-card-profile-link">פתח פרופיל</a>';
-                $user['Image'] = getMainProfileImage($pdo, (int)$user['Id']);
-                $user['is_online'] = is_user_online($pdo, (int)$user['Id']);
-                include __DIR__ . '/includes/view_card.php';
-                ?>
-            <?php endforeach; ?>
+                        $user['Image'] = getMainProfileImage($pdo, (int)$user['Id']);
+                        $user['is_online'] = is_user_online($pdo, (int)$user['Id']);
+                        include __DIR__ . '/includes/view_card.php';
+                        ?>
+                    <?php endforeach; ?>
+
+                </div>
+
+            <?php endif; ?>
 
         </div>
-
-    <?php endif; ?>
-
-</div>

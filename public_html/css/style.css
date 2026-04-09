@@ -795,7 +795,7 @@ footer {
 .view-card {
     display: flex;
     flex-direction: row-reverse;
-    align-items: flex-start;
+    align-items: center;
     gap: 18px;
     width: 100%;
     background: #f8f8f8;
@@ -804,13 +804,13 @@ footer {
 }
 
 .view-card-media {
-    width: 145px;
+    width: 260px;
+    height: 170px;
     flex-shrink: 0;
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    justify-content: center;
     position: relative;
-    overflow: hidden;
 }
 
 .online-badge {
@@ -2868,37 +2868,6 @@ footer {
    מסגרת לתמונות בכרטיסים
    חיפוש / צפיות / הודעות
    ========================= */
-.view-card {
-    display: flex !important;
-    align-items: stretch !important;
-    gap: 16px !important;
-}
-
-.view-card-media {
-    flex: 0 0 220px !important;
-    width: 220px !important;
-    max-width: 220px !important;
-    min-width: 220px !important;
-    height: 200px !important;
-    overflow: hidden !important;
-    border: 3px solid #dcdcdc !important;
-    border-radius: 18px !important;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14) !important;
-    background: #fff !important;
-    display: block !important;
-}
-
-.view-card-image {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
-    display: block !important;
-}
-
-.view-card-content {
-    flex: 1 1 auto !important;
-    min-width: 0 !important;
-}
 
 /* ==== PROFILE GALLERY FINAL ==== */
 /* ===============================
@@ -4744,30 +4713,22 @@ body.match-table-open {
 
 /* ===== FINAL VIEW CARD STYLE ===== */
 
-.view-card {
-    display: flex !important;
-    flex-direction: row-reverse !important;
-    align-items: center !important;
-    gap: 18px !important;
-    width: 100% !important;
-    max-width: none !important;
-    margin: 0 0 16px 0 !important;
 
-    background: #f8f8f8 !important;
-    border-radius: 20px !important;
-    padding: 16px !important;
-    position: relative !important;
-}
-
+/* ===== FINAL VIEW CARD CANONICAL STYLE ===== */
 .view-card-media {
-    width: 220px !important;
-    min-width: 220px !important;
-    height: 200px !important;
-    border-radius: 18px !important;
+    width: 250px !important;
+    min-width: 300px !important;
+    max-width: 300px !important;
+    flex: 0 0 300px !important;
+    /* 🔥 זה מה שמקבע רוחב ב-flex */
+    height: 100px !important;
     overflow: hidden !important;
+    border: 3px solid #dcdcdc !important;
+    border-radius: 18px !important;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14) !important;
+    background: #fff !important;
     position: relative !important;
-    transform: none !important;
-    /* 🔥 מבטל הזזה */
+    align-self: center !important;
 }
 
 .view-card-image {
@@ -4775,84 +4736,13 @@ body.match-table-open {
     height: 100% !important;
     object-fit: cover !important;
     display: block !important;
-    margin: 0 !important;
-    /* 🔥 מבטל margin-left ישן */
 }
 
 .view-card-content {
-    flex: 1 1 auto !important;
-    min-width: 0 !important;
-    text-align: right !important;
-}
-
-.view-card-name {
-    font-size: 22px !important;
-    font-weight: 700 !important;
-    margin-bottom: 10px !important;
-}
-
-.view-card-detail {
-    font-size: 15px !important;
-    line-height: 1.8 !important;
-    color: #444 !important;
-}
-
-.view-card-actions {
-    margin-top: 12px !important;
-}
-
-.view-card-profile-link {
-    color: #15b6c7 !important;
-    font-weight: 700 !important;
-}
-
-.online-badge {
-    position: absolute !important;
-    right: 8px !important;
-    bottom: 8px !important;
-}
-
-/* ===== FINAL VIEW CARD CANONICAL STYLE ===== */
-.view-card {
     display: flex;
-    flex-direction: row-reverse;
-    align-items: flex-start;
-    gap: 18px;
-    width: 100%;
-    background: #f8f8f8;
-    border-radius: 20px;
-    padding: 16px;
-    position: relative;
-}
-
-.view-card-media {
-    width: 220px;
-    min-width: 220px;
-    max-width: 220px;
-    height: 200px;
-    overflow: hidden;
-    border: 3px solid #dcdcdc;
-    border-radius: 18px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
-    background: #fff;
-    position: relative;
-    display: block;
-    transform: none;
-}
-
-.view-card-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    margin: 0;
-    border-radius: 0;
-}
-
-.view-card-content {
-    flex: 1 1 auto;
-    min-width: 0;
-    text-align: right;
+    flex-direction: column;
+    justify-content: center;
+    /* 🔥 זה הפתרון */
 }
 
 .view-card-name {
@@ -4883,6 +4773,13 @@ body.match-table-open {
 .view-card-profile-link:hover {
     text-decoration: underline;
 }
+.view-card-media {
+    align-self: center;
+}
+
+
+
+
 
 @media (max-width: 950px) {
     .view-card {
@@ -4904,6 +4801,12 @@ body.match-table-open {
     }
 }
 
+
+
+
 .view-card-media {
-    align-self: flex-end;
+    width: 360px !important;
+ 
+    height: 260px !important;
+    outline: 4px solid rgb(139, 137, 137) !important;
 }
