@@ -5,6 +5,10 @@
         background: #efefef;
     }
 
+    .home-page-shell {
+        min-height: calc(100vh - 190px);
+    }
+
     .home-demo-hero {
         max-width: 1150px;
         margin: 0 auto 35px;
@@ -143,38 +147,58 @@
             max-width: 260px;
             text-align: center;
         }
+
     }
 </style>
+<main class="home-page-shell">
+    <div class="home-demo-wrap">
+        <section class="home-demo-hero">
+            <h1>ברוכים הבאים ל־LoveMatch ❤️</h1>
+            <p>מצא את ההתאמה המושלמת עבורך במהירות ובקלות.</p>
+            <p>קהילה איכותית, התאמות חכמות וחוויית שימוש נעימה ופשוטה.</p>
 
-<div class="home-demo-wrap">
-    <section class="home-demo-hero">
-        <h1>ברוכים הבאים ל־LoveMatch ❤️</h1>
-        <p>מצא את ההתאמה המושלמת עבורך במהירות ובקלות.</p>
-        <p>קהילה איכותית, התאמות חכמות וחוויית שימוש נעימה ופשוטה.</p>
+            <div class="home-demo-actions">
+                <a href="?page=search" class="home-demo-btn home-demo-btn-primary">התחל לחפש</a>
+                <?php if (empty($_SESSION['user_id'])): ?>
 
-        <div class="home-demo-actions">
-            <a href="?page=search" class="home-demo-btn home-demo-btn-primary">התחל לחפש</a>
-            <a href="?page=register" class="home-demo-btn home-demo-btn-secondary">הרשמה מהירה</a>
-        </div>
-    </section>
+                    <!-- הרשמה מהירה -->
+                    <div class="quick-register">
+                        <!-- כל הטופס שלך -->
+                    </div>
 
-    <section class="home-demo-features">
-        <div class="home-demo-card">
-            <div class="home-demo-icon">❤</div>
-            <h3>קהילה רחבה</h3>
-            <p>אנשים מכל רחבי הארץ שמחפשים קשר אמיתי ומשמעותי.</p>
-        </div>
+                <?php else: ?>
 
-        <div class="home-demo-card">
-            <div class="home-demo-icon">★</div>
-            <h3>התאמות אישיות</h3>
-            <p>מערכת חכמה שמסייעת למצוא התאמות מדויקות וטובות יותר.</p>
-        </div>
+                    <!-- מה שמופיע למשתמש מחובר -->
+                    <div class="home-logged-in">
 
-        <div class="home-demo-card">
-            <div class="home-demo-icon">✓</div>
-            <h3>פרטיות ובטיחות</h3>
-            <p>המידע שלך נשמר בצורה מאובטחת עם חוויית שימוש בטוחה ונוחה.</p>
-        </div>
-    </section>
-</div>
+                        <h2>ברוך הבא 👋</h2>
+
+                       
+
+                    </div>
+
+                <?php endif; ?>
+            </div>
+        </section>
+
+        <section class="home-demo-features">
+            <div class="home-demo-card">
+                <div class="home-demo-icon">❤</div>
+                <h3>קהילה רחבה</h3>
+                <p>אנשים מכל רחבי הארץ שמחפשים קשר אמיתי ומשמעותי.</p>
+            </div>
+
+            <div class="home-demo-card">
+                <div class="home-demo-icon">★</div>
+                <h3>התאמות אישיות</h3>
+                <p>מערכת חכמה שמסייעת למצוא התאמות מדויקות וטובות יותר.</p>
+            </div>
+
+            <div class="home-demo-card">
+                <div class="home-demo-icon">✓</div>
+                <h3>פרטיות ובטיחות</h3>
+                <p>המידע שלך נשמר בצורה מאובטחת עם חוויית שימוש בטוחה ונוחה.</p>
+            </div>
+        </section>
+    </div>
+</main>

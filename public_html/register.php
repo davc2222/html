@@ -1,27 +1,72 @@
 <!-- register.php-->
 <style>
-.password-wrapper {
-    position: relative;
-}
+    .password-wrapper {
+        position: relative;
+    }
 
-.password-wrapper input {
-    width: 100%;
-    box-sizing: border-box;
-    padding-left: 44px;
-}
+    .password-wrapper input {
+        width: 100%;
+        box-sizing: border-box;
+        padding-left: 44px;
+    }
 
-.toggle-pass {
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    font-size: 18px;
-    padding: 0;
-    line-height: 1;
-}
+    .toggle-pass {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 0;
+        line-height: 1;
+    }
+
+    .register-terms-wrap {
+        margin-top: 12px;
+        margin-bottom: 10px;
+        padding: 10px 12px;
+        background: #fafafa;
+        border: 1px solid #eee;
+        border-radius: 12px;
+    }
+
+    .register-terms-label {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        line-height: 1.6;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .register-terms-label input[type="checkbox"] {
+        margin-top: 3px;
+        flex: 0 0 auto;
+    }
+
+    .inline-terms-link {
+        background: none;
+        border: none;
+        padding: 0;
+        margin: 0 2px;
+        color: #e11d48;
+        font: inherit;
+        cursor: pointer;
+        text-decoration: underline;
+    }
+
+    .inline-terms-link:hover {
+        opacity: 0.85;
+    }
+
+    .register-terms-note {
+        margin-top: 8px;
+        font-size: 12px;
+        color: #777;
+        line-height: 1.5;
+    }
 </style>
 
 <?php
@@ -70,6 +115,8 @@ $success = $_GET['success'] ?? '';
                     echo 'שם המשתמש כבר קיים במערכת';
                 } elseif ($error === 'missing') {
                     echo 'יש למלא את כל השדות';
+                } elseif ($error === 'terms') {
+                    echo 'יש לאשר את תנאי השימוש';
                 } else {
                     echo 'אירעה שגיאה בהרשמה';
                 }
@@ -163,6 +210,23 @@ $success = $_GET['success'] ?? '';
                 <input type="date" name="Open_Date" id="Open_Date" value="<?= date('Y-m-d') ?>" required>
             </div>
 
+            <div class="register-terms-wrap">
+                <label class="register-terms-label">
+                    <input type="checkbox" id="termsAgree" name="terms_agree" value="1" required>
+                    <span>
+                        אני מאשר/ת שקראתי ואני מסכים/ה ל
+                        <button type="button" id="registerTermsLink" class="inline-terms-link">
+                            תנאי השימוש
+                        </button>
+                        של האתר.
+                    </span>
+                </label>
+
+                <div class="register-terms-note">
+                    ההרשמה והשימוש באתר כפופים לתנאי השימוש.
+                </div>
+            </div>
+
             <div class="submit-wrap">
                 <button type="submit" id="register-btn" disabled>צור חשבון</button>
             </div>
@@ -175,192 +239,211 @@ $success = $_GET['success'] ?? '';
 </section>
 
 <script>
-const nameInput = document.getElementById("Name");
-const emailInput = document.getElementById("Email");
-const registerBtn = document.getElementById("register-btn");
-const passInput = document.getElementById("Pass");
-const nameError = document.getElementById("name-error");
-const emailError = document.getElementById("email-error");
-const passError = document.getElementById("pass-error");
-let nameValid = false;
-let emailValid = false;
-let passValid = false;
+    const nameInput = document.getElementById("Name");
+    const emailInput = document.getElementById("Email");
+    const registerBtn = document.getElementById("register-btn");
+    const passInput = document.getElementById("Pass");
+    const nameError = document.getElementById("name-error");
+    const emailError = document.getElementById("email-error");
+    const passError = document.getElementById("pass-error");
+    const termsAgree = document.getElementById("termsAgree");
+    const registerTermsLink = document.getElementById("registerTermsLink");
 
-function showError(element, input, message) {
-    element.innerText = message;
-    element.classList.add("show");
-    input.classList.add("input-error");
-    input.classList.remove("input-ok");
-}
+    let nameValid = false;
+    let emailValid = false;
+    let passValid = false;
 
-function clearError(element, input) {
-    element.innerText = "";
-    element.classList.remove("show");
-    input.classList.remove("input-error");
-    input.classList.add("input-ok");
-}
+    function showError(element, input, message) {
+        element.innerText = message;
+        element.classList.add("show");
+        input.classList.add("input-error");
+        input.classList.remove("input-ok");
+    }
 
-function checkFormValidity() {
-    const requiredFields = document.querySelectorAll(".register-form input[required], .register-form select[required]");
-    let allFilled = true;
+    function clearError(element, input) {
+        element.innerText = "";
+        element.classList.remove("show");
+        input.classList.remove("input-error");
+        input.classList.add("input-ok");
+    }
 
-    requiredFields.forEach(field => {
-        if (!field.value.trim()) {
-            allFilled = false;
+    function checkFormValidity() {
+        const requiredFields = document.querySelectorAll(".register-form input[required], .register-form select[required]");
+        let allFilled = true;
+
+        requiredFields.forEach(field => {
+            if (field.type === "checkbox") {
+                if (!field.checked) {
+                    allFilled = false;
+                }
+            } else if (!field.value.trim()) {
+                allFilled = false;
+            }
+        });
+
+        registerBtn.disabled = !(allFilled && nameValid && emailValid && passValid && termsAgree.checked);
+    }
+
+    /* בדיקת שם משתמש */
+    let nameTimeout;
+    nameInput.addEventListener("input", function() {
+        clearTimeout(nameTimeout);
+
+        const name = this.value.trim();
+        const englishOnly = /^[A-Za-z0-9]+$/;
+
+        nameValid = false;
+        checkFormValidity();
+
+        if (name === "") {
+            nameError.innerText = "";
+            nameError.classList.remove("show");
+            this.classList.remove("input-error", "input-ok");
+            return;
+        }
+
+        if (!englishOnly.test(name)) {
+            showError(nameError, this, "רק אנגלית ומספרים");
+            return;
+        }
+
+        if (name.length > 15) {
+            showError(nameError, this, "עד 15 תווים בלבד");
+            return;
+        }
+
+        nameTimeout = setTimeout(() => {
+            fetch("/check_name.php", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: "name=" + encodeURIComponent(name)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.valid === false) {
+                        showError(nameError, nameInput, "רק אנגלית ומספרים, עד 15 תווים");
+                        nameValid = false;
+                    } else if (data.exists) {
+                        showError(nameError, nameInput, "שם המשתמש תפוס");
+                        nameValid = false;
+                    } else {
+                        clearError(nameError, nameInput);
+                        nameValid = true;
+                    }
+                    checkFormValidity();
+                })
+                .catch(() => {
+                    showError(nameError, nameInput, "שגיאה בבדיקת שם משתמש");
+                    nameValid = false;
+                    checkFormValidity();
+                });
+        }, 400);
+    });
+
+    /* בדיקת אימייל */
+    let emailTimeout;
+    emailInput.addEventListener("input", function() {
+        clearTimeout(emailTimeout);
+
+        const email = this.value.trim();
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        emailValid = false;
+        checkFormValidity();
+
+        if (email === "") {
+            emailError.innerText = "";
+            emailError.classList.remove("show");
+            this.classList.remove("input-error", "input-ok");
+            return;
+        }
+
+        if (!emailPattern.test(email)) {
+            showError(emailError, this, "פורמט אימייל לא תקין");
+            return;
+        }
+
+        emailTimeout = setTimeout(() => {
+            fetch("/check_email.php", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: "email=" + encodeURIComponent(email)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.exists) {
+                        showError(emailError, emailInput, "האימייל כבר קיים");
+                        emailValid = false;
+                    } else {
+                        clearError(emailError, emailInput);
+                        emailValid = true;
+                    }
+                    checkFormValidity();
+                })
+                .catch(() => {
+                    showError(emailError, emailInput, "שגיאה בבדיקת אימייל");
+                    emailValid = false;
+                    checkFormValidity();
+                });
+        }, 400);
+    });
+
+    /* בדיקת סיסמה */
+    passInput.addEventListener("input", function() {
+        const pass = this.value.trim();
+        const passPattern = /^(?=.*[A-Za-z])(?=.*[0-9])[A-Za-z0-9]{4,}$/;
+
+        passValid = false;
+        checkFormValidity();
+
+        if (pass === "") {
+            passError.innerText = "";
+            passError.classList.remove("show");
+            this.classList.remove("input-error", "input-ok");
+            return;
+        }
+
+        if (!passPattern.test(pass)) {
+            showError(passError, this, "לפחות 4 תווים, אנגלית ומספרים");
+            return;
+        }
+
+        clearError(passError, this);
+        passValid = true;
+        checkFormValidity();
+    });
+
+    /* בדיקות על שדות נוספים */
+    document.querySelectorAll(".register-form input, .register-form select").forEach(el => {
+        el.addEventListener("input", checkFormValidity);
+        el.addEventListener("change", checkFormValidity);
+    });
+
+    if (termsAgree) {
+        termsAgree.addEventListener("change", checkFormValidity);
+    }
+
+    const togglePass = document.getElementById("togglePass");
+
+    togglePass.addEventListener("click", function() {
+        if (passInput.type === "password") {
+            passInput.type = "text";
+            togglePass.textContent = "🙈";
+        } else {
+            passInput.type = "password";
+            togglePass.textContent = "👁";
         }
     });
 
-    registerBtn.disabled = !(allFilled && nameValid && emailValid && passValid);
-}
-
-/* בדיקת שם משתמש */
-let nameTimeout;
-nameInput.addEventListener("input", function () {
-    clearTimeout(nameTimeout);
-
-    const name = this.value.trim();
-    const englishOnly = /^[A-Za-z0-9]+$/;
-
-    nameValid = false;
-    checkFormValidity();
-
-    if (name === "") {
-        nameError.innerText = "";
-        nameError.classList.remove("show");
-        this.classList.remove("input-error", "input-ok");
-        return;
-    }
-
-    if (!englishOnly.test(name)) {
-        showError(nameError, this, "רק אנגלית ומספרים");
-        return;
-    }
-
-    if (name.length > 15) {
-        showError(nameError, this, "עד 15 תווים בלבד");
-        return;
-    }
-
-    nameTimeout = setTimeout(() => {
-        fetch("/check_name.php", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            body: "name=" + encodeURIComponent(name)
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.valid === false) {
-                showError(nameError, nameInput, "רק אנגלית ומספרים, עד 15 תווים");
-                nameValid = false;
-            } else if (data.exists) {
-                showError(nameError, nameInput, "שם המשתמש תפוס");
-                nameValid = false;
-            } else {
-                clearError(nameError, nameInput);
-                nameValid = true;
+    if (registerTermsLink) {
+        registerTermsLink.addEventListener("click", function() {
+            if (typeof openTermsPopup === "function") {
+                openTermsPopup();
             }
-            checkFormValidity();
-        })
-        .catch(() => {
-            showError(nameError, nameInput, "שגיאה בבדיקת שם משתמש");
-            nameValid = false;
-            checkFormValidity();
         });
-    }, 400);
-});
-
-/* בדיקת אימייל */
-let emailTimeout;
-emailInput.addEventListener("input", function () {
-    clearTimeout(emailTimeout);
-
-    const email = this.value.trim();
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    emailValid = false;
-    checkFormValidity();
-
-    if (email === "") {
-        emailError.innerText = "";
-        emailError.classList.remove("show");
-        this.classList.remove("input-error", "input-ok");
-        return;
     }
-
-    if (!emailPattern.test(email)) {
-        showError(emailError, this, "פורמט אימייל לא תקין");
-        return;
-    }
-
-    emailTimeout = setTimeout(() => {
-        fetch("/check_email.php", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            body: "email=" + encodeURIComponent(email)
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.exists) {
-                showError(emailError, emailInput, "האימייל כבר קיים");
-                emailValid = false;
-            } else {
-                clearError(emailError, emailInput);
-                emailValid = true;
-            }
-            checkFormValidity();
-        })
-        .catch(() => {
-            showError(emailError, emailInput, "שגיאה בבדיקת אימייל");
-            emailValid = false;
-            checkFormValidity();
-        });
-    }, 400);
-});
-
-/* בדיקת סיסמה */
-passInput.addEventListener("input", function () {
-    const pass = this.value.trim();
-    const passPattern = /^(?=.*[A-Za-z])(?=.*[0-9])[A-Za-z0-9]{4,}$/;
-
-    passValid = false;
-    checkFormValidity();
-
-    if (pass === "") {
-        passError.innerText = "";
-        passError.classList.remove("show");
-        this.classList.remove("input-error", "input-ok");
-        return;
-    }
-
-    if (!passPattern.test(pass)) {
-        showError(passError, this, "לפחות 4 תווים, אנגלית ומספרים");
-        return;
-    }
-
-    clearError(passError, this);
-    passValid = true;
-    checkFormValidity();
-});
-
-/* בדיקות על שדות נוספים */
-document.querySelectorAll(".register-form input, .register-form select").forEach(el => {
-    el.addEventListener("input", checkFormValidity);
-    el.addEventListener("change", checkFormValidity);
-});
-
-const togglePass = document.getElementById("togglePass");
-
-togglePass.addEventListener("click", function () {
-    if (passInput.type === "password") {
-        passInput.type = "text";
-        togglePass.textContent = "🙈";
-    } else {
-        passInput.type = "password";
-        togglePass.textContent = "👁";
-    }
-});
 </script>

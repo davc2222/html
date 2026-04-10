@@ -120,27 +120,7 @@ if (in_array($page, $protectedPages, true) && empty($_SESSION['user_id'])) {
         });
     </script>
 
-    <footer class="site-footer">
-        <div class="footer-inner">
-
-            <div class="footer-left">
-                <span>© <?= date('Y') ?> LoveMatch</span>
-            </div>
-
-            <div class="footer-center">
-                <a href="#">תנאי שימוש</a>
-                <span>|</span>
-                <a href="#">מדיניות פרטיות</a>
-                <span>|</span>
-                <a href="#">צור קשר</a>
-            </div>
-
-            <div class="footer-right">
-                ❤️ נבנה עבורך
-            </div>
-
-        </div>
-    </footer>
+    <?php include __DIR__ . '/includes/footer.php'; ?>
 </body>
 
 </html>
