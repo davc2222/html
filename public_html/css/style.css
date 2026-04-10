@@ -4947,7 +4947,147 @@ body.match-table-open {
     border-top: 1px solid #eee;
 }
 
-.view-card-icons {
-    margin-right: 60px;
-    /* ⬅️ זה מה שיזיז שמאלה בפועל */
+.view-card {
+    display: flex;
+    align-items: stretch;
 }
+
+.view-card-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: auto;
+}
+
+/* שורה עליונה: אייקונים + badge */
+.view-card-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 14px;
+    width: 100%;
+    margin-bottom: 10px;
+    padding-right: 70px;
+    /* מזיז את הכל שמאלה */
+    box-sizing: border-box;
+}
+
+/* אייקונים */
+.view-card-icons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
+
+/* badge רגיל */
+.view-card-top-badge {
+    position: static !important;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    border-radius: 999px;
+    padding: 4px 10px;
+    line-height: 1;
+}
+
+/* רק בהודעות - שה-badge יהיה צמוד יפה לאייקונים */
+.messages-page .view-card-top-row {
+    gap: 10px;
+    padding-right: 55px;
+    /* אפשר לשחק 45-70 */
+}
+
+.messages-page .view-card-top-badge {
+    margin: 0;
+    flex: 0 0 auto;
+}
+
+.view-card {
+    display: flex;
+    align-items: stretch;
+}
+
+.view-card-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: auto;
+}
+
+.view-card-top-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+.view-card-icons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+/* האייקון עצמו */
+.icon-with-badge {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+/* 🔥 הבועה הקטנה */
+.icon-badge {
+    position: absolute;
+    top: -6px;
+    right: -8px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 2px 5px;
+    border-radius: 999px;
+    line-height: 1;
+    min-width: 16px;
+    text-align: center;
+}
+
+.view-card-top-badge {
+    position: static !important;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.view-card-actions {
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+}
+
+.view-card-top-row {
+    display: flex;
+    justify-content: center;
+    /* מרכז הכל */
+    align-items: center;
+    gap: 10px;
+}
+
+/* 🔥 גורם ל-badge להיות משמאל לאייקונים */
+.view-card-top-badge {
+    order: -1;
+}
+
+
+
+
+
+
+

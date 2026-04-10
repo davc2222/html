@@ -17,13 +17,10 @@ $occupation = $user['Occupation_Str'] ?? '';
 $smoking    = $user['Smoking_Habbit_Str'] ?? '';
 
 $cardId          = $cardId ?? '';
-$cardIconClass   = $cardIconClass ?? 'vc-search';
 $cardTopBadge    = $cardTopBadge ?? '';
 $cardSubline     = $cardSubline ?? '';
 $cardActionsHtml = $cardActionsHtml ?? '<a href="/?page=profile&id=' . $id . '" class="view-card-profile-link">צפייה בפרופיל</a>';
 $cardShowOnline  = $cardShowOnline ?? true;
-
-$cardIconsHtml = $cardIconsHtml ?? '<span class="vc-icon ' . e($cardIconClass) . '"></span>';
 
 $img = $user['Image'] ?? '/images/no_photo.jpg';
 $isOnline = $cardShowOnline ? !empty($user['is_online']) : false;
@@ -35,13 +32,93 @@ if (($age === '' || $age === null) && !empty($user['DOB'])) {
         $age = '';
     }
 }
+
+/* מספר הודעות חדשות לבועה הקטנה */
+$unreadBadgeCount = 0;
+if ($cardTopBadge !== '') {
+    $digits = preg_replace('/[^\d]/', '', (string)$cardTopBadge);
+    $unreadBadgeCount = (int)($digits ?: 0);
+}
+
+/* =========================
+   אייקוני קשרים - 4 שאילתות
+   ========================= */
+$viewed_me    = false; // היא צפתה בי
+$viewed_by_me = false; // אני צפיתי בה
+$msg_in       = false; // היא שלחה לי
+$msg_out      = false; // אני שלחתי לה
+
+if (!empty($pdo) && $id > 0 && !empty($session_user_id) && (int)$session_user_id > 0) {
+    try {
+        /* 1) היא צפתה בי */
+        $stmtViewIn = $pdo->prepare("
+            SELECT 1
+            FROM views
+            WHERE Id = :me
+              AND ById = :other
+              AND (Deleted_By_Id = 0 OR Deleted_By_Id IS NULL)
+            LIMIT 1
+        ");
+        $stmtViewIn->execute([
+            ':me'    => (int)$session_user_id,
+            ':other' => $id
+        ]);
+        $viewed_me = (bool)$stmtViewIn->fetchColumn();
+
+        /* 2) אני צפיתי בה */
+        $stmtViewOut = $pdo->prepare("
+            SELECT 1
+            FROM views
+            WHERE Id = :other
+              AND ById = :me
+              AND (Deleted_By_ById = 0 OR Deleted_By_ById IS NULL)
+            LIMIT 1
+        ");
+        $stmtViewOut->execute([
+            ':me'    => (int)$session_user_id,
+            ':other' => $id
+        ]);
+        $viewed_by_me = (bool)$stmtViewOut->fetchColumn();
+
+        /* 3) היא שלחה לי הודעה */
+        $stmtMsgIn = $pdo->prepare("
+            SELECT 1
+            FROM messages
+            WHERE Id = :me
+              AND ById = :other
+              AND (Deleted_By_Id = 0 OR Deleted_By_Id IS NULL)
+            LIMIT 1
+        ");
+        $stmtMsgIn->execute([
+            ':me'    => (int)$session_user_id,
+            ':other' => $id
+        ]);
+        $msg_in = (bool)$stmtMsgIn->fetchColumn();
+
+        /* 4) אני שלחתי לה הודעה */
+        $stmtMsgOut = $pdo->prepare("
+            SELECT 1
+            FROM messages
+            WHERE Id = :other
+              AND ById = :me
+              AND (Deleted_By_ById = 0 OR Deleted_By_ById IS NULL)
+            LIMIT 1
+        ");
+        $stmtMsgOut->execute([
+            ':me'    => (int)$session_user_id,
+            ':other' => $id
+        ]);
+        $msg_out = (bool)$stmtMsgOut->fetchColumn();
+    } catch (Throwable $e) {
+        $viewed_me = false;
+        $viewed_by_me = false;
+        $msg_in = false;
+        $msg_out = false;
+    }
+}
 ?>
 
 <div class="view-card" <?= $cardId !== '' ? ' id="' . e($cardId) . '"' : '' ?>>
-
-    <?php if ($cardTopBadge !== ''): ?>
-        <div class="view-card-top-badge"><?= $cardTopBadge ?></div>
-    <?php endif; ?>
 
     <div class="view-card-media">
         <img src="<?= e($img) ?>" alt="<?= e($name) ?>" class="view-card-image">
@@ -53,9 +130,32 @@ if (($age === '' || $age === null) && !empty($user['DOB'])) {
 
     <div class="view-card-content">
 
-        <div class="view-card-icons">
-            <?= $cardIconsHtml ?>
-        </div>
+        <?php if ($viewed_me || $viewed_by_me || $msg_in || $msg_out): ?>
+            <div class="view-card-icons">
+
+                <?php if ($viewed_me): ?>
+                    <span title="צפתה בי">↙️ 👁️</span>
+                <?php endif; ?>
+
+                <?php if ($viewed_by_me): ?>
+                    <span title="צפיתי בה">↗️ 👁️</span>
+                <?php endif; ?>
+
+                <?php if ($msg_in): ?>
+                    <span class="icon-with-badge" title="שלחה לי הודעה">
+                        ↙️ 💬
+                        <?php if ($unreadBadgeCount > 0): ?>
+                            <span class="icon-badge"><?= $unreadBadgeCount ?></span>
+                        <?php endif; ?>
+                    </span>
+                <?php endif; ?>
+
+                <?php if ($msg_out): ?>
+                    <span title="שלחתי לה הודעה">↗️ 💬</span>
+                <?php endif; ?>
+
+            </div>
+        <?php endif; ?>
 
         <div class="view-card-name">
             <?= e($name) ?><?= ($age !== '' && $age !== null) ? ', ' . (int)$age : '' ?>

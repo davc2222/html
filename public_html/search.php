@@ -5,6 +5,7 @@ ini_set('display_errors', 0);
 error_reporting(0);
 
 require_once __DIR__ . '/config/config.php';
+require_once __DIR__ . '/includes/profile_helpers.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -62,12 +63,14 @@ $search_done = ($gender_id !== '' || $age_from !== '' || $age_to !== '' || $zone
 /* ===== search ===== */
 if ($search_done) {
     $me = (int)($_SESSION['user_id'] ?? 0);
+    $session_user_id = $me;
 
     $sql = "SELECT * FROM {$mainTable} WHERE 1=1";
     $params = [];
 
     if ($me > 0) {
         $sql .= "
+            AND {$mainTable}.Id <> :me
             AND NOT EXISTS (
                 SELECT 1
                 FROM blocked_users bu
@@ -103,6 +106,8 @@ if ($search_done) {
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} else {
+    $session_user_id = (int)($_SESSION['user_id'] ?? 0);
 }
 ?>
 
@@ -183,18 +188,11 @@ if ($search_done) {
                     $cardMode = 'search';
                     $cardTopBadge = '';
                     $cardSubline = '';
+                    $cardShowOnline = true;
                     $cardActionsHtml = '<a href="/?page=profile&id=' . (int)$user['Id'] . '" class="view-card-profile-link">צפייה בפרופיל</a>';
 
                     $user['Image'] = getMainProfileImage($pdo, (int)$user['Id']);
                     $user['is_online'] = is_user_online($pdo, (int)$user['Id']);
-
-                 $cardIconsHtml = '
-<div style="display:flex;justify-content:flex-end;gap:10px;width:100%;padding-right:16px;">
-    <span title="צפייה נכנסת">↙️ 👁️</span>
-    <span title="צפייה יוצאת">↗️ 👁️</span>
-    <span title="הודעה נכנסת">↙️ 💬</span>
-    <span title="הודעה יוצאת">↗️ 💬</span>
-</div>';
 
                     include __DIR__ . '/includes/view_card.php';
                     ?>

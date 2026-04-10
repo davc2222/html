@@ -2,6 +2,7 @@
 // ===== FILE: messages.php =====
 
 require_once __DIR__ . '/config/config.php';
+require_once __DIR__ . '/includes/profile_helpers.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -27,6 +28,7 @@ if (empty($_SESSION['user_id'])) {
 }
 
 $me = (int)$_SESSION['user_id'];
+$session_user_id = $me;
 
 function h($v) {
     return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
@@ -37,7 +39,15 @@ $stmt = $pdo->prepare("
     SELECT 
         up.*,
         MAX(m.Date_Sent) AS last_msg_date,
-        SUM(CASE WHEN m.Id = :me AND m.`New` = 1 THEN 1 ELSE 0 END) AS unread_count,
+        SUM(
+            CASE 
+                WHEN m.Id = :me 
+                 AND m.`New` = 1
+                 AND (m.Deleted_By_Id = 0 OR m.Deleted_By_Id IS NULL)
+                THEN 1 
+                ELSE 0 
+            END
+        ) AS unread_count,
         CASE 
             WHEN m.ById = :me THEN m.Id
             ELSE m.ById
@@ -53,6 +63,12 @@ $stmt = $pdo->prepare("
             (m.Id = :me AND (m.Deleted_By_Id = 0 OR m.Deleted_By_Id IS NULL))
          OR (m.ById = :me AND (m.Deleted_By_ById = 0 OR m.Deleted_By_ById IS NULL))
       )
+      AND NOT EXISTS (
+            SELECT 1
+            FROM blocked_users bu
+            WHERE (bu.Id = up.Id AND bu.Blocked_ById = :me)
+               OR (bu.Id = :me AND bu.Blocked_ById = up.Id)
+      )
     GROUP BY other_user_id
     ORDER BY last_msg_date DESC
 ");
@@ -61,7 +77,7 @@ $stmt->execute([':me' => $me]);
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
-<main class="page-shell">
+<main class="page-shell messages-page">
     <section class="search-container">
 
         <h2 class="views-page-title">הודעות</h2>
@@ -75,6 +91,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <?php foreach ($results as $row): ?>
                     <?php
                     $user = $row;
+
                     $otherUserId = (int)($row['other_user_id'] ?? 0);
                     $user['Id'] = $otherUserId;
 
@@ -94,16 +111,10 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     $cardId = '';
                     $cardTopBadge = $unread > 0 ? '💬 ' . $unread . ' חדשות' : '';
                     $cardSubline = '';
+                    $cardShowOnline = true;
 
-                    /* 4 אייקונים מרוכזים, בלי תלות ב-CSS חיצוני */
-                    $cardIconsHtml = '
-                        <div style="display:flex;justify-content:center;align-items:center;gap:10px;width:100%;">
-                            <span title="צפייה נכנסת" style="display:inline-flex;align-items:center;gap:3px;">↙️ 👁️</span>
-                            <span title="צפייה יוצאת" style="display:inline-flex;align-items:center;gap:3px;">↗️ 👁️</span>
-                            <span title="הודעה נכנסת" style="display:inline-flex;align-items:center;gap:3px;">↙️ 💬</span>
-                            <span title="הודעה יוצאת" style="display:inline-flex;align-items:center;gap:3px;">↗️ 💬</span>
-                        </div>
-                    ';
+                    /* חשוב: לא מגדירים $cardIconsHtml כאן
+                       הקארד עצמו בונה את האייקונים מתוך 4 השאילתות שלו */
 
                     $cardActionsHtml =
                         '<a href="#" class="view-card-profile-link" onclick="openMessageModal(' . $otherUserId . ', \''

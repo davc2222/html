@@ -1,11 +1,13 @@
 <?php
 require_once __DIR__ . '/config/config.php';
+require_once __DIR__ . '/includes/profile_helpers.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
 $userId = (int)($_SESSION['user_id'] ?? 0);
+$session_user_id = $userId;
 
 function e($v): string {
     return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
@@ -191,6 +193,15 @@ try {
         $sql .= " AND u.Gender_Id = :wanted_gender";
         $params[':wanted_gender'] = $wantedGenderId;
     }
+
+    $sql .= "
+        AND NOT EXISTS (
+            SELECT 1
+            FROM blocked_users bu
+            WHERE (bu.Id = u.Id AND bu.Blocked_ById = :me)
+               OR (bu.Id = :me AND bu.Blocked_ById = u.Id)
+        )
+    ";
 
     $sql .= " AND TIMESTAMPDIFF(YEAR, u.DOB, CURDATE()) BETWEEN :age_min AND :age_max";
     $params[':age_min'] = (int)$prefs['age_min'];
@@ -544,192 +555,182 @@ try {
 <main class="page-shell">
     <section class="search-container">
 
-    <div class="advanced-search-toggle-wrap">
-        <button type="button" class="advanced-search-toggle-btn" id="openAdvancedSearchBtn">
-            טבלת התאמות
-        </button>
-    </div>
-
-    <div class="advanced-search-panel" id="advancedSearchPanel">
-        <div class="advanced-search-modal">
-            <h2 class="advanced-search-title">טבלת התאמות</h2>
-
-            <form method="POST" action="/save_search_preferences.php">
-                <div class="advanced-search-grid">
-
-                    <div class="advanced-search-section">
-                        <h3 class="advanced-search-section-title">טווח גילאים</h3>
-                        <div class="adv-range-wrap">
-                            <div class="adv-range-values">
-                                <span id="ageMinValue"><?= (int)$prefs['age_min'] ?></span>
-                                <span id="ageMaxValue"><?= (int)$prefs['age_max'] ?></span>
-                            </div>
-                            <div class="adv-range-row">
-                                <input class="adv-range" type="range" id="age_min" name="age_min" min="18" max="80" value="<?= (int)$prefs['age_min'] ?>">
-                                <input class="adv-range" type="range" id="age_max" name="age_max" min="18" max="80" value="<?= (int)$prefs['age_max'] ?>">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="advanced-search-section">
-                        <h3 class="advanced-search-section-title">גובה</h3>
-                        <div class="adv-range-wrap">
-                            <div class="adv-range-values">
-                                <span id="heightMinValue"><?= (int)$prefs['height_min'] ?></span>
-                                <span id="heightMaxValue"><?= (int)$prefs['height_max'] ?></span>
-                            </div>
-                            <div class="adv-range-row">
-                                <input class="adv-range" type="range" id="height_min" name="height_min" min="140" max="220" value="<?= (int)$prefs['height_min'] ?>">
-                                <input class="adv-range" type="range" id="height_max" name="height_max" min="140" max="220" value="<?= (int)$prefs['height_max'] ?>">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="advanced-search-section">
-                        <h3 class="advanced-search-section-title">ילדים</h3>
-                        <select class="adv-select" name="children">
-                            <option value="" <?= $prefs['children'] === '' ? 'selected' : '' ?>>לא משנה</option>
-                            <option value="yes" <?= $prefs['children'] === 'yes' ? 'selected' : '' ?>>יש</option>
-                            <option value="no" <?= $prefs['children'] === 'no' ? 'selected' : '' ?>>אין</option>
-                        </select>
-                    </div>
-
-                    <div class="advanced-search-section">
-                        <h3 class="advanced-search-section-title">אזור</h3>
-                        <div class="adv-check-grid">
-                            <?php foreach ($zones as $item): ?>
-                                <label class="adv-check-item">
-                                    <input type="checkbox" name="zone[]" value="<?= e($item['id']) ?>" <?= isChecked($prefs['zone'], $item['id']) ?>>
-                                    <span><?= e($item['text']) ?></span>
-                                </label>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-
-                    <div class="advanced-search-section">
-                        <h3 class="advanced-search-section-title">דתיות</h3>
-                        <div class="adv-check-grid">
-                            <?php foreach ($religions as $item): ?>
-                                <label class="adv-check-item">
-                                    <input type="checkbox" name="religion[]" value="<?= e($item['id']) ?>" <?= isChecked($prefs['religion'], $item['id']) ?>>
-                                    <span><?= e($item['text']) ?></span>
-                                </label>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-
-                    <div class="advanced-search-section">
-                        <h3 class="advanced-search-section-title">רקע דתי</h3>
-                        <div class="adv-check-grid">
-                            <?php foreach ($religionRefs as $item): ?>
-                                <label class="adv-check-item">
-                                    <input type="checkbox" name="religion_ref[]" value="<?= e($item['id']) ?>" <?= isChecked($prefs['religion_ref'], $item['id']) ?>>
-                                    <span><?= e($item['text']) ?></span>
-                                </label>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-
-                    <div class="advanced-search-section">
-                        <h3 class="advanced-search-section-title">הרגלי עישון</h3>
-                        <div class="adv-check-grid">
-                            <?php foreach ($smokings as $item): ?>
-                                <label class="adv-check-item">
-                                    <input type="checkbox" name="smoking[]" value="<?= e($item['id']) ?>" <?= isChecked($prefs['smoking'], $item['id']) ?>>
-                                    <span><?= e($item['text']) ?></span>
-                                </label>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-
-                    <div class="advanced-search-section">
-                        <h3 class="advanced-search-section-title">שתייה</h3>
-                        <div class="adv-check-grid">
-                            <?php foreach ($drinkings as $item): ?>
-                                <label class="adv-check-item">
-                                    <input type="checkbox" name="drinking[]" value="<?= e($item['id']) ?>" <?= isChecked($prefs['drinking'], $item['id']) ?>>
-                                    <span><?= e($item['text']) ?></span>
-                                </label>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-
-                    <div class="advanced-search-section">
-                        <h3 class="advanced-search-section-title">מצב משפחתי</h3>
-                        <div class="adv-check-grid">
-                            <?php foreach ($familyOptions as $item): ?>
-                                <label class="adv-check-item">
-                                    <input type="checkbox" name="family_status[]" value="<?= e($item['id']) ?>" <?= isChecked($prefs['family_status'], $item['id']) ?>>
-                                    <span><?= e($item['text']) ?></span>
-                                </label>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-
-                    <div class="advanced-search-section">
-                        <h3 class="advanced-search-section-title">מבנה גוף</h3>
-                        <div class="adv-check-grid">
-                            <?php foreach ($bodyTypes as $item): ?>
-                                <label class="adv-check-item">
-                                    <input type="checkbox" name="body_type[]" value="<?= e($item['id']) ?>" <?= isChecked($prefs['body_type'], $item['id']) ?>>
-                                    <span><?= e($item['text']) ?></span>
-                                </label>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-
-                    <div class="advanced-search-section">
-                        <h3 class="advanced-search-section-title">צמחונות / טבעונות</h3>
-                        <div class="adv-check-grid">
-                            <?php foreach ($vegitrains as $item): ?>
-                                <label class="adv-check-item">
-                                    <input type="checkbox" name="vegitrain[]" value="<?= e($item['id']) ?>" <?= isChecked($prefs['vegitrain'], $item['id']) ?>>
-                                    <span><?= e($item['text']) ?></span>
-                                </label>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="adv-actions">
-                    <button type="submit" class="adv-save-btn">הצג התאמות</button>
-                    <button type="button" class="adv-cancel-btn" id="cancelAdvancedSearchBtn">ביטול</button>
-                </div>
-            </form>
+        <div class="advanced-search-toggle-wrap">
+            <button type="button" class="advanced-search-toggle-btn" id="openAdvancedSearchBtn">
+                טבלת התאמות
+            </button>
         </div>
-    </div>
+
+        <div class="advanced-search-panel" id="advancedSearchPanel">
+            <div class="advanced-search-modal">
+                <h2 class="advanced-search-title">טבלת התאמות</h2>
+
+                <form method="POST" action="/save_search_preferences.php">
+                    <div class="advanced-search-grid">
+
+                        <div class="advanced-search-section">
+                            <h3 class="advanced-search-section-title">טווח גילאים</h3>
+                            <div class="adv-range-wrap">
+                                <div class="adv-range-values">
+                                    <span id="ageMinValue"><?= (int)$prefs['age_min'] ?></span>
+                                    <span id="ageMaxValue"><?= (int)$prefs['age_max'] ?></span>
+                                </div>
+                                <div class="adv-range-row">
+                                    <input class="adv-range" type="range" id="age_min" name="age_min" min="18" max="80" value="<?= (int)$prefs['age_min'] ?>">
+                                    <input class="adv-range" type="range" id="age_max" name="age_max" min="18" max="80" value="<?= (int)$prefs['age_max'] ?>">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="advanced-search-section">
+                            <h3 class="advanced-search-section-title">גובה</h3>
+                            <div class="adv-range-wrap">
+                                <div class="adv-range-values">
+                                    <span id="heightMinValue"><?= (int)$prefs['height_min'] ?></span>
+                                    <span id="heightMaxValue"><?= (int)$prefs['height_max'] ?></span>
+                                </div>
+                                <div class="adv-range-row">
+                                    <input class="adv-range" type="range" id="height_min" name="height_min" min="140" max="220" value="<?= (int)$prefs['height_min'] ?>">
+                                    <input class="adv-range" type="range" id="height_max" name="height_max" min="140" max="220" value="<?= (int)$prefs['height_max'] ?>">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="advanced-search-section">
+                            <h3 class="advanced-search-section-title">ילדים</h3>
+                            <select class="adv-select" name="children">
+                                <option value="" <?= $prefs['children'] === '' ? 'selected' : '' ?>>לא משנה</option>
+                                <option value="yes" <?= $prefs['children'] === 'yes' ? 'selected' : '' ?>>יש</option>
+                                <option value="no" <?= $prefs['children'] === 'no' ? 'selected' : '' ?>>אין</option>
+                            </select>
+                        </div>
+
+                        <div class="advanced-search-section">
+                            <h3 class="advanced-search-section-title">אזור</h3>
+                            <div class="adv-check-grid">
+                                <?php foreach ($zones as $item): ?>
+                                    <label class="adv-check-item">
+                                        <input type="checkbox" name="zone[]" value="<?= e($item['id']) ?>" <?= isChecked($prefs['zone'], $item['id']) ?>>
+                                        <span><?= e($item['text']) ?></span>
+                                    </label>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+
+                        <div class="advanced-search-section">
+                            <h3 class="advanced-search-section-title">דתיות</h3>
+                            <div class="adv-check-grid">
+                                <?php foreach ($religions as $item): ?>
+                                    <label class="adv-check-item">
+                                        <input type="checkbox" name="religion[]" value="<?= e($item['id']) ?>" <?= isChecked($prefs['religion'], $item['id']) ?>>
+                                        <span><?= e($item['text']) ?></span>
+                                    </label>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+
+                        <div class="advanced-search-section">
+                            <h3 class="advanced-search-section-title">רקע דתי</h3>
+                            <div class="adv-check-grid">
+                                <?php foreach ($religionRefs as $item): ?>
+                                    <label class="adv-check-item">
+                                        <input type="checkbox" name="religion_ref[]" value="<?= e($item['id']) ?>" <?= isChecked($prefs['religion_ref'], $item['id']) ?>>
+                                        <span><?= e($item['text']) ?></span>
+                                    </label>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+
+                        <div class="advanced-search-section">
+                            <h3 class="advanced-search-section-title">הרגלי עישון</h3>
+                            <div class="adv-check-grid">
+                                <?php foreach ($smokings as $item): ?>
+                                    <label class="adv-check-item">
+                                        <input type="checkbox" name="smoking[]" value="<?= e($item['id']) ?>" <?= isChecked($prefs['smoking'], $item['id']) ?>>
+                                        <span><?= e($item['text']) ?></span>
+                                    </label>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+
+                        <div class="advanced-search-section">
+                            <h3 class="advanced-search-section-title">שתייה</h3>
+                            <div class="adv-check-grid">
+                                <?php foreach ($drinkings as $item): ?>
+                                    <label class="adv-check-item">
+                                        <input type="checkbox" name="drinking[]" value="<?= e($item['id']) ?>" <?= isChecked($prefs['drinking'], $item['id']) ?>>
+                                        <span><?= e($item['text']) ?></span>
+                                    </label>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+
+                        <div class="advanced-search-section">
+                            <h3 class="advanced-search-section-title">מצב משפחתי</h3>
+                            <div class="adv-check-grid">
+                                <?php foreach ($familyOptions as $item): ?>
+                                    <label class="adv-check-item">
+                                        <input type="checkbox" name="family_status[]" value="<?= e($item['id']) ?>" <?= isChecked($prefs['family_status'], $item['id']) ?>>
+                                        <span><?= e($item['text']) ?></span>
+                                    </label>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+
+                        <div class="advanced-search-section">
+                            <h3 class="advanced-search-section-title">מבנה גוף</h3>
+                            <div class="adv-check-grid">
+                                <?php foreach ($bodyTypes as $item): ?>
+                                    <label class="adv-check-item">
+                                        <input type="checkbox" name="body_type[]" value="<?= e($item['id']) ?>" <?= isChecked($prefs['body_type'], $item['id']) ?>>
+                                        <span><?= e($item['text']) ?></span>
+                                    </label>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+
+                        <div class="advanced-search-section">
+                            <h3 class="advanced-search-section-title">צמחונות / טבעונות</h3>
+                            <div class="adv-check-grid">
+                                <?php foreach ($vegitrains as $item): ?>
+                                    <label class="adv-check-item">
+                                        <input type="checkbox" name="vegitrain[]" value="<?= e($item['id']) ?>" <?= isChecked($prefs['vegitrain'], $item['id']) ?>>
+                                        <span><?= e($item['text']) ?></span>
+                                    </label>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="adv-actions">
+                        <button type="submit" class="adv-save-btn">הצג התאמות</button>
+                        <button type="button" class="adv-cancel-btn" id="cancelAdvancedSearchBtn">ביטול</button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
         <div class="results">
-        <?php if (!$results): ?>
-            <div class="no-results">לא נמצאו תוצאות</div>
-        <?php else: ?>
-            <?php foreach ($results as $user): ?>
-                <?php
-                $cardId = '';
-                $cardMode = 'search';
-                $cardTopBadge = '';
-                $cardSubline = '';
-                $cardShowOnline = true;
-                $cardActionsHtml = '<a href="/?page=profile&id=' . (int)$user['Id'] . '" class="view-card-profile-link">צפייה בפרופיל</a>';
-                $user['Image'] = getMainProfileImage($pdo, (int)$user['Id']);
-                $user['is_online'] = is_user_online($pdo, (int)$user['Id']);
-                $cardIconsHtml = '
-<div style="display:flex;justify-content:flex-end;gap:10px;width:100%;padding-right:16px;">
-    <span title="צפייה נכנסת">↙️ 👁️</span>
-    <span title="צפייה יוצאת">↗️ 👁️</span>
-    <span title="הודעה נכנסת">↙️ 💬</span>
-    <span title="הודעה יוצאת">↗️ 💬</span>
-</div>';
+            <?php if (!$results): ?>
+                <div class="no-results">לא נמצאו תוצאות</div>
+            <?php else: ?>
+                <?php foreach ($results as $user): ?>
+                    <?php
+                    $cardId = '';
+                    $cardMode = 'search';
+                    $cardTopBadge = '';
+                    $cardSubline = '';
+                    $cardShowOnline = true;
+                    $cardActionsHtml = '<a href="/?page=profile&id=' . (int)$user['Id'] . '" class="view-card-profile-link">צפייה בפרופיל</a>';
 
-                $cardActionsHtml = '<a href="/?page=profile&id=' . (int)$user['Id'] . '" class="view-card-profile-link">צפייה בפרופיל</a>';
-                $user['Image'] = getMainProfileImage($pdo, (int)$user['Id']);
-                $user['is_online'] = is_user_online($pdo, (int)$user['Id']);
+                    $user['Image'] = getMainProfileImage($pdo, (int)$user['Id']);
+                    $user['is_online'] = is_user_online($pdo, (int)$user['Id']);
 
-                include __DIR__ . '/includes/view_card.php';
-                ?>
-            <?php endforeach; ?>
-        <?php endif; ?>
+                    include __DIR__ . '/includes/view_card.php';
+                    ?>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </div>
 
     </section>
