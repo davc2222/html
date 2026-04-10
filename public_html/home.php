@@ -1,4 +1,3 @@
-<?php echo 'HOME LOADED'; ?>
 <!-- home.php-->
 <style>
     .home-demo-wrap {

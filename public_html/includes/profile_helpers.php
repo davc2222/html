@@ -55,19 +55,21 @@ if (!function_exists('is_user_online')) {
     function is_user_online(PDO $pdo, int $userId): bool {
         try {
             $stmt = $pdo->prepare("
-                SELECT last_seen
-                FROM users_profile
-                WHERE Id = :id
-                LIMIT 1
-            ");
+            SELECT UNIX_TIMESTAMP(last_seen)
+            FROM users_profile
+            WHERE Id = :id
+            LIMIT 1
+        ");
             $stmt->execute([':id' => $userId]);
-            $ts = $stmt->fetchColumn();
 
-            if (!$ts) {
+            $lastSeen = (int)$stmt->fetchColumn();
+
+            if (!$lastSeen) {
                 return false;
             }
 
-            return strtotime((string)$ts) >= (time() - 120);
+            // 🔥 120 שניות בלבד!
+            return ($lastSeen >= (time() - 120));
         } catch (Throwable $e) {
             return false;
         }

@@ -90,7 +90,7 @@ if (in_array($page, $protectedPages, true) && empty($_SESSION['user_id'])) {
             include 'inbox.php';
             break;
 
-       
+
         case 'blocked_users':
             include __DIR__ . '/blocked_users.php';
             break;
@@ -103,8 +103,7 @@ if (in_array($page, $protectedPages, true) && empty($_SESSION['user_id'])) {
         default:
             include 'home.php';
             break;
-
-    }  
+    }
     ?>
 
     <?php if (!empty($_SESSION['user_id'])): ?>
@@ -120,6 +119,28 @@ if (in_array($page, $protectedPages, true) && empty($_SESSION['user_id'])) {
             'albumLabel': 'תמונה %1 מתוך %2'
         });
     </script>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+
+            <div class="footer-left">
+                <span>© <?= date('Y') ?> LoveMatch</span>
+            </div>
+
+            <div class="footer-center">
+                <a href="#">תנאי שימוש</a>
+                <span>|</span>
+                <a href="#">מדיניות פרטיות</a>
+                <span>|</span>
+                <a href="#">צור קשר</a>
+            </div>
+
+            <div class="footer-right">
+                ❤️ נבנה עבורך
+            </div>
+
+        </div>
+    </footer>
 </body>
 
 </html>
