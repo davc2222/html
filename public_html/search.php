@@ -14,7 +14,6 @@ function e($v) {
     return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
 }
 
-
 /* =======================================================
    SEARCH PAGE
 ======================================================= */
@@ -185,12 +184,16 @@ if ($search_done) {
                     $cardTopBadge = '';
                     $cardSubline = '';
                     $cardActionsHtml = '<a href="/?page=profile&id=' . (int)$user['Id'] . '" class="view-card-profile-link">צפייה בפרופיל</a>';
+
                     $user['Image'] = getMainProfileImage($pdo, (int)$user['Id']);
                     $user['is_online'] = is_user_online($pdo, (int)$user['Id']);
-                    $cardIconsHtml = '
-<div style="display:flex;justify-content:center;gap:10px;width:100%;">
-    <span title="צפייה">👁️</span>
-    <span title="הודעה">💬</span>
+
+                 $cardIconsHtml = '
+<div style="display:flex;justify-content:flex-end;gap:10px;width:100%;padding-right:16px;">
+    <span title="צפייה נכנסת">↙️ 👁️</span>
+    <span title="צפייה יוצאת">↗️ 👁️</span>
+    <span title="הודעה נכנסת">↙️ 💬</span>
+    <span title="הודעה יוצאת">↗️ 💬</span>
 </div>';
 
                     include __DIR__ . '/includes/view_card.php';
