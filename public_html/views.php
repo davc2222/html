@@ -29,10 +29,6 @@ if (!empty($_SESSION['user_id'])) {
 
 $session_user_id = (int)$_SESSION['user_id'];
 
-function h($v) {
-    return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
-}
-
 /* סימון צפיות כנקראו רק בכניסה לדף צפיות */
 $pdo->prepare("
     UPDATE views
@@ -40,11 +36,16 @@ $pdo->prepare("
     WHERE Id = :id AND `New` = 1
 ")->execute([':id' => $session_user_id]);
 
-/* שליפה */
+/*
+   שליפה + הדדיות באותה שאילתה
+   v  = מי שצפה בי
+   vm = האם גם אני צפיתי בו
+*/
 $stmt = $pdo->prepare("
     SELECT
         up.*,
         MAX(v.Date) AS last_view_date,
+
         SUM(
             CASE
                 WHEN v.Id = :id
@@ -53,19 +54,31 @@ $stmt = $pdo->prepare("
                 THEN 1
                 ELSE 0
             END
-        ) AS new_views_count
+        ) AS new_views_count,
+
+        EXISTS (
+            SELECT 1
+            FROM views v2
+            WHERE v2.Id = up.Id
+              AND v2.ById = :id
+              AND (v2.Deleted_By_ById = 0 OR v2.Deleted_By_ById IS NULL)
+        ) AS is_mutual
+
     FROM views v
     JOIN users_profile up
         ON up.Id = v.ById
+
     WHERE v.Id = :id
       AND v.ById <> :id
       AND (v.Deleted_By_Id = 0 OR v.Deleted_By_Id IS NULL)
+
       AND NOT EXISTS (
             SELECT 1
             FROM blocked_users bu
             WHERE (bu.Id = up.Id AND bu.Blocked_ById = :id)
                OR (bu.Id = :id AND bu.Blocked_ById = up.Id)
       )
+
     GROUP BY up.Id
     ORDER BY last_view_date DESC
 ");
@@ -75,46 +88,78 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <main class="page-shell">
-    <section class="search-container">
+    <div class="views-layout">
 
-        <h2 class="views-page-title">צפיות</h2>
+        <aside class="views-sidebar">
+            <h2 class="views-sidebar-title">צפיות</h2>
 
-        <?php if (!$results): ?>
-            <div class="no-results">אין צפיות עדיין</div>
-        <?php else: ?>
+            <a href="/?page=views" class="views-sidebar-link is-active">
+                <span class="views-sidebar-icon">↩👤</span>
+                <span>צפו בפרופיל שלי</span>
+            </a>
 
-            <div class="results">
+            <a href="/?page=viewed_by_me" class="views-sidebar-link">
+                <span class="views-sidebar-icon">↪👤</span>
+                <span>פרופילים שצפיתי</span>
+            </a>
 
-                <?php foreach ($results as $row): ?>
-                    <?php
-                    $user = $row;
+            <a href="/?page=blocked_users" class="views-sidebar-link">
+                <span class="views-sidebar-icon">⊘</span>
+                <span>פרופילים שחסמתי</span>
+            </a>
+        </aside>
 
-                    $user['Age'] = '';
-                    if (!empty($user['DOB'])) {
-                        try {
-                            $user['Age'] = date_diff(date_create((string)$user['DOB']), date_create('today'))->y;
-                        } catch (Throwable $e) {
-                            $user['Age'] = '';
+        <section class="search-container views-main-content">
+
+            <h2 class="views-page-title">צפיות</h2>
+
+            <?php if (!$results): ?>
+                <div class="no-results">אין צפיות עדיין</div>
+            <?php else: ?>
+
+                <div class="results">
+
+                    <?php foreach ($results as $row): ?>
+                        <?php
+                        $user = $row;
+
+                        $user['Age'] = '';
+                        if (!empty($user['DOB'])) {
+                            try {
+                                $user['Age'] = date_diff(date_create((string)$user['DOB']), date_create('today'))->y;
+                            } catch (Throwable $e) {
+                                $user['Age'] = '';
+                            }
                         }
-                    }
 
-                    $newViews = (int)($row['new_views_count'] ?? 0);
+                        $newViews = (int)($row['new_views_count'] ?? 0);
 
-                    $cardId = '';
-                    $cardIconClass = 'vc-eye';
-                    $cardTopBadge = $newViews > 0 ? '👁 ' . $newViews . ' חדשות' : '';
-                    $cardSubline = '';
-                    $cardActionsHtml = '<a href="/?page=profile&id=' . (int)$user['Id'] . '" class="view-card-profile-link">צפייה בפרופיל</a>';
-                    $user['Image'] = getMainProfileImage($pdo, (int)$user['Id']);
-                    $user['is_online'] = is_user_online($pdo, (int)$user['Id']);
+                        $cardId = '';
+                        $cardTopBadge = $newViews > 0 ? '👁 ' . $newViews . ' חדשות' : '';
+                        $cardSubline = '';
+                        $cardShowOnline = true;
 
-                    include __DIR__ . '/includes/view_card.php';
-                    ?>
-                <?php endforeach; ?>
+                        $cardIconsHtml = '
+                        <div style="display:flex;justify-content:center;gap:10px;width:100%;">
+                            <span title="צפייה נכנסת">↙️ 👁️</span>
+                            <span title="צפייה יוצאת">↗️ 👁️</span>
+                            <span title="הודעה נכנסת">↙️ 💬</span>
+                            <span title="הודעה יוצאת">↗️ 💬</span>
+                        </div>';
 
-            </div>
+                        $cardActionsHtml = '<a href="/?page=profile&id=' . (int)$user['Id'] . '" class="view-card-profile-link">צפייה בפרופיל</a>';
 
-        <?php endif; ?>
+                        $user['Image'] = getMainProfileImage($pdo, (int)$user['Id']);
+                        $user['is_online'] = is_user_online($pdo, (int)$user['Id']);
 
-    </section>
+                        include __DIR__ . '/includes/view_card.php';
+                        ?>
+                    <?php endforeach; ?>
+
+                </div>
+
+            <?php endif; ?>
+
+        </section>
+    </div>
 </main>

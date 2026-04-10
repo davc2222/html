@@ -90,9 +90,7 @@ if (in_array($page, $protectedPages, true) && empty($_SESSION['user_id'])) {
             include 'inbox.php';
             break;
 
-        default:
-            include 'home.php';
-            break;
+       
         case 'blocked_users':
             include __DIR__ . '/blocked_users.php';
             break;
@@ -101,7 +99,12 @@ if (in_array($page, $protectedPages, true) && empty($_SESSION['user_id'])) {
             require 'viewed_by_me.php';
             break;
 
-    }
+
+        default:
+            include 'home.php';
+            break;
+
+    }  
     ?>
 
     <?php if (!empty($_SESSION['user_id'])): ?>

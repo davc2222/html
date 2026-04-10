@@ -23,7 +23,8 @@ $cardSubline     = $cardSubline ?? '';
 $cardActionsHtml = $cardActionsHtml ?? '<a href="/?page=profile&id=' . $id . '" class="view-card-profile-link">צפייה בפרופיל</a>';
 $cardShowOnline  = $cardShowOnline ?? true;
 
-/* ===== חשוב: לא עושים כאן שאילתות ===== */
+$cardIconsHtml = $cardIconsHtml ?? '<span class="vc-icon ' . e($cardIconClass) . '"></span>';
+
 $img = $user['Image'] ?? '/images/no_photo.jpg';
 $isOnline = $cardShowOnline ? !empty($user['is_online']) : false;
 
@@ -53,7 +54,7 @@ if (($age === '' || $age === null) && !empty($user['DOB'])) {
     <div class="view-card-content">
 
         <div class="view-card-icons">
-            <span class="vc-icon <?= e($cardIconClass) ?>"></span>
+            <?= $cardIconsHtml ?>
         </div>
 
         <div class="view-card-name">

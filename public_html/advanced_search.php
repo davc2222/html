@@ -707,10 +707,19 @@ try {
             <?php foreach ($results as $user): ?>
                 <?php
                 $cardId = '';
-                $cardIconClass = 'vc-search';
+                $cardMode = 'search';
                 $cardTopBadge = '';
                 $cardSubline = '';
                 $cardShowOnline = true;
+                $cardActionsHtml = '<a href="/?page=profile&id=' . (int)$user['Id'] . '" class="view-card-profile-link">צפייה בפרופיל</a>';
+                $user['Image'] = getMainProfileImage($pdo, (int)$user['Id']);
+                $user['is_online'] = is_user_online($pdo, (int)$user['Id']);
+                $cardIconsHtml = '
+<div style="display:flex;justify-content:center;gap:10px;width:100%;">
+    <span title="צפייה">👁️</span>
+    <span title="הודעה">💬</span>
+</div>';
+
                 $cardActionsHtml = '<a href="/?page=profile&id=' . (int)$user['Id'] . '" class="view-card-profile-link">צפייה בפרופיל</a>';
                 $user['Image'] = getMainProfileImage($pdo, (int)$user['Id']);
                 $user['is_online'] = is_user_online($pdo, (int)$user['Id']);

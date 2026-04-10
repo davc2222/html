@@ -1,9 +1,12 @@
 <?php
+// ===== FILE: viewed_by_me.php =====
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
 require_once __DIR__ . '/config/config.php';
+require_once __DIR__ . '/includes/profile_helpers.php';
 
 if (empty($_SESSION['user_id'])) {
     header('Location: ?page=login');
@@ -16,61 +19,7 @@ function h($v) {
     return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
 }
 
-function is_user_online(PDO $pdo, int $userId): bool {
-    try {
-        $stmt = $pdo->prepare("
-            SELECT CASE
-                WHEN last_seen IS NOT NULL
-                 AND last_seen >= (NOW() - INTERVAL 120 SECOND)
-                THEN 1
-                ELSE 0
-            END
-            FROM users_profile
-            WHERE Id = :id
-            LIMIT 1
-        ");
-        $stmt->execute([':id' => $userId]);
-        return (bool)$stmt->fetchColumn();
-    } catch (Throwable $e) {
-        return false;
-    }
-}
-
-function get_profile_image(PDO $pdo, int $userId): string {
-    try {
-        $stmt = $pdo->prepare("
-            SELECT Pic_Name
-            FROM user_pics
-            WHERE Id = :id
-              AND Main_Pic = 1
-              AND Pic_Status = 1
-            LIMIT 1
-        ");
-        $stmt->execute([':id' => $userId]);
-        $picName = $stmt->fetchColumn();
-
-        if (!$picName) {
-            $stmt = $pdo->prepare("
-                SELECT Pic_Name
-                FROM user_pics
-                WHERE Id = :id
-                  AND Pic_Status = 1
-                ORDER BY Main_Pic DESC, Pic_Num ASC
-                LIMIT 1
-            ");
-            $stmt->execute([':id' => $userId]);
-            $picName = $stmt->fetchColumn();
-        }
-
-        if ($picName) {
-            return '/uploads/' . ltrim((string)$picName, '/');
-        }
-    } catch (Throwable $e) {
-    }
-
-    return '/images/no_photo.jpg';
-}
-
+/* שליפה */
 $stmt = $pdo->prepare("
     SELECT
         v.Num,
@@ -87,57 +36,80 @@ $stmt->execute([':me' => $session_user_id]);
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
-<div class="page-shell">
+<main class="page-shell">
+    <section class="search-container">
 
-    <h2 class="views-page-title">פרופילים שצפיתי בהם</h2>
+        <h2 class="views-page-title">פרופילים שצפיתי בהם</h2>
 
-    <?php if (!$results): ?>
-        <div class="no-views-box">עדיין לא צפית בפרופילים</div>
-    <?php else: ?>
+        <?php if (!$results): ?>
+            <div class="no-views-box">עדיין לא צפית בפרופילים</div>
+        <?php else: ?>
 
-        <div class="views-list">
+            <div class="results">
 
-            <?php foreach ($results as $row): ?>
-                <?php
-                $user = $row;
-                $num  = (int)$row['Num'];
+                <?php foreach ($results as $row): ?>
+                    <?php
+                    $user = $row;
+                    $num  = (int)$row['Num'];
 
-                $user['Age'] = '';
-                if (!empty($user['DOB'])) {
-                    try {
-                        $user['Age'] = date_diff(date_create((string)$user['DOB']), date_create('today'))->y;
-                    } catch (Throwable $e) {
-                        $user['Age'] = '';
+                    /* גיל */
+                    $user['Age'] = '';
+                    if (!empty($user['DOB'])) {
+                        try {
+                            $user['Age'] = date_diff(
+                                date_create((string)$user['DOB']),
+                                date_create('today')
+                            )->y;
+                        } catch (Throwable $e) {
+                            $user['Age'] = '';
+                        }
                     }
-                }
 
-                $viewDate = '';
-                if (!empty($row['Date'])) {
-                    try {
-                        $viewDate = date('d/m/Y H:i', strtotime((string)$row['Date']));
-                    } catch (Throwable $e) {
-                        $viewDate = '';
+                    /* תאריך צפייה */
+                    $viewDate = '';
+                    if (!empty($row['Date'])) {
+                        try {
+                            $viewDate = date('d/m/Y H:i', strtotime((string)$row['Date']));
+                        } catch (Throwable $e) {
+                            $viewDate = '';
+                        }
                     }
-                }
 
-                $cardId = 'viewed-card-' . $num;
-                $cardIconClass = 'vc-eye-reverse';
-                $cardTopBadge = '';
-                $cardSubline = $viewDate !== '' ? 'נצפה בתאריך: ' . $viewDate : '';
-                $cardActionsHtml =
-                    '<a href="/?page=profile&id=' . (int)$user['Id'] . '" class="view-card-profile-link">צפייה בפרופיל</a>
-                     <span>|</span>
-                     <a href="#" class="view-card-profile-link" onclick="deleteViewedCard(' . $num . '); return false;">הסר מהרשימה</a>';
+                    /* קארד */
+                    $cardId = 'viewed-card-' . $num;
+                    $cardMode = 'viewed_by_me';
+                    $cardTopBadge = '';
+                    $cardSubline = $viewDate !== '' ? 'נצפה בתאריך: ' . $viewDate : '';
 
-                include __DIR__ . '/includes/view_card.php';
-                ?>
-            <?php endforeach; ?>
+                    /* 🔥 אייקונים אחידים */
+                    $cardIconsHtml = '
+                    <div style="display:flex;justify-content:center;gap:10px;width:100%;">
+                        <span title="צפיתי">↗️ 👁️</span>
+                        <span title="צפו בי">↙️ 👁️</span>
+                        <span title="הודעה נכנסת">↙️ 💬</span>
+                        <span title="הודעה יוצאת">↗️ 💬</span>
+                    </div>';
 
-        </div>
+                    /* פעולות */
+                    $cardActionsHtml =
+                        '<a href="/?page=profile&id=' . (int)$user['Id'] . '" class="view-card-profile-link">צפייה בפרופיל</a>
+                        <span>|</span>
+                        <a href="#" class="view-card-profile-link" onclick="deleteViewedCard(' . $num . '); return false;">הסר מהרשימה</a>';
 
-    <?php endif; ?>
+                    /* נתונים נוספים */
+                    $user['Image'] = getMainProfileImage($pdo, (int)$user['Id']);
+                    $user['is_online'] = is_user_online($pdo, (int)$user['Id']);
 
-</div>
+                    include __DIR__ . '/includes/view_card.php';
+                    ?>
+                <?php endforeach; ?>
+
+            </div>
+
+        <?php endif; ?>
+
+    </section>
+</main>
 
 <script>
     window.showToast = function(message, isError = false) {
@@ -192,7 +164,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 try {
                     data = JSON.parse(text);
                 } catch (e) {
-                    console.error('Invalid JSON from delete_viewed_by_me.php:', text);
+                    console.error('Invalid JSON:', text);
                     showToast('תגובה לא תקינה מהשרת', true);
                     return;
                 }
@@ -207,7 +179,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 setTimeout(() => {
                     card.remove();
 
-                    const list = document.querySelector('.views-list');
+                    const list = document.querySelector('.results');
                     if (list && !list.querySelector('.view-card')) {
                         list.outerHTML = '<div class="no-views-box">עדיין לא צפית בפרופילים</div>';
                     }

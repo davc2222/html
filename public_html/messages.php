@@ -32,7 +32,6 @@ function h($v) {
     return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
 }
 
-
 /* ===== שליפה ===== */
 $stmt = $pdo->prepare("
     SELECT 
@@ -89,13 +88,23 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     }
 
                     $unread = (int)($row['unread_count'] ?? 0);
-                    $name = trim((string)($user['Name'] ?? ''));
-                    $img = getMainProfileImage($pdo, $otherUserId);
+                    $name   = trim((string)($user['Name'] ?? ''));
+                    $img    = getMainProfileImage($pdo, $otherUserId);
 
                     $cardId = '';
-                    $cardIconClass = 'vc-message';
                     $cardTopBadge = $unread > 0 ? '💬 ' . $unread . ' חדשות' : '';
                     $cardSubline = '';
+
+                    /* 4 אייקונים מרוכזים, בלי תלות ב-CSS חיצוני */
+                    $cardIconsHtml = '
+                        <div style="display:flex;justify-content:center;align-items:center;gap:10px;width:100%;">
+                            <span title="צפייה נכנסת" style="display:inline-flex;align-items:center;gap:3px;">↙️ 👁️</span>
+                            <span title="צפייה יוצאת" style="display:inline-flex;align-items:center;gap:3px;">↗️ 👁️</span>
+                            <span title="הודעה נכנסת" style="display:inline-flex;align-items:center;gap:3px;">↙️ 💬</span>
+                            <span title="הודעה יוצאת" style="display:inline-flex;align-items:center;gap:3px;">↗️ 💬</span>
+                        </div>
+                    ';
+
                     $cardActionsHtml =
                         '<a href="#" class="view-card-profile-link" onclick="openMessageModal(' . $otherUserId . ', \''
                         . h($name) . '\', \''
