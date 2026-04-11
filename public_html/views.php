@@ -36,11 +36,6 @@ $pdo->prepare("
     WHERE Id = :id AND `New` = 1
 ")->execute([':id' => $session_user_id]);
 
-/*
-   שליפה + הדדיות באותה שאילתה
-   v  = מי שצפה בי
-   vm = האם גם אני צפיתי בו
-*/
 $stmt = $pdo->prepare("
     SELECT
         up.*,
@@ -69,6 +64,7 @@ $stmt = $pdo->prepare("
         ON up.Id = v.ById
 
     WHERE v.Id = :id
+      AND up.Is_Frozen = 0
       AND v.ById <> :id
       AND (v.Deleted_By_Id = 0 OR v.Deleted_By_Id IS NULL)
 

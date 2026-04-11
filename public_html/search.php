@@ -65,7 +65,7 @@ if ($search_done) {
     $me = (int)($_SESSION['user_id'] ?? 0);
     $session_user_id = $me;
 
-    $sql = "SELECT * FROM {$mainTable} WHERE 1=1";
+    $sql = "SELECT * FROM {$mainTable} WHERE Is_Frozen = 0";
     $params = [];
 
     if ($me > 0) {

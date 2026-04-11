@@ -183,6 +183,7 @@ try {
         SELECT u.*
         FROM users_profile u
         WHERE u.Id <> :me
+          AND u.Is_Frozen = 0
     ";
 
     $params = [

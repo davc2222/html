@@ -5,6 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 $contactEmail = trim((string)($_SESSION['user_email'] ?? ''));
 $contactName  = trim((string)($_SESSION['user_name'] ?? ($_SESSION['username'] ?? '')));
+$isLoggedIn   = !empty($_SESSION['user_id']);
 ?>
 
 <footer class="site-footer">
@@ -20,6 +21,13 @@ $contactName  = trim((string)($_SESSION['user_name'] ?? ($_SESSION['username'] ?
             <button type="button" id="privacyFooterLink" class="footer-link-btn">מדיניות פרטיות</button>
             <span>|</span>
             <button type="button" id="contactFooterLink" class="footer-link-btn">צור קשר</button>
+
+            <?php if ($isLoggedIn): ?>
+                <span>|</span>
+                <button type="button" id="accountManageFooterLink" class="footer-link-btn footer-link-danger">
+                    ניהול כרטיס
+                </button>
+            <?php endif; ?>
         </div>
 
         <div class="footer-right">
@@ -136,10 +144,6 @@ $contactName  = trim((string)($_SESSION['user_name'] ?? ($_SESSION['username'] ?
                 כל עניין הנוגע לשימוש באתר יהיה כפוף לדין הישראלי בלבד,
                 ובסמכותם הבלעדית של בתי המשפט המוסמכים בחיפה.
             </p>
-
-            <p class="terms-note">
-                הנוסח מבוסס על הטקסט ששלחת, עם התאמות לשם האתר LoveMatch. :contentReference[oaicite:0]{index=0}
-            </p>
         </div>
     </div>
 </div>
@@ -155,186 +159,219 @@ $contactName  = trim((string)($_SESSION['user_name'] ?? ($_SESSION['username'] ?
 
         <div class="terms-content">
             <p>
-            <div class="terms-content">
+                מדיניות פרטיות זו מסבירה כיצד אתר <strong>LoveMatch</strong> אוסף, משתמש ושומר מידע אישי של המשתמשים.
+                השימוש באתר מהווה הסכמה למדיניות זו.
+            </p>
 
-                <p>
-                    מדיניות פרטיות זו מסבירה כיצד אתר <strong>LoveMatch</strong> אוסף, משתמש ושומר מידע אישי של המשתמשים.
-                    השימוש באתר מהווה הסכמה למדיניות זו.
-                </p>
+            <h3>איסוף מידע</h3>
+            <p>
+                בעת הרשמה לאתר נאסף מידע כגון שם משתמש, כתובת אימייל, תאריך לידה ופרטים נוספים שהמשתמש בוחר להזין בפרופיל.
+            </p>
 
-                <h3>איסוף מידע</h3>
-                <p>
-                    בעת הרשמה לאתר נאסף מידע כגון שם משתמש, כתובת אימייל, תאריך לידה ופרטים נוספים שהמשתמש בוחר להזין בפרופיל.
-                </p>
+            <h3>שימוש במידע</h3>
+            <ul>
+                <li>ניהול חשבון המשתמש והפעלת האתר</li>
+                <li>התאמת תכנים והצגת התאמות בין משתמשים</li>
+                <li>שליחת הודעות והתראות בתוך האתר</li>
+                <li>שיפור חוויית המשתמש</li>
+            </ul>
 
-                <h3>שימוש במידע</h3>
-                <ul>
-                    <li>ניהול חשבון המשתמש והפעלת האתר</li>
-                    <li>התאמת תכנים והצגת התאמות בין משתמשים</li>
-                    <li>שליחת הודעות והתראות בתוך האתר</li>
-                    <li>שיפור חוויית המשתמש</li>
-                </ul>
+            <h3>שמירת מידע</h3>
+            <p>
+                המידע נשמר במאגרי המידע של האתר ומוגן באמצעים סבירים בהתאם לנהוג בתחום.
+            </p>
 
-                <h3>שמירת מידע</h3>
-                <p>
-                    המידע נשמר במאגרי המידע של האתר ומוגן באמצעים סבירים בהתאם לנהוג בתחום.
-                </p>
+            <h3>שיתוף מידע</h3>
+            <p>
+                האתר אינו מוכר ואינו מעביר מידע אישי לצדדים שלישיים, למעט מקרים בהם נדרש על פי חוק
+                או לצורך תפעול השירות כגון ספקי אחסון.
+            </p>
 
-                <h3>שיתוף מידע</h3>
-                <p>
-                    האתר אינו מוכר ואינו מעביר מידע אישי לצדדים שלישיים, למעט מקרים בהם נדרש על פי חוק
-                    או לצורך תפעול השירות (כגון ספקי אחסון).
-                </p>
+            <h3>קבצי Cookies</h3>
+            <p>
+                האתר עשוי להשתמש בקבצי Cookies לצורך תפעול תקין, שמירת העדפות משתמש ושיפור השירות.
+            </p>
 
-                <h3>קבצי Cookies</h3>
-                <p>
-                    האתר עשוי להשתמש בקבצי Cookies לצורך תפעול תקין, שמירת העדפות משתמש ושיפור השירות.
-                </p>
+            <h3>אבטחת מידע</h3>
+            <p>
+                מפעילת האתר נוקטת באמצעים סבירים לאבטחת המידע, אך אינה יכולה להבטיח חסינות מוחלטת מפני פריצות.
+            </p>
 
-                <h3>אבטחת מידע</h3>
-                <p>
-                    מפעילת האתר נוקטת באמצעים סבירים לאבטחת המידע, אך אינה יכולה להבטיח חסינות מוחלטת מפני פריצות.
-                </p>
+            <h3>מחיקת מידע</h3>
+            <p>
+                המשתמש רשאי לבקש מחיקת חשבונו והמידע המשויך אליו באמצעות פנייה דרך האתר או דרך אפשרויות ניהול הכרטיס.
+            </p>
 
-                <h3>מחיקת מידע</h3>
-                <p>
-                    המשתמש רשאי לבקש מחיקת חשבונו והמידע המשויך אליו באמצעות פנייה דרך האתר.
-                </p>
+            <h3>יצירת קשר</h3>
+            <p>
+                בכל שאלה בנושא פרטיות ניתן לפנות דרך טופס "צור קשר" באתר.
+            </p>
 
-                <h3>יצירת קשר</h3>
-                <p>
-                    בכל שאלה בנושא פרטיות ניתן לפנות דרך טופס “צור קשר” באתר.
-                </p>
-
-                <p class="terms-note">
-                    מדיניות זו עשויה להתעדכן מעת לעת.
-                </p>
-
-            </div>
+            <p class="terms-note">
+                מדיניות זו עשויה להתעדכן מעת לעת.
             </p>
         </div>
     </div>
 </div>
 
+<?php if ($isLoggedIn): ?>
+<!-- =======================
+     ACCOUNT MANAGE POPUP
+======================= -->
+<div id="accountManagePopupOverlay" class="footer-popup-overlay" style="display:none;">
+    <div class="footer-popup-box">
+        <button type="button" class="footer-popup-close" id="accountManagePopupCloseBtn">×</button>
+
+        <h2 class="footer-popup-title">ניהול כרטיס</h2>
+
+        <div class="terms-content" style="text-align:right;">
+            <p>
+                אפשר להקפיא את הכרטיס ולחזור בעתיד, או למחוק את הפרופיל לצמיתות.
+            </p>
+
+            <div class="account-manage-actions">
+                <button type="button" id="freezeAccountBtn" class="footer-popup-submit account-freeze-btn">
+                    הקפאת כרטיס
+                </button>
+
+                <button type="button" id="deleteAccountBtn" class="footer-popup-submit account-delete-btn">
+                    מחיקה מלאה
+                </button>
+            </div>
+
+            <div id="accountManageMsg" class="footer-popup-msg"></div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
 <script>
-    (function() {
-        function openPopup(id) {
-            const el = document.getElementById(id);
-            if (!el) return;
-            el.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        }
+(function() {
+    function openPopup(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
 
-        function closePopup(id) {
-            const el = document.getElementById(id);
-            if (!el) return;
-            el.style.display = 'none';
-            document.body.style.overflow = '';
-        }
+    function closePopup(id) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.style.display = 'none';
+        document.body.style.overflow = '';
+    }
 
-        window.openContactPopup = function() {
-            openPopup('contactPopupOverlay');
-        };
+    window.openContactPopup = function() { openPopup('contactPopupOverlay'); };
+    window.closeContactPopup = function() { closePopup('contactPopupOverlay'); };
 
-        window.closeContactPopup = function() {
-            closePopup('contactPopupOverlay');
-        };
+    window.openTermsPopup = function() { openPopup('termsPopupOverlay'); };
+    window.closeTermsPopup = function() { closePopup('termsPopupOverlay'); };
 
-        window.openTermsPopup = function() {
-            openPopup('termsPopupOverlay');
-        };
+    window.openPrivacyPopup = function() { openPopup('privacyPopupOverlay'); };
+    window.closePrivacyPopup = function() { closePopup('privacyPopupOverlay'); };
 
-        window.closeTermsPopup = function() {
-            closePopup('termsPopupOverlay');
-        };
+    window.openAccountManagePopup = function() { openPopup('accountManagePopupOverlay'); };
+    window.closeAccountManagePopup = function() { closePopup('accountManagePopupOverlay'); };
 
-        window.openPrivacyPopup = function() {
-            openPopup('privacyPopupOverlay');
-        };
-
-        window.closePrivacyPopup = function() {
-            closePopup('privacyPopupOverlay');
-        };
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const contactLink = document.getElementById('contactFooterLink');
-            const termsLink = document.getElementById('termsFooterLink');
-            const privacyLink = document.getElementById('privacyFooterLink');
-
-            const contactOverlay = document.getElementById('contactPopupOverlay');
-            const termsOverlay = document.getElementById('termsPopupOverlay');
-            const privacyOverlay = document.getElementById('privacyPopupOverlay');
-
-            const contactCloseBtn = document.getElementById('contactPopupCloseBtn');
-            const termsCloseBtn = document.getElementById('termsPopupCloseBtn');
-            const privacyCloseBtn = document.getElementById('privacyPopupCloseBtn');
-
-            const form = document.getElementById('contactPopupForm');
-            const msgBox = document.getElementById('contactPopupMsg');
-
-            if (contactLink) {
-                contactLink.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    openContactPopup();
-                });
+    async function postJson(url) {
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
             }
+        });
 
-            if (termsLink) {
-                termsLink.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    openTermsPopup();
-                });
-            }
+        return res.json();
+    }
 
-            if (privacyLink) {
-                privacyLink.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    openPrivacyPopup();
-                });
-            }
+    document.addEventListener('DOMContentLoaded', function() {
+        const contactLink = document.getElementById('contactFooterLink');
+        const termsLink = document.getElementById('termsFooterLink');
+        const privacyLink = document.getElementById('privacyFooterLink');
+        const accountManageLink = document.getElementById('accountManageFooterLink');
 
-            if (contactCloseBtn) {
-                contactCloseBtn.addEventListener('click', function() {
-                    closeContactPopup();
-                });
-            }
+        const contactOverlay = document.getElementById('contactPopupOverlay');
+        const termsOverlay = document.getElementById('termsPopupOverlay');
+        const privacyOverlay = document.getElementById('privacyPopupOverlay');
+        const accountManageOverlay = document.getElementById('accountManagePopupOverlay');
 
-            if (termsCloseBtn) {
-                termsCloseBtn.addEventListener('click', function() {
-                    closeTermsPopup();
-                });
-            }
+        const contactCloseBtn = document.getElementById('contactPopupCloseBtn');
+        const termsCloseBtn = document.getElementById('termsPopupCloseBtn');
+        const privacyCloseBtn = document.getElementById('privacyPopupCloseBtn');
+        const accountManageCloseBtn = document.getElementById('accountManagePopupCloseBtn');
 
-            if (privacyCloseBtn) {
-                privacyCloseBtn.addEventListener('click', function() {
-                    closePrivacyPopup();
-                });
-            }
+        const form = document.getElementById('contactPopupForm');
+        const msgBox = document.getElementById('contactPopupMsg');
 
-            [contactOverlay, termsOverlay, privacyOverlay].forEach(function(overlay) {
-                if (!overlay) return;
+        const freezeBtn = document.getElementById('freezeAccountBtn');
+        const deleteBtn = document.getElementById('deleteAccountBtn');
+        const accountManageMsg = document.getElementById('accountManageMsg');
 
-                overlay.addEventListener('click', function(e) {
-                    if (e.target === overlay) {
-                        overlay.style.display = 'none';
-                        document.body.style.overflow = '';
-                    }
-                });
+        if (contactLink) {
+            contactLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                openContactPopup();
             });
+        }
 
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    closeContactPopup();
-                    closeTermsPopup();
-                    closePrivacyPopup();
+        if (termsLink) {
+            termsLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                openTermsPopup();
+            });
+        }
+
+        if (privacyLink) {
+            privacyLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                openPrivacyPopup();
+            });
+        }
+
+        if (accountManageLink) {
+            accountManageLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                openAccountManagePopup();
+            });
+        }
+
+        if (contactCloseBtn) {
+            contactCloseBtn.addEventListener('click', closeContactPopup);
+        }
+
+        if (termsCloseBtn) {
+            termsCloseBtn.addEventListener('click', closeTermsPopup);
+        }
+
+        if (privacyCloseBtn) {
+            privacyCloseBtn.addEventListener('click', closePrivacyPopup);
+        }
+
+        if (accountManageCloseBtn) {
+            accountManageCloseBtn.addEventListener('click', closeAccountManagePopup);
+        }
+
+        [contactOverlay, termsOverlay, privacyOverlay, accountManageOverlay].forEach(function(overlay) {
+            if (!overlay) return;
+
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) {
+                    overlay.style.display = 'none';
+                    document.body.style.overflow = '';
                 }
             });
+        });
 
-            if (!form || !msgBox) return;
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeContactPopup();
+                closeTermsPopup();
+                closePrivacyPopup();
+                closeAccountManagePopup();
+            }
+        });
 
+        if (form && msgBox) {
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
 
@@ -370,6 +407,61 @@ $contactName  = trim((string)($_SESSION['user_name'] ?? ($_SESSION['username'] ?
                     msgBox.classList.add('error');
                 }
             });
-        });
-    })();
+        }
+
+        if (freezeBtn) {
+            freezeBtn.addEventListener('click', async function() {
+                if (!confirm('להקפיא את הכרטיס? ניתן יהיה לשחזר אותו בעתיד.')) {
+                    return;
+                }
+
+                accountManageMsg.textContent = '';
+                accountManageMsg.className = 'footer-popup-msg';
+
+                try {
+                    const data = await postJson('/freeze_account.php');
+
+                    if (data.ok) {
+                        window.location.href = data.redirect || '/';
+                    } else {
+                        accountManageMsg.textContent = data.error || 'שגיאה בהקפאת הכרטיס';
+                        accountManageMsg.classList.add('error');
+                    }
+                } catch (err) {
+                    accountManageMsg.textContent = 'שגיאה בתקשורת עם השרת';
+                    accountManageMsg.classList.add('error');
+                }
+            });
+        }
+
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', async function() {
+                if (!confirm('האם למחוק את הפרופיל לצמיתות?')) {
+                    return;
+                }
+
+                if (!confirm('אישור אחרון: כל הנתונים יימחקו לחלוטין ולא יהיה ניתן לשחזר.')) {
+                    return;
+                }
+
+                accountManageMsg.textContent = '';
+                accountManageMsg.className = 'footer-popup-msg';
+
+                try {
+                    const data = await postJson('/delete_account.php');
+
+                    if (data.ok) {
+                        window.location.href = data.redirect || '/';
+                    } else {
+                        accountManageMsg.textContent = data.error || 'שגיאה במחיקת הכרטיס';
+                        accountManageMsg.classList.add('error');
+                    }
+                } catch (err) {
+                    accountManageMsg.textContent = 'שגיאה בתקשורת עם השרת';
+                    accountManageMsg.classList.add('error');
+                }
+            });
+        }
+    });
+})();
 </script>

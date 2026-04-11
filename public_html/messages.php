@@ -59,6 +59,7 @@ $stmt = $pdo->prepare("
             ELSE m.ById
         END
     WHERE (m.Id = :me OR m.ById = :me)
+      AND up.Is_Frozen = 0
       AND (
             (m.Id = :me AND (m.Deleted_By_Id = 0 OR m.Deleted_By_Id IS NULL))
          OR (m.ById = :me AND (m.Deleted_By_ById = 0 OR m.Deleted_By_ById IS NULL))
@@ -112,9 +113,6 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     $cardTopBadge = $unread > 0 ? '💬 ' . $unread . ' חדשות' : '';
                     $cardSubline = '';
                     $cardShowOnline = true;
-
-                    /* חשוב: לא מגדירים $cardIconsHtml כאן
-                       הקארד עצמו בונה את האייקונים מתוך 4 השאילתות שלו */
 
                     $cardActionsHtml =
                         '<a href="#" class="view-card-profile-link" onclick="openMessageModal(' . $otherUserId . ', \''

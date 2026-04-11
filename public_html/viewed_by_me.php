@@ -29,6 +29,7 @@ $stmt = $pdo->prepare("
     JOIN users_profile up
         ON up.Id = v.Id
     WHERE v.ById = :me
+      AND up.Is_Frozen = 0
       AND (v.Deleted_By_ById = 0 OR v.Deleted_By_ById IS NULL)
     ORDER BY v.Date DESC
 ");
@@ -52,7 +53,6 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     $user = $row;
                     $num  = (int)$row['Num'];
 
-                    /* גיל */
                     $user['Age'] = '';
                     if (!empty($user['DOB'])) {
                         try {
@@ -65,7 +65,6 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         }
                     }
 
-                    /* תאריך צפייה */
                     $viewDate = '';
                     if (!empty($row['Date'])) {
                         try {
@@ -75,13 +74,11 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         }
                     }
 
-                    /* קארד */
                     $cardId = 'viewed-card-' . $num;
                     $cardMode = 'viewed_by_me';
                     $cardTopBadge = '';
                     $cardSubline = $viewDate !== '' ? 'נצפה בתאריך: ' . $viewDate : '';
 
-                    /* 🔥 אייקונים אחידים */
                     $cardIconsHtml = '
                     <div style="display:flex;justify-content:center;gap:10px;width:100%;">
                         <span title="צפיתי">↗️ 👁️</span>
@@ -90,13 +87,11 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <span title="הודעה יוצאת">↗️ 💬</span>
                     </div>';
 
-                    /* פעולות */
                     $cardActionsHtml =
                         '<a href="/?page=profile&id=' . (int)$user['Id'] . '" class="view-card-profile-link">צפייה בפרופיל</a>
                         <span>|</span>
                         <a href="#" class="view-card-profile-link" onclick="deleteViewedCard(' . $num . '); return false;">הסר מהרשימה</a>';
 
-                    /* נתונים נוספים */
                     $user['Image'] = getMainProfileImage($pdo, (int)$user['Id']);
                     $user['is_online'] = is_user_online($pdo, (int)$user['Id']);
 

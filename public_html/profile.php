@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/config/config.php';
+require_once __DIR__ . '/includes/profile_helpers.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -54,14 +55,24 @@ function e($v) {
     return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
 }
 
-
-
 $stmt = $pdo->prepare("SELECT * FROM users_profile WHERE Id = :id LIMIT 1");
 $stmt->execute([':id' => $id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$user) {
     echo "משתמש לא נמצא";
+    exit;
+}
+
+if ((int)($user['Is_Frozen'] ?? 0) === 1 && $viewerId !== (int)$user['Id']) {
+    echo '
+    <div class="blocked-profile-box">
+        <div class="blocked-profile-icon">❄</div>
+        <div class="blocked-profile-title">
+            המשתמש הקפיא את הפרופיל
+        </div>
+    </div>
+    ';
     exit;
 }
 

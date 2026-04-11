@@ -38,6 +38,35 @@ if (in_array($page, $protectedPages, true) && empty($_SESSION['user_id'])) {
 <html lang="he">
 
 <head>
+    <!-- בסיס -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- SEO -->
+    <title>LoveMatch - אתר הכרויות חכם למציאת אהבה</title>
+
+    <meta name="description" content="LoveMatch הוא אתר הכרויות חכם למציאת זוגיות אמיתית. הירשם עכשיו, מצא התאמות ושלח הודעות בקלות.">
+    <meta name="keywords" content="אתר הכרויות, טינדר , אתר הכרויות בחינם, לאב מי  ,הכרויות בישראל, מציאת זוגיות, דייטים, אהבה, LoveMatch">
+    <meta name="author" content="LoveMatch">
+
+    <!-- אינדוקס -->
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph (פייסבוק וכו') -->
+    <meta property="og:title" content="LoveMatch - אתר הכרויות">
+    <meta property="og:description" content="מצא אהבה אמיתית ב-LoveMatch. הירשם והתחל להכיר אנשים עכשיו.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://your-domain.com">
+    <meta property="og:image" content="http://your-domain.com/images/og-image.jpg">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="LoveMatch - אתר הכרויות">
+    <meta name="twitter:description" content="מצא אהבה בקלות עם LoveMatch">
+    <meta name="twitter:image" content="http://your-domain.com/images/og-image.jpg">
+
+    <!-- favicon -->
+    <link rel="icon" href="/images/favicon.ico" type="image/x-icon">
     <meta charset="UTF-8">
     <title>LoveMatch</title>
     <link rel="stylesheet" href="/css/style.css">

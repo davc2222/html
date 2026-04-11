@@ -1,8 +1,16 @@
 <?php
 // ===== FILE: login.php =====
 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 $error = $_GET['error'] ?? '';
 $verified = $_GET['verified'] ?? '';
+$showFrozenRestorePopup = (
+    !empty($_GET['frozen_restore']) &&
+    !empty($_SESSION['restore_user_id'])
+);
 ?>
 
 <main class="page-shell">
@@ -48,9 +56,75 @@ $verified = $_GET['verified'] ?? '';
     </section>
 </main>
 
+<?php if ($showFrozenRestorePopup): ?>
+<div id="restoreFrozenModal" class="footer-popup-overlay" style="display:flex;">
+    <div class="footer-popup-box">
+        <h2 class="footer-popup-title">הפרופיל מוקפא</h2>
+
+        <div class="terms-content" style="text-align:right;">
+            <p>הפרופיל שלך מוקפא כרגע. האם תרצה/י לשחזר אותו?</p>
+
+            <div class="account-manage-actions">
+                <button type="button" id="restoreFrozenYesBtn" class="footer-popup-submit account-freeze-btn">
+                    כן, שחזרו את הפרופיל
+                </button>
+
+                <button type="button" id="restoreFrozenNoBtn" class="footer-popup-submit">
+                    לא
+                </button>
+            </div>
+
+            <div id="restoreFrozenMsg" class="footer-popup-msg"></div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
 <script>
 function togglePassword() {
     const input = document.getElementById('Pass');
     input.type = (input.type === 'password') ? 'text' : 'password';
 }
+
+<?php if ($showFrozenRestorePopup): ?>
+document.addEventListener('DOMContentLoaded', function() {
+    const yesBtn = document.getElementById('restoreFrozenYesBtn');
+    const noBtn = document.getElementById('restoreFrozenNoBtn');
+    const msgBox = document.getElementById('restoreFrozenMsg');
+
+    if (yesBtn) {
+        yesBtn.addEventListener('click', async function() {
+            msgBox.textContent = '';
+            msgBox.className = 'footer-popup-msg';
+
+            try {
+                const res = await fetch('/restore_account.php', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const data = await res.json();
+
+                if (data.ok) {
+                    window.location.href = data.redirect || '/?page=login';
+                } else {
+                    msgBox.textContent = data.error || 'שגיאה בשחזור הפרופיל';
+                    msgBox.classList.add('error');
+                }
+            } catch (err) {
+                msgBox.textContent = 'שגיאה בתקשורת עם השרת';
+                msgBox.classList.add('error');
+            }
+        });
+    }
+
+    if (noBtn) {
+        noBtn.addEventListener('click', function() {
+            window.location.href = '/?page=login';
+        });
+    }
+});
+<?php endif; ?>
 </script>

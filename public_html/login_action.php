@@ -5,14 +5,6 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
-
-
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 require_once __DIR__ . '/config/config.php';
 
 /* =========================
@@ -38,7 +30,7 @@ if ($email === '' || $pass === '') {
    Fetch user by email
 ========================= */
 $stmt = $pdo->prepare("
-    SELECT Id, Name, Email, Pass, email_verified
+    SELECT Id, Name, Email, Pass, email_verified, Is_Frozen
     FROM users_profile
     WHERE Email = :email
     LIMIT 1
@@ -69,10 +61,24 @@ if ((int)$user['email_verified'] !== 1) {
 }
 
 /* =========================
-   RESET SESSION  🔥 חשוב!
+   Frozen profile flow
+========================= */
+if ((int)($user['Is_Frozen'] ?? 0) === 1) {
+    unset($_SESSION['user_id'], $_SESSION['user_name'], $_SESSION['user_email']);
+
+    $_SESSION['restore_user_id'] = (int)$user['Id'];
+    $_SESSION['restore_user_name'] = (string)$user['Name'];
+
+    header('Location: /?page=login&frozen_restore=1');
+    exit;
+}
+
+/* =========================
+   RESET SESSION
 ========================= */
 $_SESSION = [];
 session_regenerate_id(true);
+
 /* =========================
    Session values
 ========================= */
@@ -81,14 +87,7 @@ $_SESSION['user_name']  = $user['Name'];
 $_SESSION['user_email'] = $user['Email'];
 
 /* =========================
-   Regenerate session ID
-========================= */
-
-
-/* =========================
    Redirect after login
 ========================= */
-//header('Location: /?page=profile&id=' . (int)$user['Id']);
-
-header('Location: /?page=יhome');
+header('Location: /?page=home');
 exit;
