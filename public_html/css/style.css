@@ -5495,3 +5495,29 @@ transform: translateX(-50px);
         width: 100%;
     }
 }
+
+
+
+.site-logo-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 30px;
+    font-weight: 800;
+    text-decoration: none;
+    color: #000; /* שחור */
+    font-style: italic;
+}
+
+/* הלב */
+.logo-heart {
+    color: #e11d48; /* אדום */
+    font-size: 26px;
+
+    /* 🔥 מסגרת שחורה */
+    text-shadow:
+        -1px -1px 0 #000,
+         1px -1px 0 #000,
+        -1px  1px 0 #000,
+         1px  1px 0 #000;
+}

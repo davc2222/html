@@ -79,6 +79,77 @@ if ((int)($user['Is_Frozen'] ?? 0) === 1 && $viewerId !== (int)$user['Id']) {
 $isOwner = ($viewerId === (int)$user['Id']);
 $isOnlineProfile = is_user_online($pdo, (int)$user['Id']);
 
+/* ========= אייקונים כמו בכרטיסים ========= */
+$hasViewIn = false;
+$hasViewOut = false;
+$hasMsgIn = false;
+$hasMsgOut = false;
+
+if ($viewerId > 0 && !$isOwner) {
+    try {
+        $stmt = $pdo->prepare("
+            SELECT 1
+            FROM views
+            WHERE Id = :viewer
+              AND ById = :profile
+              AND (Deleted_By_Id = 0 OR Deleted_By_Id IS NULL)
+            LIMIT 1
+        ");
+        $stmt->execute([
+            ':viewer'  => $viewerId,
+            ':profile' => $id
+        ]);
+        $hasViewIn = (bool)$stmt->fetchColumn();
+
+        $stmt = $pdo->prepare("
+            SELECT 1
+            FROM views
+            WHERE Id = :profile
+              AND ById = :viewer
+              AND (Deleted_By_ById = 0 OR Deleted_By_ById IS NULL)
+            LIMIT 1
+        ");
+        $stmt->execute([
+            ':profile' => $id,
+            ':viewer'  => $viewerId
+        ]);
+        $hasViewOut = (bool)$stmt->fetchColumn();
+
+        $stmt = $pdo->prepare("
+            SELECT 1
+            FROM messages
+            WHERE Id = :viewer
+              AND ById = :profile
+              AND (Deleted_By_Id = 0 OR Deleted_By_Id IS NULL)
+            LIMIT 1
+        ");
+        $stmt->execute([
+            ':viewer'  => $viewerId,
+            ':profile' => $id
+        ]);
+        $hasMsgIn = (bool)$stmt->fetchColumn();
+
+        $stmt = $pdo->prepare("
+            SELECT 1
+            FROM messages
+            WHERE Id = :profile
+              AND ById = :viewer
+              AND (Deleted_By_ById = 0 OR Deleted_By_ById IS NULL)
+            LIMIT 1
+        ");
+        $stmt->execute([
+            ':profile' => $id,
+            ':viewer'  => $viewerId
+        ]);
+        $hasMsgOut = (bool)$stmt->fetchColumn();
+    } catch (Throwable $e) {
+        $hasViewIn = false;
+        $hasViewOut = false;
+        $hasMsgIn = false;
+        $hasMsgOut = false;
+    }
+}
+
 /* חישוב גיל מ-DOB */
 $age = null;
 if (!empty($user['DOB'])) {
@@ -247,6 +318,26 @@ $rightSelectOptionsJson = json_encode($rightSelectOptions, JSON_UNESCAPED_UNICOD
         <!-- RIGHT -->
         <div class="profile-right-col">
             <div class="profile-right-card">
+
+                <?php if (!$isOwner && $viewerId > 0): ?>
+                    <div class="view-card-icons" style="margin-bottom:10px;">
+                        <?php if ($hasViewIn): ?>
+                            <span title="צפייה נכנסת">↙️ 👁️</span>
+                        <?php endif; ?>
+
+                        <?php if ($hasViewOut): ?>
+                            <span title="צפייה יוצאת">↗️ 👁️</span>
+                        <?php endif; ?>
+
+                        <?php if ($hasMsgIn): ?>
+                            <span title="הודעה נכנסת">↙️ 💬</span>
+                        <?php endif; ?>
+
+                        <?php if ($hasMsgOut): ?>
+                            <span title="הודעה יוצאת">↗️ 💬</span>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
 
                 <div class="profile-main-image-wrap">
                     <a

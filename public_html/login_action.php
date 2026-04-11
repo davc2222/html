@@ -69,7 +69,7 @@ if ((int)($user['Is_Frozen'] ?? 0) === 1) {
     $_SESSION['restore_user_id'] = (int)$user['Id'];
     $_SESSION['restore_user_name'] = (string)$user['Name'];
 
-    header('Location: /?page=login&frozen_restore=1');
+    header('Location: /?page=advanced_search');
     exit;
 }
 

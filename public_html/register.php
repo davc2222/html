@@ -137,7 +137,7 @@ $success = $_GET['success'] ?? '';
 
             <div class="form-group">
                 <label for="Email">אימייל</label>
-                <input type="email" name="Email" id="Email" required>
+              <input type="email" name="Email" autocomplete="username" required>
                 <div class="error-text" id="email-error"></div>
             </div>
 
@@ -145,7 +145,7 @@ $success = $_GET['success'] ?? '';
                 <label for="Pass">סיסמה</label>
 
                 <div class="password-wrapper">
-                    <input type="password" name="Pass" id="Pass" required autocomplete="new-password">
+                  <input type="password" name="Pass" autocomplete="current-password" required>
                     <button type="button" class="toggle-pass" id="togglePass">👁</button>
                 </div>
 
