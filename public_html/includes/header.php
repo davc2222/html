@@ -90,8 +90,10 @@ $menu = [
 
 <header class="site-header">
 
-   <a href="?page=home" class="site-logo-text">
-    LoveMatch <span class="logo-heart">❤</span>
+  <a href="?page=home" class="site-logo-text">
+    <span class="logo-heart left">❤</span>
+    <span class="logo-text">LoveMatch</span>
+    <span class="logo-heart right">❤</span>
 </a>
 
     <nav class="links">

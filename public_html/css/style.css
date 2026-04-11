@@ -5521,3 +5521,76 @@ transform: translateX(-50px);
         -1px  1px 0 #000,
          1px  1px 0 #000;
 }
+
+.profile-gallery-upload-btn {
+    width: 140px;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 0 auto;
+    background: linear-gradient(135deg, #ff4d6d, #ff6f8f);
+    color: #fff;
+    border: 2px dashed #d91f4f;
+    border-radius: 18px;
+    cursor: pointer;
+    box-shadow: 0 8px 18px rgba(255, 77, 109, 0.18);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    text-align: center;
+}
+
+.profile-gallery-upload-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(255, 77, 109, 0.24);
+    opacity: 0.96;
+}
+
+.profile-gallery-upload-btn-icon {
+    font-size: 34px;
+    line-height: 1;
+    font-weight: 700;
+}
+
+.profile-gallery-upload-btn-text {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.logo-heart.left {
+    margin-right: 8px;
+}
+
+.logo-heart.right {
+    margin-left: 14px;
+}
+
+.site-logo-text .logo-heart:first-child {
+    margin-right: 8px;
+}
+
+.site-logo-text {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+}
+
+/* הלב הראשון */
+.logo-heart.left {
+    margin-right: 1px;
+}
+
+/* הלב השני */
+.logo-heart.right {
+    margin-left: 6px;
+}
+
+/* שיפור יישור */
+.logo-heart {
+    color: #ff4d6d;
+    font-size: 19px;
+    display: inline-block;
+    transform: translateY(1px);
+}
