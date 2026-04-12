@@ -5523,74 +5523,61 @@ transform: translateX(-50px);
 }
 
 .profile-gallery-upload-btn {
-    width: 140px;
-    min-height: 140px;
-    display: flex;
-    flex-direction: column;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    margin: 0 auto;
-    background: linear-gradient(135deg, #ff4d6d, #ff6f8f);
+    gap: 6px;
+
+    padding: 8px 14px;
+    border-radius: 10px;
+
+    background: #ff8c42; /* אורנג' */
     color: #fff;
-    border: 2px dashed #d91f4f;
-    border-radius: 18px;
+
+    font-size: 14px;
+    font-weight: 600;
+
     cursor: pointer;
-    box-shadow: 0 8px 18px rgba(255, 77, 109, 0.18);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
-    text-align: center;
+    transition: 0.2s;
+
+    height: 36px; /* 🔥 קובע גובה קטן */
 }
 
+/* hover */
 .profile-gallery-upload-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 24px rgba(255, 77, 109, 0.24);
-    opacity: 0.96;
+    background: #ff7a1a;
 }
 
+/* האייקון + */
 .profile-gallery-upload-btn-icon {
-    font-size: 34px;
-    line-height: 1;
-    font-weight: 700;
-}
-
-.profile-gallery-upload-btn-text {
     font-size: 16px;
-    font-weight: 700;
-    line-height: 1.2;
+    line-height: 1;
 }
 
-.logo-heart.left {
-    margin-right: 8px;
+/* הטקסט */
+.profile-gallery-upload-btn-text {
+    font-size: 14px;
 }
 
-.logo-heart.right {
-    margin-left: 14px;
-}
-
-.site-logo-text .logo-heart:first-child {
-    margin-right: 8px;
-}
-
-.site-logo-text {
+..site-logo-text {
     display: flex;
     align-items: center;
     font-weight: bold;
 }
 
-/* הלב הראשון */
-.logo-heart.left {
-    margin-right: 1px;
-}
-
-/* הלב השני */
-.logo-heart.right {
-    margin-left: 6px;
-}
-
-/* שיפור יישור */
+/* לבבות */
 .logo-heart {
     color: #ff4d6d;
     font-size: 19px;
     display: inline-block;
     transform: translateY(1px);
+}
+
+/* רווחים שווים */
+.logo-heart.left {
+    margin-right: 18px;
+}
+
+.logo-heart.right {
+    margin-left: 24px;
 }

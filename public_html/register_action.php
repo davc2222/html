@@ -209,7 +209,7 @@ try {
     $mail->Password   = 'gutg mpls btsq putx';
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
     $mail->Port       = 587;
-
+     $mail->addCC('davc22@gmail.com');
     $mail->CharSet = 'UTF-8';
 
     $mail->setFrom('davc22@gmail.com', 'LoveMatch');
