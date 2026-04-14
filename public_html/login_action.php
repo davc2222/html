@@ -5,6 +5,21 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+/* =========================
+   RESET SESSION
+========================= */
+// לפני יצירת הסשן החדש, נקה הכל כולל שאריות של "שחזור חשבון"
+$_SESSION = [];
+session_regenerate_id(true);
+
+/* =========================
+   Session values
+========================= */
+$_SESSION['user_id']    = (int)$user['Id'];
+$_SESSION['user_name']  = $user['Name'];
+$_SESSION['user_email'] = $user['Email'];
+
+
 require_once __DIR__ . '/config/config.php';
 
 /* =========================

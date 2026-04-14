@@ -7,8 +7,9 @@ if (session_status() === PHP_SESSION_NONE) {
 
 $error = $_GET['error'] ?? '';
 $verified = $_GET['verified'] ?? '';
+// ב-login.php שורה 11 בערך:
 $showFrozenRestorePopup = (
-    !empty($_GET['frozen_restore']) &&
+    isset($_GET['frozen_restore']) && // לוודא שזה מגיע מה-URL באופן מפורש
     !empty($_SESSION['restore_user_id'])
 );
 ?>
