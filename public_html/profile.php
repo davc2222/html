@@ -301,6 +301,29 @@ foreach ($right as $field => $cfg) {
 }
 
 $rightSelectOptionsJson = json_encode($rightSelectOptions, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+/* העדפות חיפוש - לטקסט "את מי אני מחפש/ת" */
+$searchPrefMinAge = '';
+$searchPrefMaxAge = '';
+
+try {
+    $stmt = $pdo->prepare("
+        SELECT Age_From, Age_To
+        FROM search_preferences
+        WHERE Id = :id
+        LIMIT 1
+    ");
+    $stmt->execute([':id' => $id]);
+    $searchPrefs = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($searchPrefs) {
+        $searchPrefMinAge = trim((string)($searchPrefs['Age_From'] ?? ''));
+        $searchPrefMaxAge = trim((string)($searchPrefs['Age_To'] ?? ''));
+    }
+} catch (Throwable $e) {
+    $searchPrefMinAge = '';
+    $searchPrefMaxAge = '';
+}
 ?>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css">
@@ -417,7 +440,32 @@ $rightSelectOptionsJson = json_encode($rightSelectOptions, JSON_UNESCAPED_UNICOD
         <div class="profile-left-col">
 
             <?php foreach ($left as $field => $cfg): ?>
-                <?php $val = trim((string)($user[$field] ?? '')); ?>
+                <?php
+                $rawVal = trim((string)($user[$field] ?? ''));
+                $val = $rawVal;
+
+                if ($field === 'Looking_For') {
+                    $ageText = '';
+
+                    if ($searchPrefMinAge !== '' && $searchPrefMaxAge !== '') {
+                        $ageText = 'מגיל ' . $searchPrefMinAge . ' עד גיל ' . $searchPrefMaxAge;
+                    } elseif ($searchPrefMinAge !== '') {
+                        $ageText = 'מגיל ' . $searchPrefMinAge;
+                    } elseif ($searchPrefMaxAge !== '') {
+                        $ageText = 'עד גיל ' . $searchPrefMaxAge;
+                    }
+
+                    if ($rawVal !== '' && $ageText !== '') {
+                        $val = $rawVal . ' | ' . $ageText;
+                    } elseif ($rawVal === '' && $ageText !== '') {
+                        $val = $ageText;
+                    }
+                }
+
+                if (!$isOwner && trim($val) === '') {
+                    continue;
+                }
+                ?>
 
                 <div class="profile-left-card">
                     <div class="profile-left-card-head">
@@ -428,8 +476,8 @@ $rightSelectOptionsJson = json_encode($rightSelectOptions, JSON_UNESCAPED_UNICOD
                         <?php endif; ?>
                     </div>
 
-                    <div class="profile-left-view<?= $val === '' ? ' is-empty' : '' ?>" data-field="<?= e($field) ?>">
-                        <?= $val !== '' ? nl2br(e($val)) : 'לא מולא' ?>
+                    <div class="profile-left-view<?= trim($val) === '' ? ' is-empty' : '' ?>" data-field="<?= e($field) ?>">
+                        <?= trim($val) !== '' ? nl2br(e($val)) : 'לא מולא' ?>
                     </div>
                 </div>
             <?php endforeach; ?>

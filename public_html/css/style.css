@@ -29,7 +29,12 @@ body {
 }
 
 
-
+footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+}
 
 
 a {
@@ -5576,4 +5581,12 @@ transform: translateX(-50px);
 
 .logo-heart.right {
     margin-left: 24px;
+}
+..views-sidebar-link,
+.views-sidebar-link:visited,
+.views-sidebar-link:hover,
+.views-sidebar-link:active,
+.views-sidebar-link:focus {
+    color: #ff4d6d;
+    text-decoration: none;
 }
