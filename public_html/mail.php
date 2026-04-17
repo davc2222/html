@@ -1,66 +1,58 @@
 <?php
 // ===== FILE: mail.php =====
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+
 
 require __DIR__ . '/vendor/autoload.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-/**
- * שליחת מייל דרך GoDaddy (localhost SMTP)
- */
 function sendMail($to, $subject, $body, $toName = '') {
+    $config = require __DIR__ . '/config/mail_config.php';
+
     $mail = new PHPMailer(true);
 
     try {
-        // =========================
-        // SMTP (GoDaddy - עובד!)
-        // =========================
         $mail->isSMTP();
-        $mail->Host       = 'localhost';
+        $mail->Host       = $config['host'];
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'lovematch@lovematch.co.il';
-        $mail->Password   = '!Y+c|!rxZ-3x%T:E';
-        $mail->Port       = 25;
+        $mail->Username   = $config['username'];
+        $mail->Password   = $config['password'];
+        $mail->Port       = $config['port'];
+        $mail->Timeout    = 20;
 
-        // חשוב מאוד!
-        $mail->SMTPSecure = false;
-        $mail->SMTPAutoTLS = false;
+        if ($config['secure'] === 'tls') {
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        } elseif ($config['secure'] === 'ssl') {
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+        } else {
+            $mail->SMTPSecure = false;
+            $mail->SMTPAutoTLS = false;
+        }
 
-        // =========================
-        // Encoding (קריטי לעברית!)
-        // =========================
-        $mail->CharSet = 'UTF-8';
-        $mail->Encoding = 'base64';
+        $mail->setFrom($config['from_email'], $config['from_name']);
 
-        // =========================
-        // FROM
-        // =========================
-        $mail->setFrom('lovematch@lovematch.co.il', 'LoveMatch');
-
-        // =========================
-        // TO
-        // =========================
         if ($toName !== '') {
             $mail->addAddress($to, $toName);
         } else {
             $mail->addAddress($to);
         }
-
-        // =========================
-        // CONTENT
-        // =========================
-        $mail->isHTML(true);
+        // $mail->SMTPDebug = 2;
+        // $mail->Debugoutput = 'html';
         $mail->Subject = $subject;
         $mail->Body    = $body;
 
-        // =========================
-        // SEND
-        // =========================
         $mail->send();
-
         return true;
     } catch (Exception $e) {
-        return $mail->ErrorInfo;
+        return $mail->ErrorInfo ?: $e->getMessage();
     }
+
+    
+
+
+    
 }

@@ -63,77 +63,113 @@ if (in_array($page, $protectedPages, true) && empty($_SESSION['user_id'])) {
 
 <body>
 
-<?php include __DIR__ . '/includes/header.php'; ?>
+    <div class="site-page">
 
-<?php
-switch ($page) {
-    case 'home': include 'home.php'; break;
-    case 'profile': include 'profile.php'; break;
-    case 'search': include 'search.php'; break;
-    case 'advanced_search': include 'advanced_search.php'; break;
-    case 'messages': include 'messages.php'; break;
-    case 'views': include 'views.php'; break;
-    case 'login': include 'login.php'; break;
-    case 'register': include 'register.php'; break;
-    case 'verify_notice': include 'verify_notice.php'; break;
-    case 'inbox': include 'inbox.php'; break;
-    case 'blocked_users': include __DIR__ . '/blocked_users.php'; break;
-    case 'viewed_by_me': require 'viewed_by_me.php'; break;
-    default: include 'home.php'; break;
-}
-?>
+        <?php include __DIR__ . '/includes/header.php'; ?>
 
-<?php if (!empty($_SESSION['user_id'])): ?>
-    <?php include __DIR__ . '/includes/chat_windows.php'; ?>
-<?php endif; ?>
+        <div class="site-main">
 
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.5/js/lightbox.min.js"></script>
+            <?php
+            switch ($page) {
+                case 'home':
+                    include 'home.php';
+                    break;
+                case 'profile':
+                    include 'profile.php';
+                    break;
+                case 'search':
+                    include 'search.php';
+                    break;
+                case 'advanced_search':
+                    include 'advanced_search.php';
+                    break;
+                case 'messages':
+                    include 'messages.php';
+                    break;
+                case 'views':
+                    include 'views.php';
+                    break;
+                case 'login':
+                    include 'login.php';
+                    break;
+                case 'register':
+                    include 'register.php';
+                    break;
+                case 'verify_notice':
+                    include 'verify_notice.php';
+                    break;
+                case 'inbox':
+                    include 'inbox.php';
+                    break;
+                case 'blocked_users':
+                    include __DIR__ . '/blocked_users.php';
+                    break;
+                case 'viewed_by_me':
+                    require 'viewed_by_me.php';
+                    break;
+                default:
+                    include 'home.php';
+                    break;
+            }
+            ?>
 
-<script>
-lightbox.option({
-    'resizeDuration': 200,
-    'wrapAround': true,
-    'albumLabel': 'תמונה %1 מתוך %2'
-});
-</script>
+        </div>
 
-<!-- 🔥 TITLE BLINK -->
-<script>
-(function () {
-    const normalTitle = document.title.trim() || 'LoveMatch';
-    const alertTitle = '💬 הודעה חדשה!';
-    let interval = null;
-    let isBlinking = false;
+        <?php if (!empty($_SESSION['user_id'])): ?>
+            <?php include __DIR__ . '/includes/chat_windows.php'; ?>
+        <?php endif; ?>
 
-    function startBlink() {
-        if (isBlinking) return;
+        <?php include __DIR__ . '/includes/footer.php'; ?>
 
-        isBlinking = true;
-        let showAlert = false;
+    </div>
 
-        interval = setInterval(() => {
-            document.title = showAlert ? alertTitle : normalTitle;
-            showAlert = !showAlert;
-        }, 1000);
-    }
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.5/js/lightbox.min.js"></script>
 
-    function stopBlink() {
-        isBlinking = false;
+    <script>
+        lightbox.option({
+            'resizeDuration': 200,
+            'wrapAround': true,
+            'albumLabel': 'תמונה %1 מתוך %2'
+        });
+    </script>
 
-        if (interval) {
-            clearInterval(interval);
-            interval = null;
-        }
+    <!-- 🔥 TITLE BLINK -->
+    <script>
+        (function() {
+            const normalTitle = document.title.trim() || 'LoveMatch';
+            const alertTitle = '💬 הודעה חדשה!';
+            let interval = null;
+            let isBlinking = false;
 
-        document.title = normalTitle;
-    }
+            function startBlink() {
+                if (isBlinking) return;
 
-    window.startTitleBlink = startBlink;
-    window.stopTitleBlink = stopBlink;
-})();
-</script>
-<?php include __DIR__ . '/includes/footer.php'; ?>
+                isBlinking = true;
+                let showAlert = false;
+
+                interval = setInterval(() => {
+                    document.title = showAlert ? alertTitle : normalTitle;
+                    showAlert = !showAlert;
+                }, 1000);
+            }
+
+            function stopBlink() {
+                isBlinking = false;
+
+                if (interval) {
+                    clearInterval(interval);
+                    interval = null;
+                }
+
+                document.title = normalTitle;
+            }
+
+            window.startTitleBlink = startBlink;
+            window.stopTitleBlink = stopBlink;
+        })();
+    </script>
 
 </body>
+
 </html>

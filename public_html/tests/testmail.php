@@ -20,7 +20,7 @@ try {
     $mail->Host       = 'smtp.gmail.com';
     $mail->SMTPAuth   = true;
     $mail->Username   = 'davc22@gmail.com';
-    $mail->Password   = 'APP_PASSWORD_HERE';
+    $mail->Password   = 'gutg mpls btsq putx';
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
     $mail->Port       = 587;
     $mail->Timeout    = 20;

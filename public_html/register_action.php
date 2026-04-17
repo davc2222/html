@@ -9,10 +9,7 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
 require_once __DIR__ . '/config/config.php';
-require_once __DIR__ . '/vendor/autoload.php';
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+require_once __DIR__ . '/mail.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: /');
@@ -186,64 +183,50 @@ $isHttps = (
 
 $scheme = $isHttps ? 'https' : 'http';
 $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
-$baseUrl = $scheme . '://' . $host;
 
-/* חשוב: מפנה ישירות לקובץ verify.php */
-//$verifyLink = $baseUrl . '/verify.php?token=' . urlencode($verifyToken);
-// define('APP_BASE_URL', 'https://your-real-domain.com');
+$verifyLink = $scheme . '://' . $host . '/?page=verify_email&token=' . urlencode($verifyToken);
 
-$verifyLink =
-    (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') .
-    $_SERVER['HTTP_HOST'] .
-    '/?page=verify_email&token=' . urlencode($verifyToken);
 /* =========================
-   שליחת אימייל דרך Gmail SMTP
+   בניית תוכן המייל
 ========================= */
-$mail = new PHPMailer(true);
+$safeName = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
+$safeLink = htmlspecialchars($verifyLink, ENT_QUOTES, 'UTF-8');
 
-try {
-    $mail->isSMTP();
-    $mail->Host       = 'smtp.gmail.com';
-    $mail->SMTPAuth   = true;
-    $mail->Username   = 'davc22@gmail.com';
-    $mail->Password   = 'gutg mpls btsq putx';
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-    $mail->Port       = 587;
-     $mail->addCC('davc22@gmail.com');
-    $mail->CharSet = 'UTF-8';
+$mailBody = "
+    <div style='font-family:Arial,sans-serif;direction:rtl;text-align:right'>
+        <h2>שלום {$safeName},</h2>
+        <p>ברוך/ה הבא/ה ל-LoveMatch.</p>
+        <p>כדי לאמת את החשבון שלך, לחץ/י על הכפתור:</p>
+        <p>
+            <a href='{$safeLink}'
+               style='display:inline-block;padding:12px 20px;background:#ff4d6d;color:#fff;text-decoration:none;border-radius:10px;font-weight:bold;'>
+                לאימות החשבון
+            </a>
+        </p>
+        <p>אם הכפתור לא עובד, אפשר להעתיק את הקישור הזה:</p>
+        <p>{$safeLink}</p>
+    </div>
+";
 
-    $mail->setFrom('davc22@gmail.com', 'LoveMatch');
-    $mail->addAddress($email, $name);
+/* =========================
+   שליחת מייל דרך sendMail()
+========================= */
+$mailResult = sendMail(
+    $email,
+    'אימות חשבון LoveMatch',
+    $mailBody,
+    $name
+);
 
-    $mail->isHTML(true);
-    $mail->Subject = 'אימות חשבון LoveMatch';
-
-    $mail->Body = "
-        <div style='font-family:Arial,sans-serif;direction:rtl;text-align:right'>
-            <h2>שלום " . htmlspecialchars($name, ENT_QUOTES, 'UTF-8') . ",</h2>
-            <p>ברוך/ה הבא/ה ל-LoveMatch.</p>
-            <p>כדי לאמת את החשבון שלך, לחץ/י על הכפתור:</p>
-            <p>
-                <a href='" . htmlspecialchars($verifyLink, ENT_QUOTES, 'UTF-8') . "'
-                   style='display:inline-block;padding:12px 20px;background:#ff4d6d;color:#fff;text-decoration:none;border-radius:10px;font-weight:bold;'>
-                    לאימות החשבון
-                </a>
-            </p>
-            <p>אם הכפתור לא עובד, אפשר להעתיק את הקישור הזה:</p>
-            <p>" . htmlspecialchars($verifyLink, ENT_QUOTES, 'UTF-8') . "</p>
-        </div>
-    ";
-
-    $mail->AltBody =
-        "שלום {$name},\n\n"
-        . "ברוך/ה הבא/ה ל-LoveMatch.\n\n"
-        . "כדי לאמת את החשבון שלך, לחץ/י על הקישור הבא:\n"
-        . $verifyLink . "\n\n";
-
-    $mail->send();
-
-    header('Location: /?page=verify_notice');
-    exit;
-} catch (Exception $e) {
-    die('שליחת המייל נכשלה: ' . $mail->ErrorInfo);
+/* =========================
+   אם המייל נכשל - לא להפיל את כל ההרשמה
+========================= */
+if ($mailResult !== true) {
+    error_log('MAIL ERROR [register_action]: ' . $mailResult);
 }
+
+/* =========================
+   מעבר לדף הודעת אימות
+========================= */
+header('Location: /?page=verify_notice');
+exit;
