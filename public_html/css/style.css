@@ -5582,11 +5582,24 @@ transform: translateX(-50px);
 .logo-heart.right {
     margin-left: 24px;
 }
-..views-sidebar-link,
+.views-sidebar-link,
 .views-sidebar-link:visited,
 .views-sidebar-link:hover,
 .views-sidebar-link:active,
 .views-sidebar-link:focus {
-    color: #ff4d6d;
+    color: #12b5cb;
     text-decoration: none;
+    font-weight: 700;
+
+}
+
+.profile-age-inline {
+    font-size: 0.85em;
+    /* קטן יותר */
+    color: #666;
+    /* אפור חזק */
+    margin-right: 8px;
+    /* רווח מהטקסט */
+    font-weight: normal;
+    /* שלא יהיה בולד */
 }

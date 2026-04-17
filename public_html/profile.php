@@ -302,23 +302,23 @@ foreach ($right as $field => $cfg) {
 
 $rightSelectOptionsJson = json_encode($rightSelectOptions, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
-/* העדפות חיפוש - לטקסט "את מי אני מחפש/ת" */
+/* העדפות חיפוש - גיל */
 $searchPrefMinAge = '';
 $searchPrefMaxAge = '';
 
 try {
     $stmt = $pdo->prepare("
-        SELECT Age_From, Age_To
-        FROM search_preferences
-        WHERE Id = :id
+        SELECT age_min, age_max
+        FROM user_search_preferences
+        WHERE user_id = :id
         LIMIT 1
     ");
     $stmt->execute([':id' => $id]);
     $searchPrefs = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($searchPrefs) {
-        $searchPrefMinAge = trim((string)($searchPrefs['Age_From'] ?? ''));
-        $searchPrefMaxAge = trim((string)($searchPrefs['Age_To'] ?? ''));
+        $searchPrefMinAge = trim((string)($searchPrefs['age_min'] ?? ''));
+        $searchPrefMaxAge = trim((string)($searchPrefs['age_max'] ?? ''));
     }
 } catch (Throwable $e) {
     $searchPrefMinAge = '';
@@ -327,6 +327,21 @@ try {
 ?>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css">
+
+<style>
+    .profile-lookingfor-title {
+        display: flex;
+        align-items: baseline;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .profile-lookingfor-title .profile-age-inline {
+        font-size: 0.82em;
+        font-weight: 400;
+        color: #666666;
+    }
+</style>
 
 <div class="page-shell profile-shell">
     <div class="profile-top-bar">
@@ -443,8 +458,9 @@ try {
                 <?php
                 $rawVal = trim((string)($user[$field] ?? ''));
                 $val = $rawVal;
+                $cardTitle = e($cfg['label']);
 
-                if ($field === 'Looking_For') {
+                if ($field === 'I_Looking_For') {
                     $ageText = '';
 
                     if ($searchPrefMinAge !== '' && $searchPrefMaxAge !== '') {
@@ -455,30 +471,32 @@ try {
                         $ageText = 'עד גיל ' . $searchPrefMaxAge;
                     }
 
-                    if ($rawVal !== '' && $ageText !== '') {
-                        $val = $rawVal . ' | ' . $ageText;
-                    } elseif ($rawVal === '' && $ageText !== '') {
-                        $val = $ageText;
+                    if ($ageText !== '') {
+                        $cardTitle .= '<span class="profile-age-inline">' . e($ageText) . '</span>';
                     }
                 }
 
-                if (!$isOwner && trim($val) === '') {
+                if (!$isOwner && trim((string)$val) === '' && $field !== 'I_Looking_For') {
                     continue;
                 }
                 ?>
 
                 <div class="profile-left-card">
                     <div class="profile-left-card-head">
-                        <h3><?= e($cfg['label']) ?></h3>
+                        <h3 class="profile-left-title<?= $field === 'I_Looking_For' ? ' profile-lookingfor-title' : '' ?>">
+                            <?= $cardTitle ?>
+                        </h3>
 
                         <?php if ($isOwner): ?>
                             <a href="#" class="profile-inline-edit-btn edit-btn" data-field="<?= e($field) ?>">✎</a>
                         <?php endif; ?>
                     </div>
 
-                    <div class="profile-left-view<?= trim($val) === '' ? ' is-empty' : '' ?>" data-field="<?= e($field) ?>">
-                        <?= trim($val) !== '' ? nl2br(e($val)) : 'לא מולא' ?>
-                    </div>
+                    <?php if (trim((string)$val) !== '' || $field !== 'I_Looking_For'): ?>
+                        <div class="profile-left-view<?= trim((string)$val) === '' ? ' is-empty' : '' ?>" data-field="<?= e($field) ?>">
+                            <?= trim((string)$val) !== '' ? nl2br(e($val)) : 'לא מולא' ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
             <?php endforeach; ?>
 
