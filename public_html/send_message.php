@@ -134,18 +134,36 @@ try {
             $mail->addAddress($recipientEmail, $recipientName ?: 'User');
 
             $mail->isHTML(true);
-            $mail->Subject = 'יש לך הודעה חדשה ❤️';
-
-            $preview = mb_substr($text, 0, 100, 'UTF-8');
+            $mail->Subject = 'יש לך הודעה חדשה 💌';
 
             $mail->Body = "
-                <div dir='rtl'>
-                    <h2>יש לך הודעה חדשה</h2>
-                    <p><b>{$senderName}</b> שלח לך הודעה:</p>
-                    <p>{$preview}</p>
-                    <a href='https://lovematch.co.il/?page=messages'>כניסה לצ'אט</a>
-                </div>
-            ";
+<div style='font-family:Arial,sans-serif;direction:rtl;text-align:right;max-width:600px;margin:auto;background:#ffffff;border:1px solid #eeeeee;border-radius:12px;padding:24px;'>
+
+    <h2 style='margin-top:0;color:#e91e63;'>יש לך הודעה חדשה 💌</h2>
+
+    <p style='font-size:15px;color:#333;line-height:1.7;'>
+        <strong>{$senderName}</strong> שלח לך הודעה באתר <b>LoveMatch</b>.
+    </p>
+
+    <p style='font-size:14px;color:#666;line-height:1.6;'>
+        מטעמי פרטיות, תוכן ההודעה אינו מופיע במייל.
+    </p>
+
+    <div style='text-align:center;margin:30px 0;'>
+        <a href='https://lovematch.co.il/?page=messages'
+           style='display:inline-block;background:#e91e63;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:bold;'>
+            כניסה לצ'אט
+        </a>
+    </div>
+
+    <hr style='border:none;border-top:1px solid #eee;margin:20px 0;'>
+
+    <p style='font-size:12px;color:#999;margin-bottom:0;text-align:center;'>
+        הודעה זו נשלחה אוטומטית ממערכת LoveMatch
+    </p>
+
+</div>
+";
 
             $mail->send();
         } catch (Throwable $mailError) {
