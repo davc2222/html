@@ -1,4 +1,7 @@
-<!-- home.php-->
+<?php
+// ===== FILE: home.php =====
+?>
+
 <style>
     .home-demo-wrap {
         padding: 35px 20px 50px;
@@ -147,9 +150,9 @@
             max-width: 260px;
             text-align: center;
         }
-
     }
 </style>
+
 <main class="home-page-shell">
     <div class="home-demo-wrap">
         <section class="home-demo-hero">
@@ -159,24 +162,15 @@
 
             <div class="home-demo-actions">
                 <a href="?page=search" class="home-demo-btn home-demo-btn-primary">התחל לחפש</a>
-                <?php if (empty($_SESSION['user_id'])): ?>
 
-                    <!-- הרשמה מהירה -->
+                <?php if (empty($_SESSION['user_id'])): ?>
                     <div class="quick-register">
                         <!-- כל הטופס שלך -->
                     </div>
-
                 <?php else: ?>
-
-                    <!-- מה שמופיע למשתמש מחובר -->
                     <div class="home-logged-in">
-
                         <h2>ברוך הבא 👋</h2>
-
-                       
-
                     </div>
-
                 <?php endif; ?>
             </div>
         </section>

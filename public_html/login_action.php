@@ -2,23 +2,8 @@
 // ===== FILE: login_action.php =====
 
 if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+   session_start();
 }
-
-/* =========================
-   RESET SESSION
-========================= */
-// לפני יצירת הסשן החדש, נקה הכל כולל שאריות של "שחזור חשבון"
-$_SESSION = [];
-session_regenerate_id(true);
-
-/* =========================
-   Session values
-========================= */
-$_SESSION['user_id']    = (int)$user['Id'];
-$_SESSION['user_name']  = $user['Name'];
-$_SESSION['user_email'] = $user['Email'];
-
 
 require_once __DIR__ . '/config/config.php';
 
@@ -26,8 +11,8 @@ require_once __DIR__ . '/config/config.php';
    Allow only POST
 ========================= */
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: /?page=login');
-    exit;
+   header('Location: /?page=login');
+   exit;
 }
 
 /* =========================
@@ -37,8 +22,8 @@ $email = trim($_POST['Email'] ?? '');
 $pass  = $_POST['Pass'] ?? '';
 
 if ($email === '' || $pass === '') {
-    header('Location: /?page=login&error=missing');
-    exit;
+   header('Location: /?page=login&error=missing');
+   exit;
 }
 
 /* =========================
@@ -55,51 +40,50 @@ $stmt->execute([':email' => $email]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$user) {
-    header('Location: /?page=login&error=badLogin');
-    exit;
+   header('Location: /?page=login&error=badLogin');
+   exit;
 }
 
 /* =========================
    Verify password
 ========================= */
 if (!password_verify($pass, $user['Pass'])) {
-    header('Location: /?page=login&error=badLogin');
-    exit;
+   header('Location: /?page=login&error=badLogin');
+   exit;
 }
 
 /* =========================
    Verify email was confirmed
 ========================= */
 if ((int)$user['email_verified'] !== 1) {
-    header('Location: /?page=login&error=notVerified');
-    exit;
+   header('Location: /?page=login&error=notVerified');
+   exit;
 }
 
 /* =========================
    Frozen profile flow
 ========================= */
 if ((int)($user['Is_Frozen'] ?? 0) === 1) {
-    unset($_SESSION['user_id'], $_SESSION['user_name'], $_SESSION['user_email']);
+   $_SESSION = [];
+   session_regenerate_id(true);
 
-    $_SESSION['restore_user_id'] = (int)$user['Id'];
-    $_SESSION['restore_user_name'] = (string)$user['Name'];
+   $_SESSION['restore_user_id']   = (int)$user['Id'];
+   $_SESSION['restore_user_name'] = (string)$user['Name'];
 
-    header('Location: /?page=login&frozen_restore=1');
-exit;
+   header('Location: /?page=login&frozen_restore=1');
+   exit;
 }
 
 /* =========================
-   RESET SESSION
+   Normal login flow
 ========================= */
 $_SESSION = [];
 session_regenerate_id(true);
 
-/* =========================
-   Session values
-========================= */
-$_SESSION['user_id']    = (int)$user['Id'];
-$_SESSION['user_name']  = $user['Name'];
-$_SESSION['user_email'] = $user['Email'];
+$_SESSION['user_id']         = (int)$user['Id'];
+$_SESSION['user_name']       = $user['Name'];
+$_SESSION['user_email']      = $user['Email'];
+
 
 /* =========================
    Redirect after login

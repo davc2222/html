@@ -3,29 +3,42 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-
-require __DIR__ . '/../../vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
-$mail = new PHPMailer();
+$mail = new PHPMailer(true);
 
-$mail->isSMTP();
-$mail->Host = 'smtp.gmail.com';
-$mail->SMTPAuth = true;
-$mail->Username = 'davc22@gmail.com';
-$mail->Password = 'gutg mpls btsq putx';
-$mail->SMTPSecure = 'tls';
-$mail->Port = 587;
+try {
+    echo 'START<br>';
 
-$mail->setFrom('davc22@gmail.com', 'Test');
-$mail->addAddress('davc22@gmail.com');
+    $mail->SMTPDebug = 2;
+    $mail->Debugoutput = 'html';
 
-$mail->Subject = 'Test Mail';
-$mail->Body    = 'Hello from WSL!';
+    $mail->isSMTP();
+    $mail->Host       = 'smtp.gmail.com';
+    $mail->SMTPAuth   = true;
+    $mail->Username   = 'davc22@gmail.com';
+    $mail->Password   = 'APP_PASSWORD_HERE';
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->Port       = 587;
+    $mail->Timeout    = 20;
 
-if ($mail->send()) {
-    echo "Message sent!";
-} else {
-    echo "Mailer Error: " . $mail->ErrorInfo;
+    echo 'SMTP SET<br>';
+
+    $mail->setFrom('davc22@gmail.com', 'Test');
+    $mail->addAddress('davc22@gmail.com');
+
+    $mail->Subject = 'Test Mail';
+    $mail->Body    = 'Hello from GoDaddy!';
+
+    echo 'BEFORE SEND<br>';
+
+    $mail->send();
+
+    echo 'MESSAGE SENT';
+} catch (Exception $e) {
+    echo '<br>MAILER ERROR: ' . htmlspecialchars($mail->ErrorInfo);
+    echo '<br>EXCEPTION: ' . htmlspecialchars($e->getMessage());
 }
