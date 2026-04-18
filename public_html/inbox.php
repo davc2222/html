@@ -46,13 +46,19 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
                 <input type="text" id="inboxMessageInput" placeholder="כתוב הודעה..." autocomplete="off">
                 <button type="submit">שלח</button>
             </form>
+
+            <div class="inbox-enter-row">
+                <label class="inbox-enter-label" for="inboxEnterToggle">
+                    <input type="checkbox" id="inboxEnterToggle">
+                    <span>שלח עם Enter</span>
+                </label>
+                <div class="inbox-enter-hint">כשלא מסומן, Enter לא ישלח</div>
+            </div>
         </div>
 
     </div>
 
 </div>
-
-</style>
 
 <script>
     let inboxCurrentUserId = <?= $selectedUserId ?>;
@@ -60,6 +66,14 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
     let inboxTypingStopTimer = null;
     let inboxTypingPollTimer = null;
     let inboxTypingActive = false;
+
+    function lmGetEnterSendEnabled() {
+        return localStorage.getItem('lm_send_on_enter') === '1';
+    }
+
+    function lmSetEnterSendEnabled(enabled) {
+        localStorage.setItem('lm_send_on_enter', enabled ? '1' : '0');
+    }
 
     function inboxEscapeHtml(str) {
         return String(str ?? '').replace(/[&<>"']/g, function(m) {
@@ -98,7 +112,6 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
         });
     }
 
-    /* שיחות */
     function inboxLoadConversations() {
         fetch('/inbox_get_conversations.php')
             .then(r => r.text())
@@ -109,7 +122,6 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
             });
     }
 
-    /* הודעות */
     function inboxLoadMessages() {
         if (!inboxCurrentUserId) return;
 
@@ -122,13 +134,11 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
             });
     }
 
-    /* סמן כנקרא */
     function inboxMarkRead() {
         if (!inboxCurrentUserId) return;
         fetch('/inbox_mark_read.php?user_id=' + inboxCurrentUserId);
     }
 
-    /* שליחת סטטוס הקלדה */
     function inboxSetTyping(isTyping) {
         if (!inboxCurrentUserId) return;
 
@@ -141,7 +151,6 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
         }).catch(() => {});
     }
 
-    /* בדיקת סטטוס הקלדה */
     function inboxPollTyping() {
         if (!inboxCurrentUserId) return;
 
@@ -160,7 +169,6 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
             .catch(() => {});
     }
 
-    /* פתיחת שיחה */
     function inboxOpenConversation(userId, name = '') {
         inboxCurrentUserId = parseInt(userId || 0, 10);
         inboxCurrentName = name || '';
@@ -188,8 +196,19 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
     }
 
     document.addEventListener('DOMContentLoaded', function() {
+        const inboxSendForm = document.getElementById('inboxSendForm');
+        const inboxMessageInput = document.getElementById('inboxMessageInput');
+        const inboxEnterToggle = document.getElementById('inboxEnterToggle');
 
-        document.getElementById('inboxSendForm').addEventListener('submit', function(e) {
+        if (inboxEnterToggle) {
+            inboxEnterToggle.checked = lmGetEnterSendEnabled();
+
+            inboxEnterToggle.addEventListener('change', function() {
+                lmSetEnterSendEnabled(this.checked);
+            });
+        }
+
+        inboxSendForm.addEventListener('submit', function(e) {
             e.preventDefault();
 
             let input = document.getElementById('inboxMessageInput');
@@ -214,20 +233,20 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
             });
         });
 
-        document.getElementById('inboxMessageInput').addEventListener('focus', function() {
+        inboxMessageInput.addEventListener('focus', function() {
             if (!inboxCurrentUserId) return;
             inboxMarkRead();
             inboxLoadConversations();
         });
 
-        document.getElementById('inboxMessageInput').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
+        inboxMessageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && lmGetEnterSendEnabled()) {
                 e.preventDefault();
-                document.getElementById('inboxSendForm').dispatchEvent(new Event('submit'));
+                inboxSendForm.dispatchEvent(new Event('submit'));
             }
         });
 
-        document.getElementById('inboxMessageInput').addEventListener('input', function() {
+        inboxMessageInput.addEventListener('input', function() {
             if (!inboxCurrentUserId) return;
 
             if (!inboxTypingActive) {
@@ -263,7 +282,6 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
     });
 </script>
 
-
 <style>
     .inbox-page {
         display: flex;
@@ -276,9 +294,9 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
         overflow: hidden;
         background: #f4f5f7;
         box-sizing: border-box;
+        align-items: stretch;
     }
 
-    /* צד ימין - שיחות */
     .inbox-conversations {
         width: 260px;
         min-width: 260px;
@@ -297,7 +315,12 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
         border-bottom: 1px solid #e5e7eb;
         background: #ffffff;
         flex-shrink: 0;
-        text-align: right;
+        text-align: center;
+        height: 72px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
     }
 
     #inboxConversationsList {
@@ -315,11 +338,11 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
     }
 
     .inbox-conversation-item:hover {
-        background: #f5f6f8;
+        background: #f1f3f5;
     }
 
     .inbox-conversation-item.active {
-        background: #e8ebef;
+        background: #e7eaee;
     }
 
     .inbox-unread {
@@ -375,13 +398,12 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
         text-overflow: ellipsis;
     }
 
-    /* צד שמאל - צ'אט */
     .inbox-chat {
         flex: 1;
         display: flex;
         flex-direction: column;
         min-width: 0;
-        background: #f7f7f8;
+        background: #f7f8fa;
     }
 
     .inbox-chat-header {
@@ -393,6 +415,11 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
         background: #ffffff;
         flex-shrink: 0;
         text-align: center;
+        height: 72px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
     }
 
     .inbox-messages {
@@ -426,15 +453,15 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
     }
 
     .inbox-message-me {
-        background: #dbe7d8;
-        color: #243224;
-        border: 1px solid #cfdbc9;
+        background: #dfeadf;
+        color: #2f3e2f;
+        border: 1px solid #d3e0d3;
     }
 
     .inbox-message-other {
         background: #ffffff;
-        color: #1f2937;
-        border: 1px solid #e1e5ea;
+        color: #2c2f33;
+        border: 1px solid #e2e5e9;
     }
 
     .inbox-message-sender {
@@ -514,6 +541,34 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
         background: #d85b6b;
     }
 
+    .inbox-enter-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-top: 8px;
+        font-size: 12px;
+        color: #6b7280;
+    }
+
+    .inbox-enter-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .inbox-enter-label input {
+        margin: 0;
+    }
+
+    .inbox-enter-hint {
+        font-size: 11px;
+        color: #8a94a3;
+        white-space: nowrap;
+    }
+
     .inbox-empty {
         padding: 28px 20px;
         text-align: center;
@@ -521,163 +576,24 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
         font-size: 15px;
     }
 
-    /* יישור כותרות */
-    .inbox-page {
-        align-items: stretch;
-    }
+    @media (max-width: 900px) {
+        .inbox-page {
+            flex-direction: column;
+            height: auto;
+            min-height: 78vh;
+        }
 
-    .inbox-conversations-header,
-    .inbox-chat-header {
-        height: 72px;
-        display: flex;
-        align-items: center;
-        box-sizing: border-box;
-    }
+        .inbox-conversations {
+            width: 100%;
+            min-width: 0;
+            border-left: none;
+            border-bottom: 1px solid #d9dde3;
+        }
 
-    .inbox-conversations-header {
-        justify-content: flex-end;
-    }
-
-    .inbox-chat-header {
-        justify-content: center;
-    }
-
-    .inbox-conversations-header {
-        justify-content: center;
-        text-align: center;
-    }
-
-
-    /* רקע כללי עדין */
-    .inbox-page {
-        background: #f6f7f9;
-    }
-
-    /* רשימת שיחות */
-    .inbox-conversations {
-        background: #ffffff;
-    }
-
-    /* פריט שיחה */
-    .inbox-conversation-item {
-        background: #ffffff;
-    }
-
-    .inbox-conversation-item:hover {
-        background: #f1f3f5;
-    }
-
-    .inbox-conversation-item.active {
-        background: #e7eaee;
-    }
-
-    /* אזור צ'אט */
-    .inbox-chat {
-        background: #f7f8fa;
-    }
-
-    /* בועות */
-    .inbox-message-me {
-        background: #dfeadf;
-        border: 1px solid #d3e0d3;
-        color: #2f3e2f;
-    }
-
-    .inbox-message-other {
-        background: #ffffff;
-        border: 1px solid #e2e5e9;
-        color: #2c2f33;
-    }
-
-    /* שדה כתיבה */
-    .inbox-send-box input {
-        background: #f9fafb;
-        border: 1px solid #d5d9de;
-    }
-
-    /* כפתור שליחה סולידי */
-    .inbox-send-box button {
-        background: #9aa3ad;
-    }
-
-    .inbox-send-box button:hover {
-        background: #858e98;
-    }
-
-
-    /* ===== FIX COLORS (override חזק) ===== */
-
-    /* רקע כללי */
-    .inbox-page {
-        background: #f5f6f8 !important;
-    }
-
-    /* רשימת שיחות */
-    .inbox-conversations {
-        background: #ffffff !important;
-    }
-
-    /* פריט שיחה */
-    .inbox-conversation-item {
-        background: #ffffff !important;
-    }
-
-    .inbox-conversation-item:hover {
-        background: #f2f3f5 !important;
-    }
-
-    .inbox-conversation-item.active {
-        background: #e4e7eb !important;
-    }
-
-    /* אזור צ'אט */
-    .inbox-chat {
-        background: #f7f8fa !important;
-    }
-
-    /* הודעות */
-    .inbox-message-me {
-        background: #e3f0e3 !important;
-        border: 1px solid #d2e2d2 !important;
-        color: #2f3e2f !important;
-    }
-
-    .inbox-message-other {
-        background: #ffffff !important;
-        border: 1px solid #e2e5e9 !important;
-        color: #2c2f33 !important;
-    }
-
-    /* שדה כתיבה */
-    .inbox-send-box input {
-        background: #fafafa !important;
-        border: 1px solid #d5d9de !important;
-    }
-
-    /* ===== כפתור שלח אדום ===== */
-    .inbox-send-box button {
-        background: #e5485d !important;
-        color: #fff !important;
-        border: none !important;
-        border-radius: 8px !important;
-    }
-
-    .inbox-send-box button:hover {
-        background: #d63c50 !important;
-    }
-
-
-    /* ===== כותרות סולידיות ===== */
-
-    .inbox-conversations-header {
-        background: #f0f2f5 !important;
-        color: #1f2937 !important;
-        border-bottom: 1px solid #d9dde3 !important;
-    }
-
-    .inbox-chat-header {
-        background: #f0f2f5 !important;
-        color: #1f2937 !important;
-        border-bottom: 1px solid #d9dde3 !important;
+        .inbox-enter-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+        }
     }
 </style>

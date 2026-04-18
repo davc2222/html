@@ -81,17 +81,9 @@ if ($chatViewerId > 0) {
 </div>
 
 <style>
-    /* =========================
-   בסיס
-========================= */
-
     .chat-window[hidden] {
         display: none !important;
     }
-
-    /* =========================
-   חלון ראשי
-========================= */
 
     .chat-window {
         position: fixed;
@@ -109,10 +101,6 @@ if ($chatViewerId > 0) {
         overflow: hidden;
         direction: rtl;
     }
-
-    /* =========================
-   HEADER
-========================= */
 
     .chat-window-header {
         display: flex;
@@ -145,7 +133,6 @@ if ($chatViewerId > 0) {
         min-width: 0;
     }
 
-    /* לינק לשם */
     .chat-window-name-link {
         color: inherit;
         text-decoration: none;
@@ -157,7 +144,6 @@ if ($chatViewerId > 0) {
         cursor: pointer;
     }
 
-    /* שם */
     .chat-window-name {
         font-size: 16px;
         font-weight: 700;
@@ -167,7 +153,6 @@ if ($chatViewerId > 0) {
         text-overflow: ellipsis;
     }
 
-    /* "מקליד..." */
     .chat-window-subtitle {
         min-height: 18px;
         font-size: 12px;
@@ -176,7 +161,6 @@ if ($chatViewerId > 0) {
         opacity: 0.95;
     }
 
-    /* כפתור סגירה */
     .chat-window-close {
         border: none;
         background: transparent;
@@ -188,10 +172,6 @@ if ($chatViewerId > 0) {
         border-radius: 50%;
     }
 
-    /* =========================
-   BODY (הודעות)
-========================= */
-
     .chat-window-body {
         flex: 1;
         overflow-y: auto;
@@ -199,7 +179,6 @@ if ($chatViewerId > 0) {
         padding: 14px;
     }
 
-    /* אין הודעות */
     .cw-empty {
         text-align: center;
         color: #777;
@@ -207,29 +186,24 @@ if ($chatViewerId > 0) {
         font-size: 14px;
     }
 
-    /* שורה */
     .cw-row {
         display: flex;
         width: 100%;
         margin-bottom: 10px;
     }
 
-    /* שלי */
     .cw-row-me {
         justify-content: flex-start;
     }
 
-    /* של השני */
     .cw-row-other {
         justify-content: flex-end;
     }
 
-    /* עטיפה */
     .cw-bubble-wrap {
         max-width: 78%;
     }
 
-    /* בועה */
     .cw-bubble {
         padding: 10px 12px;
         border-radius: 16px;
@@ -240,26 +214,22 @@ if ($chatViewerId > 0) {
         color: #222;
     }
 
-    /* שלי */
     .cw-row-me .cw-bubble {
         background: #e5e7eb;
         border-bottom-left-radius: 6px;
     }
 
-    /* של השני */
     .cw-row-other .cw-bubble {
         background: #ffd7e2;
         border-bottom-right-radius: 6px;
     }
 
-    /* זמן */
     .cw-time {
         margin-top: 4px;
         font-size: 11px;
         color: #888;
     }
 
-    /* יישור זמן */
     .cw-row-me .cw-time {
         text-align: right;
     }
@@ -267,10 +237,6 @@ if ($chatViewerId > 0) {
     .cw-row-other .cw-time {
         text-align: left;
     }
-
-    /* =========================
-   FOOTER (שליחה)
-========================= */
 
     .chat-window-footer {
         border-top: 1px solid #ececec;
@@ -307,10 +273,6 @@ if ($chatViewerId > 0) {
         cursor: pointer;
     }
 
-    /* =========================
-   STATUS
-========================= */
-
     .chat-window-status {
         min-height: 18px;
         padding: 0 12px 10px;
@@ -318,10 +280,6 @@ if ($chatViewerId > 0) {
         font-size: 13px;
         background: #fff;
     }
-
-    /* =========================
-   מובייל
-========================= */
 
     @media (max-width: 768px) {
         .chat-window {
@@ -608,11 +566,11 @@ if ($chatViewerId > 0) {
         const win = document.getElementById('chatWindow');
         const closeBtn = document.getElementById('chatCloseBtn');
 
-        win.addEventListener('click', function(e) {
-            e.stopPropagation();
-        });
-
         if (win) {
+            win.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+
             win.hidden = true;
             win.style.display = 'none';
         }

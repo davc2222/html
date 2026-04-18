@@ -459,10 +459,9 @@ try {
                 $rawVal = trim((string)($user[$field] ?? ''));
                 $val = $rawVal;
                 $cardTitle = e($cfg['label']);
+                $ageText = '';
 
                 if ($field === 'I_Looking_For') {
-                    $ageText = '';
-
                     if ($searchPrefMinAge !== '' && $searchPrefMaxAge !== '') {
                         $ageText = 'מגיל ' . $searchPrefMinAge . ' עד גיל ' . $searchPrefMaxAge;
                     } elseif ($searchPrefMinAge !== '') {
@@ -472,11 +471,21 @@ try {
                     }
 
                     if ($ageText !== '') {
-                        $cardTitle .= '<span class="profile-age-inline">' . e($ageText) . '</span>';
+                        $cardTitle .= ' <span class="profile-age-inline">' . e($ageText) . '</span>';
                     }
                 }
 
-                if (!$isOwner && trim((string)$val) === '' && $field !== 'I_Looking_For') {
+                $showCard = true;
+
+                if (!$isOwner) {
+                    if ($field === 'I_Looking_For') {
+                        $showCard = ($val !== '' || $ageText !== '');
+                    } else {
+                        $showCard = ($val !== '');
+                    }
+                }
+
+                if (!$showCard) {
                     continue;
                 }
                 ?>
@@ -492,11 +501,9 @@ try {
                         <?php endif; ?>
                     </div>
 
-                    <?php if (trim((string)$val) !== '' || $field !== 'I_Looking_For'): ?>
-                        <div class="profile-left-view<?= trim((string)$val) === '' ? ' is-empty' : '' ?>" data-field="<?= e($field) ?>">
-                            <?= trim((string)$val) !== '' ? nl2br(e($val)) : 'לא מולא' ?>
-                        </div>
-                    <?php endif; ?>
+                    <div class="profile-left-view<?= $val === '' ? ' is-empty' : '' ?>" data-field="<?= e($field) ?>">
+                        <?= $val !== '' ? nl2br(e($val)) : 'לא מולא' ?>
+                    </div>
                 </div>
             <?php endforeach; ?>
 
