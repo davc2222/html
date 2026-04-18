@@ -11,13 +11,16 @@ error_reporting(E_ALL);
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/mail.php';
 
+/* =========================
+   רק POST
+========================= */
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: /');
     exit;
 }
 
 /* =========================
-   קבלת נתונים
+   קבלת נתונים מהטופס
 ========================= */
 $name        = trim($_POST['Name'] ?? '');
 $email       = trim($_POST['Email'] ?? '');
@@ -30,7 +33,7 @@ $placeId     = (int)($_POST['Place_Id'] ?? 0);
 $openDate    = $_POST['Open_Date'] ?? date('Y-m-d');
 
 /* =========================
-   בדיקות
+   ולידציה בסיסית
 ========================= */
 if ($name === '' || $email === '' || $pass === '') {
     die('חסרים נתונים');
@@ -38,6 +41,10 @@ if ($name === '' || $email === '' || $pass === '') {
 
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     die('אימייל לא תקין');
+}
+
+if (strlen($pass) < 6) {
+    die('הסיסמה חייבת להיות לפחות 6 תווים');
 }
 
 /* =========================
@@ -49,16 +56,14 @@ $stmt = $pdo->prepare("
     WHERE Email = :email
     LIMIT 1
 ");
-$stmt->execute([
-    ':email' => $email
-]);
+$stmt->execute([':email' => $email]);
 
 if ($stmt->fetch()) {
     die('האימייל כבר קיים');
 }
 
 /* =========================
-   שליפת STR מהטבלאות
+   שליפת STR מטבלאות עזר
 ========================= */
 $genderStr = null;
 if ($genderId > 0) {
@@ -102,7 +107,7 @@ if ($placeId > 0) {
 $hashedPass = password_hash($pass, PASSWORD_DEFAULT);
 
 /* =========================
-   הכנסת משתמש חדש
+   הכנסת משתמש למסד
 ========================= */
 $sql = "
     INSERT INTO users_profile (
@@ -174,42 +179,51 @@ $stmt->execute([
 ]);
 
 /* =========================
-   קישור אימות דינמי
+   בניית לינק לפי APP_URL
 ========================= */
-$isHttps = (
-    (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
-    || ((int)($_SERVER['SERVER_PORT'] ?? 80) === 443)
-);
-
-$scheme = $isHttps ? 'https' : 'http';
-$host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
-
-$verifyLink = $scheme . '://' . $host . '/?page=verify_email&token=' . urlencode($verifyToken);
+$verifyLink = APP_URL . '/verify_email.php?token=' . urlencode($verifyToken);
 
 /* =========================
-   בניית תוכן המייל
+   HTML מלא למייל (חשוב!)
 ========================= */
 $safeName = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
-$safeLink = htmlspecialchars($verifyLink, ENT_QUOTES, 'UTF-8');
+$safeLinkText = htmlspecialchars($verifyLink, ENT_QUOTES, 'UTF-8');
 
-$mailBody = "
-    <div style='font-family:Arial,sans-serif;direction:rtl;text-align:right'>
-        <h2>שלום {$safeName},</h2>
-        <p>ברוך/ה הבא/ה ל-LoveMatch.</p>
-        <p>כדי לאמת את החשבון שלך, לחץ/י על הכפתור:</p>
-        <p>
-            <a href='{$safeLink}'
-               style='display:inline-block;padding:12px 20px;background:#ff4d6d;color:#fff;text-decoration:none;border-radius:10px;font-weight:bold;'>
-                לאימות החשבון
-            </a>
-        </p>
-        <p>אם הכפתור לא עובד, אפשר להעתיק את הקישור הזה:</p>
-        <p>{$safeLink}</p>
-    </div>
-";
+$mailBody = <<<HTML
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>אימות חשבון LoveMatch</title>
+</head>
+<body style="margin:0;padding:0;background:#f7f7f7;font-family:Arial,sans-serif;">
+<div style="max-width:640px;margin:40px auto;background:#ffffff;border-radius:14px;border:1px solid #eee;padding:30px;">
+
+<h2 style="color:#e91e63;margin-top:0;">שלום {$safeName}</h2>
+
+<p>תודה שנרשמת ל-LoveMatch ❤️</p>
+
+<p>כדי להפעיל את החשבון שלך לחץ על הכפתור:</p>
+
+<div style="text-align:center;margin:30px 0;">
+<a href="{$verifyLink}" style="background:#e91e63;color:#fff;padding:12px 25px;border-radius:8px;text-decoration:none;font-weight:bold;">
+אימות חשבון
+</a>
+</div>
+
+<p style="font-size:13px;color:#666;">
+אם הכפתור לא עובד:
+<br>
+<a href="{$verifyLink}">{$safeLinkText}</a>
+</p>
+
+</div>
+</body>
+</html>
+HTML;
 
 /* =========================
-   שליחת מייל דרך sendMail()
+   שליחת מייל
 ========================= */
 $mailResult = sendMail(
     $email,
@@ -218,15 +232,12 @@ $mailResult = sendMail(
     $name
 );
 
-/* =========================
-   אם המייל נכשל - לא להפיל את כל ההרשמה
-========================= */
 if ($mailResult !== true) {
-    error_log('MAIL ERROR [register_action]: ' . $mailResult);
+    error_log('MAIL ERROR: ' . $mailResult);
 }
 
 /* =========================
-   מעבר לדף הודעת אימות
+   מעבר לדף הודעה
 ========================= */
 header('Location: /?page=verify_notice');
 exit;

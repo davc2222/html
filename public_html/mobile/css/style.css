@@ -1,0 +1,1091 @@
+/* =========================================================
+   LOVE MATCH MOBILE - FULL CSS
+========================================================= */
+
+/* ===== בסיס ===== */
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    direction: rtl;
+    background: #f5f5f5;
+    color: #222;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+input,
+select,
+textarea,
+button {
+    font-family: inherit;
+}
+
+/* ===== קונטיינר ראשי ===== */
+.mobile-site {
+    max-width: 480px;
+    margin: 0 auto;
+    background: #fff;
+    min-height: 100vh;
+    position: relative;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.03);
+}
+
+/* ===== HEADER ===== */
+.mobile-header {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    padding: 12px;
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.mobile-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.mobile-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #c2185b;
+}
+
+.mobile-auth {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.mobile-welcome {
+    width: 100%;
+    font-size: 13px;
+    color: #444;
+}
+
+.mobile-auth-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    background: #c2185b;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+}
+
+.mobile-auth-btn-logout {
+    background: #777;
+}
+
+/* ===== תוכן ===== */
+.mobile-main {
+    padding: 12px;
+    padding-bottom: 88px;
+}
+
+/* ===== כרטיס כללי ===== */
+.mobile-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* ===== פוטר ===== */
+.mobile-footer {
+    text-align: center;
+    font-size: 12px;
+    color: #777;
+    padding: 12px 0 80px;
+}
+
+/* ===== תפריט תחתון ===== */
+.mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    max-width: 480px;
+    margin: 0 auto;
+    height: 65px;
+    background: #ffffff;
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 9999;
+}
+
+.mobile-bottom-nav a {
+    flex: 1;
+    text-align: center;
+    color: #555;
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+}
+
+.mobile-bottom-nav a span {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.mobile-bottom-nav a small {
+    font-size: 11px;
+    line-height: 1;
+}
+
+.mobile-bottom-nav a.active {
+    color: #c2185b;
+    font-weight: bold;
+}
+
+.mobile-bottom-nav a:active {
+    transform: scale(0.96);
+}
+
+/* =========================================================
+   הודעות / תיבות כלליות
+========================================================= */
+.message-box {
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    font-weight: 700;
+}
+
+.message-box.error {
+    background: #ffe2e7;
+    color: #b3153e;
+    border: 1px solid #f3b4c3;
+}
+
+.message-box.success {
+    background: #e4f7e9;
+    color: #1f7a39;
+    border: 1px solid #b8e4c4;
+}
+
+.error-text {
+    color: #d91f4f;
+    font-size: 12px;
+    margin-top: 6px;
+    min-height: 16px;
+    opacity: 0;
+    transform: translateY(-3px);
+    transition: 0.2s ease;
+}
+
+.error-text.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.input-error {
+    border: 2px solid #d91f4f !important;
+}
+
+.input-ok {
+    border: 2px solid #28a745 !important;
+}
+
+/* =========================================================
+   REGISTER
+========================================================= */
+.register-page {
+    padding: 0;
+    background: transparent;
+}
+
+.register-box {
+    width: 100%;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 18px;
+    padding: 16px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.register-box h1 {
+    text-align: center;
+    color: #d91f4f;
+    font-size: 26px;
+    margin: 0 0 8px;
+    line-height: 1.2;
+}
+
+.register-box p.subtitle {
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+    margin: 0 0 18px;
+    line-height: 1.5;
+}
+
+.register-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.form-group,
+.form-group.full {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.register-form label {
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #444;
+    font-size: 14px;
+}
+
+.register-form input,
+.register-form select {
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    font-size: 16px;
+    background: #fafafa;
+    color: #222;
+}
+
+.register-form input:focus,
+.register-form select:focus {
+    outline: none;
+    border-color: #ff4d6d;
+    box-shadow: 0 0 0 3px rgba(255, 77, 109, 0.12);
+    background: #fff;
+}
+
+.password-wrapper {
+    position: relative;
+}
+
+.password-wrapper input {
+    padding-left: 44px;
+}
+
+.toggle-pass {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0;
+    line-height: 1;
+}
+
+.register-terms-wrap {
+    margin-top: 4px;
+    margin-bottom: 2px;
+    padding: 12px;
+    background: #fafafa;
+    border: 1px solid #eee;
+    border-radius: 12px;
+}
+
+.register-terms-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #333;
+}
+
+.register-terms-label input[type="checkbox"] {
+    flex: 0 0 18px;
+    width: 18px;
+    height: 18px;
+    margin: 2px 0 0 0;
+}
+
+.register-terms-label>span {
+    flex: 1;
+    min-width: 0;
+    display: block;
+    white-space: normal;
+    word-break: break-word;
+}
+
+.inline-terms-link {
+    display: inline;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0 2px;
+    color: #e11d48;
+    font: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+    line-height: inherit;
+}
+
+.inline-terms-link:hover {
+    opacity: 0.85;
+}
+
+.register-terms-note {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #777;
+    line-height: 1.5;
+}
+
+.submit-wrap {
+    margin-top: 6px;
+}
+
+.submit-wrap button {
+    width: 100%;
+    min-height: 46px;
+    border: none;
+    background: #ff4d6d;
+    color: #fff;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.submit-wrap button:disabled {
+    background: #cfcfcf;
+    color: #777;
+    cursor: not-allowed;
+}
+
+.back-home {
+    text-align: center;
+    margin-top: 16px;
+}
+
+.back-home a {
+    color: #d91f4f;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* =========================================================
+   LOGIN
+========================================================= */
+.login-page {
+    padding: 0;
+    background: transparent;
+}
+
+.login-box {
+    width: 100%;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 18px;
+    padding: 18px 16px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+.login-box h1 {
+    text-align: center;
+    color: #d91f4f;
+    font-size: 26px;
+    margin: 0 0 8px;
+}
+
+.login-subtitle {
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 16px;
+}
+
+.login-message {
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.login-message.error {
+    background: #ffe2e7;
+    color: #b3153e;
+    border: 1px solid #f3b4c3;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.login-form label {
+    font-weight: 700;
+    color: #444;
+    margin-bottom: 6px;
+    display: block;
+    font-size: 14px;
+}
+
+.login-form input {
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    font-size: 16px;
+    background: #fafafa;
+}
+
+.login-form input:focus {
+    outline: none;
+    border-color: #ff4d6d;
+    box-shadow: 0 0 0 3px rgba(255, 77, 109, 0.12);
+    background: #fff;
+}
+
+.login-submit {
+    margin-top: 4px;
+    border: none;
+    background: #ff4d6d;
+    color: #fff;
+    border-radius: 12px;
+    padding: 13px 18px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.login-links {
+    margin-top: 18px;
+    text-align: center;
+    color: #555;
+    font-size: 14px;
+}
+
+.login-links a {
+    color: #d91f4f;
+    font-weight: bold;
+}
+
+/* =========================================================
+   VIEW CARD / USER CARD
+========================================================= */
+.view-card {
+    background: #ffffff;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.10);
+}
+
+.view-card-media {
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.view-card-image {
+    width: 100%;
+    height: 240px;
+    object-fit: cover;
+}
+
+.online-badge {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    width: 12px;
+    height: 12px;
+    background: #22c55e;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    z-index: 2;
+}
+
+.view-card-content {
+    padding: 12px;
+    text-align: center;
+}
+
+.view-card-icons {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    flex-wrap: wrap;
+}
+
+.view-card-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
+
+.view-card-detail {
+    font-size: 14px;
+    color: #444;
+    margin-bottom: 5px;
+    line-height: 1.5;
+}
+
+.view-card-actions {
+    margin-top: 12px;
+}
+
+.view-card-actions a {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+    background: #c2185b;
+    color: #fff;
+    padding: 11px 12px;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* =========================================================
+   PROFILE
+========================================================= */
+.profile-shell {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.profile-top-bar {
+    margin-bottom: 10px;
+}
+
+.profile-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #c2185b;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.profile-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.profile-right-col,
+.profile-left-col {
+    width: 100%;
+}
+
+.profile-right-card,
+.profile-left-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 14px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+}
+
+.profile-main-image-wrap {
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.profile-main-image-link {
+    position: relative;
+    display: inline-block;
+}
+
+.profile-main-image {
+    width: 160px;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 20px;
+    margin: 0 auto;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+.profile-online-badge {
+    right: 8px;
+    bottom: 8px;
+}
+
+.profile-main-zoom {
+    position: absolute;
+    left: 8px;
+    bottom: 8px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-main-title {
+    text-align: center;
+    margin: 10px 0 14px;
+    font-size: 24px;
+    line-height: 1.2;
+    color: #111;
+    font-weight: 700;
+}
+
+.profile-main-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    width: 100%;
+    margin: 0 auto 10px;
+    padding: 10px 14px;
+    background: #ff4d6d;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.profile-right-edit-link {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+    color: #666;
+    font-size: 14px;
+}
+
+.profile-right-facts {
+    margin-top: 8px;
+}
+
+.profile-right-row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 8px 0;
+    font-size: 15px;
+    line-height: 1.6;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.profile-right-row:last-child {
+    border-bottom: none;
+}
+
+.profile-right-label {
+    font-weight: 700;
+    color: #111;
+}
+
+.profile-right-value {
+    color: #333;
+    text-align: right;
+    font-size: 15px;
+    line-height: 1.8;
+}
+
+.profile-actions-bottom-right {
+    margin-top: 12px;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 14px;
+}
+
+.profile-actions-bottom-right a {
+    color: #c2185b;
+    font-weight: 700;
+}
+
+.profile-left-card {
+    margin-bottom: 14px;
+}
+
+.profile-left-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.profile-left-card-head h3,
+.profile-left-title {
+    margin: 0;
+    font-size: 17px;
+    line-height: 1.4;
+    color: #111;
+    font-weight: 700;
+}
+
+.profile-inline-edit-btn,
+.edit-btn {
+    background: none;
+    border: none;
+    color: #d91f4f;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.profile-left-view {
+    color: #444;
+    font-size: 15px;
+    line-height: 1.8;
+}
+
+.profile-left-view.is-empty {
+    color: #888;
+}
+
+/* ===== עריכה ===== */
+.profile-edit-input,
+.profile-edit-textarea,
+.profile-left-edit-input,
+.profile-left-edit-textarea,
+.edit-textarea,
+.profile-right-input,
+.profile-right-select {
+    width: 100%;
+    font-size: 16px;
+    border-radius: 12px;
+    border: 1px solid #d8d8d8;
+    background: #fff;
+    color: #222;
+}
+
+.profile-edit-input,
+.profile-left-edit-input,
+.profile-right-input,
+.profile-right-select {
+    min-height: 46px;
+    padding: 10px 12px;
+}
+
+.profile-edit-textarea,
+.profile-left-edit-textarea,
+.edit-textarea {
+    min-height: 120px;
+    padding: 12px;
+    resize: vertical;
+    line-height: 1.7;
+}
+
+.profile-right-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.profile-edit-input:focus,
+.profile-edit-textarea:focus,
+.profile-left-edit-input:focus,
+.profile-left-edit-textarea:focus,
+.profile-right-input:focus,
+.profile-right-select:focus {
+    outline: none;
+    border-color: #ff4d6d;
+    box-shadow: 0 0 0 3px rgba(255, 77, 109, 0.12);
+}
+
+.profile-right-edit-row {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    padding: 4px 0;
+}
+
+.profile-right-edit-label {
+    min-width: 0;
+    width: 100%;
+    font-size: 14px;
+    font-weight: 700;
+    color: #111;
+}
+
+.profile-right-edit-control {
+    width: 100%;
+}
+
+.profile-right-edit-actions,
+.profile-edit-actions,
+.profile-left-edit-actions,
+.edit-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.profile-save-btn,
+.profile-cancel-btn,
+.profile-right-save-btn,
+.profile-right-cancel-btn,
+.save-btn,
+.cancel-btn,
+.profile-left-save-btn,
+.profile-left-cancel-btn {
+    width: 100%;
+    min-height: 46px;
+    font-size: 15px;
+    border-radius: 12px;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.profile-save-btn,
+.profile-right-save-btn,
+.save-btn,
+.profile-left-save-btn {
+    background: #ff4d6d;
+    color: #fff;
+}
+
+.profile-cancel-btn,
+.profile-right-cancel-btn,
+.cancel-btn,
+.profile-left-cancel-btn {
+    background: #ededed;
+    color: #222;
+}
+
+/* ===== גלריה ===== */
+.profile-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.profile-gallery-item {
+    position: relative;
+}
+
+.profile-gallery-thumb {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 14px;
+}
+
+.profile-photo-main-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(194, 24, 91, 0.92);
+    color: #fff;
+    font-size: 11px;
+    padding: 4px 7px;
+    border-radius: 999px;
+}
+
+.profile-gallery-actions {
+    position: absolute;
+    left: 8px;
+    top: 8px;
+}
+
+.profile-photo-number-btn {
+    border: none;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    min-width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.profile-photo-menu {
+    display: none;
+    position: absolute;
+    top: 34px;
+    left: 0;
+    min-width: 120px;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 12px;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.14);
+    padding: 6px;
+    z-index: 20;
+}
+
+.profile-photo-menu-form {
+    margin: 0;
+}
+
+.profile-photo-menu-btn {
+    width: 100%;
+    border: none;
+    background: transparent;
+    text-align: right;
+    padding: 10px 8px;
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.profile-photo-menu-btn-delete {
+    color: #c62828;
+}
+
+.profile-upload-form {
+    display: contents;
+}
+
+.profile-gallery-upload-btn {
+    min-height: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 14px;
+    border: 2px dashed #d7d7d7;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: #777;
+    cursor: pointer;
+    background: #fafafa;
+    text-align: center;
+    padding: 8px;
+}
+
+.profile-gallery-upload-btn-icon {
+    font-size: 24px;
+    line-height: 1;
+}
+
+.profile-gallery-upload-btn-text {
+    font-size: 12px;
+}
+
+/* =========================================================
+   חיפוש / דפי רשימה
+========================================================= */
+.search-container,
+.views-list,
+.results {
+    width: 100%;
+}
+
+.views-page-title {
+    text-align: center;
+    color: #d91f4f;
+    font-size: 26px;
+    margin-bottom: 16px;
+}
+
+.no-results,
+.no-views-box {
+    text-align: center;
+    font-size: 16px;
+    color: #666;
+    background: #fff;
+    padding: 18px 14px;
+    border-radius: 14px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* =========================================================
+   מסכים קטנים יותר
+========================================================= */
+@media (max-width: 380px) {
+    .mobile-main {
+        padding: 10px;
+        padding-bottom: 88px;
+    }
+
+    .register-box,
+    .login-box,
+    .profile-right-card,
+    .profile-left-card {
+        padding: 12px;
+    }
+
+    .register-box h1,
+    .login-box h1 {
+        font-size: 22px;
+    }
+
+    .view-card-image {
+        height: 220px;
+    }
+
+    .view-card-name {
+        font-size: 18px;
+    }
+
+    .view-card-detail,
+    .profile-left-view,
+    .profile-right-value {
+        font-size: 14px;
+    }
+
+    .profile-main-image {
+        width: 145px;
+        height: 145px;
+    }
+
+    .profile-main-title {
+        font-size: 22px;
+    }
+}

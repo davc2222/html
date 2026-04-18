@@ -1,5 +1,10 @@
 <?php
 // ===== FILE: verify_email.php =====
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -13,8 +18,11 @@ if ($token === '') {
     exit;
 }
 
+/* =========================
+   חיפוש משתמש לפי טוקן
+========================= */
 $stmt = $pdo->prepare("
-    SELECT Id, email_verified
+    SELECT Id, Name, Email, email_verified
     FROM users_profile
     WHERE verification_token = :t
     LIMIT 1
@@ -27,19 +35,30 @@ if (!$user) {
     exit;
 }
 
+/* =========================
+   כבר אומת
+========================= */
 if ((int)$user['email_verified'] === 1) {
     header('Location: /?page=verify_notice&status=already_verified');
     exit;
 }
 
+/* =========================
+   אימות החשבון
+========================= */
 $stmt = $pdo->prepare("
     UPDATE users_profile
-    SET email_verified = 1,
+    SET
+        email_verified = 1,
         Email_Validation = 1,
         verification_token = NULL
     WHERE Id = :id
 ");
-$stmt->execute([':id' => $user['Id']]);
+$stmt->execute([
+    ':id' => $user['Id']
+]);
+
+unset($_SESSION['resend_email']);
 
 header('Location: /?page=verify_notice&status=verified');
 exit;
