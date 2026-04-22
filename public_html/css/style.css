@@ -18,7 +18,7 @@ html,
 body {
     width: 100%;
     min-height: 100%;
-    height: 100%;
+   
 }
 
 body {
@@ -26,6 +26,7 @@ body {
     direction: rtl;
     background: #f2f2f2;
     color: #222;
+    padding-bottom: 100px;
 }
 
 
@@ -345,9 +346,9 @@ main {
     font-weight: bold;
 }
 
-/* =======================================================
-   4) REGISTER PAGE
-======================================================= */
+/* =========================
+   REGISTER PAGE CLEAN
+========================= */
 
 .register-page {
     padding: 0;
@@ -379,27 +380,7 @@ main {
     margin-bottom: 28px;
 }
 
-.message-box {
-    max-width: 700px;
-    margin: 0 auto 22px;
-    padding: 14px 18px;
-    border-radius: 14px;
-    text-align: center;
-    font-size: 17px;
-    font-weight: bold;
-}
-
-.message-box.error {
-    background: #ffe2e7;
-    color: #b3153e;
-    border: 1px solid #f3b4c3;
-}
-
-.message-box.success {
-    background: #e4f7e9;
-    color: #1f7a39;
-    border: 1px solid #b8e4c4;
-}
+/* ===== FORM ===== */
 
 .register-form {
     display: grid;
@@ -439,6 +420,8 @@ main {
     box-shadow: 0 0 0 3px rgba(255, 77, 109, 0.12);
 }
 
+/* ===== PASSWORD ===== */
+
 .password-wrapper {
     position: relative;
 }
@@ -462,11 +445,14 @@ main {
     line-height: 1;
 }
 
+/* ===== SUBMIT BUTTON ===== */
+
 .submit-wrap {
     grid-column: 1 / -1;
     display: flex;
     justify-content: center;
-    margin-top: 10px;
+    margin-top: 12px;
+    /* נקי בלי הזזות */
 }
 
 .submit-wrap button {
@@ -491,15 +477,7 @@ main {
     cursor: not-allowed;
 }
 
-.back-home {
-    text-align: center;
-    margin-top: 24px;
-}
-
-.back-home a {
-    color: #d91f4f;
-    font-weight: bold;
-}
+/* ===== ERRORS ===== */
 
 .error-text {
     color: #d91f4f;
@@ -523,7 +501,6 @@ main {
 .input-ok {
     border: 2px solid #28a745 !important;
 }
-
 /* =======================================================
    5) SEARCH PAGE
 ======================================================= */
@@ -5602,4 +5579,8 @@ transform: translateX(-50px);
     /* רווח מהטקסט */
     font-weight: normal;
     /* שלא יהיה בולד */
+}
+
+.register-page {
+    padding-bottom: 100px;
 }

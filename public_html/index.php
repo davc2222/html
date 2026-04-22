@@ -1,21 +1,64 @@
 <?php
+// ================================
+// INDEX DESKTOP (רגיל)
+// ================================
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+$userAgent  = $_SERVER['HTTP_USER_AGENT'] ?? '';
+$host       = $_SERVER['HTTP_HOST'] ?? '';
+$requestUri = $_SERVER['REQUEST_URI'] ?? '';
+
+$isLocalhost =
+    stripos($host, 'localhost') !== false ||
+    stripos($host, '127.0.0.1') !== false ||
+    preg_match('/^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/', $host);
+
+$isMobile = false;
+
+/* זיהוי אייפון */
+if (preg_match('/iPhone|iPod/i', $userAgent)) {
+    $isMobile = true;
+}
+
+/* זיהוי אנדרואיד (רק טלפונים, לא מחשב) */
+if (
+    preg_match('/Android/i', $userAgent) &&
+    preg_match('/Mobile/i', $userAgent) &&
+    !preg_match('/Windows NT|Win64|x64/i', $userAgent)
+) {
+    $isMobile = true;
+}
+
+/*
+|------------------------------------------------------------
+| מעבר ידני למובייל (האייקון)
+| עובד גם בלוקאל וגם ברמוט
+|------------------------------------------------------------
+*/
+if (isset($_GET['mobile']) && strpos($requestUri, '/mobile') !== 0) {
+    header('Location: /mobile/');
+    exit;
+}
+
+/*
+|------------------------------------------------------------
+| מעבר אוטומטי רק ברמוט ורק בנייד אמיתי
+|------------------------------------------------------------
+*/
+if (!$isLocalhost && $isMobile && strpos($requestUri, '/mobile') !== 0) {
+    header('Location: /mobile/');
+    exit;
+}
+
+//*----------------------------------------------------------------------------------------------------------------------*?/
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/includes/profile_helpers.php';
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 $page = $_GET['page'] ?? 'home';
 
-if ($page === 'verify_email') {
-    require __DIR__ . '/verify_email.php';
-    exit;
-}
 
 $protectedPages = ['profile', 'search', 'advanced_search', 'messages', 'views', 'inbox'];
 
@@ -30,33 +73,27 @@ if (in_array($page, $protectedPages, true) && empty($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>LoveMatch - אתר הכרויות חכם למציאת אהבה</title>
 
-    <!-- SEO -->
     <meta name="description" content="LoveMatch הוא אתר הכרויות חכם למציאת זוגיות אמיתית. הירשם עכשיו, מצא התאמות ושלח הודעות בקלות.">
-    <meta name="keywords" content="אתר הכרויות, הכרויות בישראל, זוגיות, דייטים, אהבה, LoveMatch">
+    <meta name="keywords" content="אתר הכרויות, הכרויות בישראל, זוגיות, דייטים, אהבה, LoveMatch , טינדר  לאבמי  רוסיות, אתר חינמי">
     <meta name="author" content="LoveMatch">
     <meta name="robots" content="index, follow">
 
-    <!-- Open Graph -->
     <meta property="og:title" content="LoveMatch - אתר הכרויות">
     <meta property="og:description" content="מצא אהבה אמיתית ב-LoveMatch">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="http://localhost">
-    <meta property="og:image" content="http://localhost/images/og-image.jpg">
+    <meta property="og:url" content="https://lovematch.co.il">
+    <meta property="og:image" content="https://lovematch.co.il/images/og-image.jpg">
 
-    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="LoveMatch">
     <meta name="twitter:description" content="מצא אהבה בקלות">
-    <meta name="twitter:image" content="http://localhost/images/og-image.jpg">
+    <meta name="twitter:image" content="https://lovematch.co.il/images/og-image.jpg">
 
-    <!-- FAVICON -->
     <link rel="icon" href="/images/favicon.ico?v=2">
     <link rel="shortcut icon" href="/images/favicon.ico?v=2">
 
-    <!-- CSS -->
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.5/css/lightbox.min.css">
 </head>
@@ -68,7 +105,6 @@ if (in_array($page, $protectedPages, true) && empty($_SESSION['user_id'])) {
         <?php include __DIR__ . '/includes/header.php'; ?>
 
         <div class="site-main">
-
             <?php
             switch ($page) {
                 case 'home':
@@ -112,7 +148,6 @@ if (in_array($page, $protectedPages, true) && empty($_SESSION['user_id'])) {
                     break;
             }
             ?>
-
         </div>
 
         <?php if (!empty($_SESSION['user_id'])): ?>
@@ -128,13 +163,12 @@ if (in_array($page, $protectedPages, true) && empty($_SESSION['user_id'])) {
 
     <script>
         lightbox.option({
-            'resizeDuration': 200,
-            'wrapAround': true,
-            'albumLabel': 'תמונה %1 מתוך %2'
+            resizeDuration: 200,
+            wrapAround: true,
+            albumLabel: 'תמונה %1 מתוך %2'
         });
     </script>
 
-    <!-- 🔥 TITLE BLINK -->
     <script>
         (function() {
             const normalTitle = document.title.trim() || 'LoveMatch';
@@ -144,7 +178,6 @@ if (in_array($page, $protectedPages, true) && empty($_SESSION['user_id'])) {
 
             function startBlink() {
                 if (isBlinking) return;
-
                 isBlinking = true;
                 let showAlert = false;
 
@@ -156,12 +189,10 @@ if (in_array($page, $protectedPages, true) && empty($_SESSION['user_id'])) {
 
             function stopBlink() {
                 isBlinking = false;
-
                 if (interval) {
                     clearInterval(interval);
                     interval = null;
                 }
-
                 document.title = normalTitle;
             }
 

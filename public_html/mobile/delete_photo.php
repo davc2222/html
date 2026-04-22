@@ -54,7 +54,7 @@ $stmt->execute([
 
 /* מחיקת קובץ */
 if ($fileName !== '') {
-    $fullPath = __DIR__ . '/uploads/' . ltrim($fileName, '/');
+    $fullPath = dirname(__DIR__) . '/uploads/' . ltrim($fileName, '/');
     if (is_file($fullPath)) {
         @unlink($fullPath);
     }

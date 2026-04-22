@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <rect width="120" height="120" rx="20" fill="#f2f2f2"></rect>
+  
+  <!-- ראש -->
+  <circle cx="60" cy="40" r="22" fill="#b5b5b5"></circle>
+  
+  <!-- גוף -->
+  <path d="M25 105c3-25 20-38 35-38s32 13 35 38" fill="#b5b5b5"></path>
+  
+  <!-- שיער -->
+  <path d="M38 28c6-12 16-18 22-18s16 6 22 18c-4-4-10-7-22-7s-18 3-22 7z" fill="#9c9c9c"></path>
+</svg>

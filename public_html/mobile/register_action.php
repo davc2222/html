@@ -1,486 +1,312 @@
-<!-- register.php -->
-<style>
-    .password-wrapper {
-        position: relative;
-    }
-
-    .password-wrapper input {
-        width: 100%;
-        box-sizing: border-box;
-        padding-left: 44px;
-    }
-
-    .toggle-pass {
-        position: absolute;
-        left: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        border: none;
-        background: transparent;
-        cursor: pointer;
-        font-size: 18px;
-        padding: 0;
-        line-height: 1;
-    }
-
-    .register-terms-wrap {
-        margin-top: 12px;
-        margin-bottom: 10px;
-        padding: 10px 12px;
-        background: #fafafa;
-        border: 1px solid #eee;
-        border-radius: 12px;
-    }
-
-    .register-terms-label {
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-        line-height: 1.6;
-        font-size: 14px;
-        color: #333;
-    }
-
-    .register-terms-label input[type="checkbox"] {
-        margin-top: 3px;
-        flex: 0 0 auto;
-    }
-
-    .inline-terms-link {
-        background: none;
-        border: none;
-        padding: 0;
-        margin: 0 2px;
-        color: #e11d48;
-        font: inherit;
-        cursor: pointer;
-        text-decoration: underline;
-    }
-
-    .inline-terms-link:hover {
-        opacity: 0.85;
-    }
-
-    .register-terms-note {
-        margin-top: 8px;
-        font-size: 12px;
-        color: #777;
-        line-height: 1.5;
-    }
-</style>
-
 <?php
+// ===== FILE: /mobile/register_action.php =====
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-require_once __DIR__ . '/config/config.php';
+require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../mail.php';
 
-$genders = [];
-$lookGenders = [];
-$zones = [];
-$places = [];
+function redirectToRegister(string $errorCode, array $old = []): void {
+    $_SESSION['register_old'] = $old;
+    header('Location: /mobile/?page=register&error=' . urlencode($errorCode));
+    exit;
+}
 
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header('Location: /mobile/');
+    exit;
+}
+
+/* =========================
+   קבלת נתונים מהטופס
+========================= */
+$name       = trim($_POST['Name'] ?? '');
+$email      = strtolower(trim($_POST['Email'] ?? ''));
+$pass       = $_POST['Pass'] ?? '';
+$dob        = trim($_POST['DOB'] ?? '');
+$genderId   = (int)($_POST['Gender_Id'] ?? 0);
+$lookGender = (int)($_POST['Look_Gender'] ?? 0);
+$zoneId     = (int)($_POST['Zone_Id'] ?? 0);
+$placeId    = (int)($_POST['Place_Id'] ?? 0);
+$openDate   = trim($_POST['Open_Date'] ?? date('Y-m-d'));
+$termsAgree = $_POST['terms_agree'] ?? '';
+
+$old = [
+    'Name'        => $name,
+    'Email'       => $email,
+    'DOB'         => $dob,
+    'Gender_Id'   => (string)$genderId,
+    'Look_Gender' => (string)$lookGender,
+    'Zone_Id'     => (string)$zoneId,
+    'Place_Id'    => (string)$placeId,
+    'Open_Date'   => $openDate,
+    'terms_agree' => $termsAgree === '1' ? '1' : ''
+];
+
+/* =========================
+   ולידציה בסיסית
+========================= */
+if (
+    $name === '' ||
+    $email === '' ||
+    $pass === '' ||
+    $dob === '' ||
+    $genderId <= 0 ||
+    $lookGender <= 0 ||
+    $zoneId <= 0 ||
+    $placeId <= 0 ||
+    $openDate === ''
+) {
+    redirectToRegister('missing', $old);
+}
+
+if ($termsAgree !== '1') {
+    redirectToRegister('terms', $old);
+}
+
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    redirectToRegister('email', $old);
+}
+
+if (!preg_match('/^[A-Za-z0-9]{1,15}$/', $name)) {
+    redirectToRegister('name', $old);
+}
+
+if (!preg_match('/^(?=.*[A-Za-z])(?=.*[0-9])[A-Za-z0-9]{4,}$/', $pass)) {
+    redirectToRegister('pass', $old);
+}
+
+$dobDate = DateTime::createFromFormat('Y-m-d', $dob);
+$today   = new DateTime('today');
+
+if (!$dobDate || $dobDate->format('Y-m-d') !== $dob) {
+    redirectToRegister('dob', $old);
+}
+
+if ($dobDate > $today) {
+    redirectToRegister('dob', $old);
+}
+
+$age = $today->diff($dobDate)->y;
+if ($age < 18 || $age > 100) {
+    redirectToRegister('dob', $old);
+}
+
+$openDateObj = DateTime::createFromFormat('Y-m-d', $openDate);
+if (!$openDateObj || $openDateObj->format('Y-m-d') !== $openDate) {
+    $openDate = date('Y-m-d');
+    $old['Open_Date'] = $openDate;
+}
+
+/* =========================
+   בדיקות כפילות
+========================= */
 try {
-    $stmt = $pdo->query("SELECT Gender_Id, Gender_Str FROM gender ORDER BY Gender_Id ASC");
-    $genders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $stmt = $pdo->prepare("
+        SELECT Id
+        FROM users_profile
+        WHERE Email = :email
+        LIMIT 1
+    ");
+    $stmt->execute([':email' => $email]);
 
-    $stmt = $pdo->query("SELECT Id, Str FROM look_gender ORDER BY Id ASC");
-    $lookGenders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if ($stmt->fetch()) {
+        redirectToRegister('doubleEmail', $old);
+    }
 
-    $stmt = $pdo->query("SELECT Zone_Id, Zone_Str FROM zone ORDER BY Zone_Id ASC");
-    $zones = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $stmt = $pdo->prepare("
+        SELECT Id
+        FROM users_profile
+        WHERE Name = :name
+        LIMIT 1
+    ");
+    $stmt->execute([':name' => $name]);
 
-    $stmt = $pdo->query("SELECT Place_Id, Place_Str FROM place ORDER BY Place_Id ASC");
-    $places = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    die("שגיאה בטעינת נתוני הרשמה: " . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8'));
+    if ($stmt->fetch()) {
+        redirectToRegister('doubleName', $old);
+    }
+
+    /* =========================
+       שליפת STR מטבלאות עזר
+    ========================= */
+    $stmt = $pdo->prepare("
+        SELECT Gender_Str
+        FROM gender
+        WHERE Gender_Id = :id
+        LIMIT 1
+    ");
+    $stmt->execute([':id' => $genderId]);
+    $genderStr = $stmt->fetchColumn() ?: null;
+
+    $stmt = $pdo->prepare("
+        SELECT Zone_Str
+        FROM zone
+        WHERE Zone_Id = :id
+        LIMIT 1
+    ");
+    $stmt->execute([':id' => $zoneId]);
+    $zoneStr = $stmt->fetchColumn() ?: null;
+
+    $stmt = $pdo->prepare("
+        SELECT Place_Str
+        FROM place
+        WHERE Place_Id = :id
+        LIMIT 1
+    ");
+    $stmt->execute([':id' => $placeId]);
+    $placeStr = $stmt->fetchColumn() ?: null;
+
+    if ($genderStr === null || $zoneStr === null || $placeStr === null) {
+        redirectToRegister('missing', $old);
+    }
+
+    /* =========================
+       הצפנת סיסמה
+    ========================= */
+    $hashedPass = password_hash($pass, PASSWORD_DEFAULT);
+
+    /* =========================
+       הכנסת משתמש למסד
+    ========================= */
+    $sql = "
+        INSERT INTO users_profile (
+            Open_Date,
+            Gender_Id,
+            Gender_Str,
+            DOB,
+            Name,
+            Pass,
+            Email,
+            Zone_Id,
+            Zone_Str,
+            Place_Id,
+            Place_Str,
+            look_gender,
+            email_verified
+        ) VALUES (
+            :open_date,
+            :gender_id,
+            :gender_str,
+            :dob,
+            :name,
+            :pass,
+            :email,
+            :zone_id,
+            :zone_str,
+            :place_id,
+            :place_str,
+            :look_gender,
+            0
+        )
+    ";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([
+        ':open_date'   => $openDate,
+        ':gender_id'   => $genderId,
+        ':gender_str'  => $genderStr,
+        ':dob'         => $dob,
+        ':name'        => $name,
+        ':pass'        => $hashedPass,
+        ':email'       => $email,
+        ':zone_id'     => $zoneId,
+        ':zone_str'    => $zoneStr,
+        ':place_id'    => $placeId,
+        ':place_str'   => $placeStr,
+        ':look_gender' => $lookGender
+    ]);
+
+    $userId = (int)$pdo->lastInsertId();
+
+    /* =========================
+       יצירת טוקן אימות
+    ========================= */
+    $verifyToken = bin2hex(random_bytes(32));
+
+    $stmt = $pdo->prepare("
+        UPDATE users_profile
+        SET
+            verification_token = :token,
+            verification_sent_at = NOW(),
+            email_verified = 0
+        WHERE Id = :id
+    ");
+    $stmt->execute([
+        ':token' => $verifyToken,
+        ':id'    => $userId
+    ]);
+} catch (Throwable $e) {
+    error_log('MOBILE REGISTER ERROR: ' . $e->getMessage());
+    redirectToRegister('db', $old);
 }
 
-$error = $_GET['error'] ?? '';
-$success = $_GET['success'] ?? '';
+/* =========================
+   בניית לינק לפי APP_URL
+========================= */
+$verifyLink = APP_URL . '/mobile/verify_email.php?token=' . urlencode($verifyToken);
 
-function old($key, $default = '') {
-    return htmlspecialchars($_GET[$key] ?? $default, ENT_QUOTES, 'UTF-8');
+/* =========================
+   HTML מלא למייל
+========================= */
+$safeName     = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
+$safeLinkText = htmlspecialchars($verifyLink, ENT_QUOTES, 'UTF-8');
+
+$mailBody = <<<HTML
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>אימות חשבון LoveMatch</title>
+</head>
+<body style="margin:0;padding:0;background:#f7f7f7;font-family:Arial,sans-serif;">
+<div style="max-width:640px;margin:40px auto;background:#ffffff;border-radius:14px;border:1px solid #eee;padding:30px;">
+
+<h2 style="color:#e91e63;margin-top:0;">שלום {$safeName}</h2>
+
+<p>תודה שנרשמת ל-LoveMatch ❤️</p>
+
+<p>כדי להפעיל את החשבון שלך לחץ על הכפתור:</p>
+
+<div style="text-align:center;margin:30px 0;">
+<a href="{$verifyLink}" style="background:#e91e63;color:#fff;padding:12px 25px;border-radius:8px;text-decoration:none;font-weight:bold;">
+אימות חשבון
+</a>
+</div>
+
+<p style="font-size:13px;color:#666;">
+אם הכפתור לא עובד:
+<br>
+<a href="{$verifyLink}">{$safeLinkText}</a>
+</p>
+
+</div>
+</body>
+</html>
+HTML;
+
+/* =========================
+   שליחת מייל
+========================= */
+$mailResult = sendMail(
+    $email,
+    'אימות חשבון LoveMatch',
+    $mailBody,
+    $name
+);
+
+if ($mailResult !== true) {
+    error_log('MOBILE MAIL ERROR: ' . $mailResult);
 }
-?>
 
-<section class="register-page">
-    <div class="register-box">
-        <h1>הרשמה ל־LoveMatch</h1>
-        <p class="subtitle">צור פרופיל חדש בכמה צעדים פשוטים</p>
+/* =========================
+   ניקוי נתונים ישנים ומעבר לדף הודעה
+========================= */
+unset($_SESSION['register_old']);
 
-        <?php if ($error !== ''): ?>
-            <div class="message-box error">
-                <?php
-                if ($error === 'doubleEmail') {
-                    echo 'האימייל כבר קיים במערכת';
-                } elseif ($error === 'doubleName') {
-                    echo 'שם המשתמש כבר קיים במערכת';
-                } elseif ($error === 'missing') {
-                    echo 'יש למלא את כל השדות';
-                } elseif ($error === 'terms') {
-                    echo 'יש לאשר את תנאי השימוש';
-                } elseif ($error === 'name') {
-                    echo 'שם המשתמש חייב להכיל רק אנגלית ומספרים, ועד 15 תווים';
-                } elseif ($error === 'email') {
-                    echo 'כתובת האימייל אינה תקינה';
-                } elseif ($error === 'pass') {
-                    echo 'הסיסמה חייבת להכיל לפחות 4 תווים, אנגלית ומספרים';
-                } elseif ($error === 'dob') {
-                    echo 'יש להזין תאריך לידה תקין';
-                } else {
-                    echo 'אירעה שגיאה בהרשמה';
-                }
-                ?>
-            </div>
-        <?php endif; ?>
-
-        <?php if ($success === '1'): ?>
-            <div class="message-box success">ההרשמה בוצעה בהצלחה</div>
-        <?php endif; ?>
-
-        <form class="register-form" method="POST" action="/register_action.php" novalidate>
-            <div class="form-group">
-                <label for="Name">שם משתמש</label>
-                <input
-                    type="text"
-                    name="Name"
-                    id="Name"
-                    autocomplete="username"
-                    value="<?= old('Name') ?>"
-                    required>
-                <div class="error-text" id="name-error"></div>
-            </div>
-
-            <div class="form-group">
-                <label for="Email">אימייל</label>
-                <input
-                    type="email"
-                    id="Email"
-                    name="Email"
-                    autocomplete="email"
-                    value="<?= old('Email') ?>"
-                    required>
-                <div class="error-text" id="email-error"></div>
-            </div>
-
-            <div class="form-group password-group">
-                <label for="Pass">סיסמה</label>
-
-                <div class="password-wrapper">
-                    <input
-                        type="password"
-                        id="Pass"
-                        name="Pass"
-                        autocomplete="new-password"
-                        required>
-                    <button type="button" class="toggle-pass" id="togglePass">👁</button>
-                </div>
-
-                <div class="error-text" id="pass-error"></div>
-            </div>
-
-            <div class="form-group">
-                <label for="DOB">תאריך לידה</label>
-                <input type="date" name="DOB" id="DOB" value="<?= old('DOB') ?>" required>
-            </div>
-
-            <div class="form-group">
-                <label for="Gender_Id">אני</label>
-                <select name="Gender_Id" id="Gender_Id" required>
-                    <option value="">בחר</option>
-                    <?php foreach ($genders as $gender): ?>
-                        <option value="<?= htmlspecialchars($gender['Gender_Id'], ENT_QUOTES, 'UTF-8') ?>"
-                            <?= old('Gender_Id') === (string)$gender['Gender_Id'] ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($gender['Gender_Str'], ENT_QUOTES, 'UTF-8') ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="Look_Gender">מחפש/ת</label>
-                <select name="Look_Gender" id="Look_Gender" required>
-                    <option value="">בחר</option>
-                    <?php foreach ($lookGenders as $g): ?>
-                        <option value="<?= htmlspecialchars($g['Id'], ENT_QUOTES, 'UTF-8') ?>"
-                            <?= old('Look_Gender') === (string)$g['Id'] ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($g['Str'], ENT_QUOTES, 'UTF-8') ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="Zone_Id">אזור</label>
-                <select name="Zone_Id" id="Zone_Id" required>
-                    <option value="">בחר אזור</option>
-                    <?php foreach ($zones as $zone): ?>
-                        <option value="<?= htmlspecialchars($zone['Zone_Id'], ENT_QUOTES, 'UTF-8') ?>"
-                            <?= old('Zone_Id') === (string)$zone['Zone_Id'] ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($zone['Zone_Str'], ENT_QUOTES, 'UTF-8') ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="Place_Id">מקום</label>
-                <select name="Place_Id" id="Place_Id" required>
-                    <option value="">בחר מקום</option>
-                    <?php foreach ($places as $place): ?>
-                        <option value="<?= htmlspecialchars($place['Place_Id'], ENT_QUOTES, 'UTF-8') ?>"
-                            <?= old('Place_Id') === (string)$place['Place_Id'] ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($place['Place_Str'], ENT_QUOTES, 'UTF-8') ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <div class="form-group full">
-                <label for="Open_Date">תאריך פתיחת פרופיל</label>
-                <input type="date" name="Open_Date" id="Open_Date" value="<?= old('Open_Date', date('Y-m-d')) ?>" required>
-            </div>
-
-            <div class="register-terms-wrap">
-                <label class="register-terms-label">
-                    <input
-                        type="checkbox"
-                        id="termsAgree"
-                        name="terms_agree"
-                        value="1"
-                        <?= isset($_GET['terms_agree']) && $_GET['terms_agree'] === '1' ? 'checked' : '' ?>
-                        required>
-                    <span>
-                        אני מאשר/ת שקראתי ואני מסכים/ה ל
-                        <button type="button" id="registerTermsLink" class="inline-terms-link">
-                            תנאי השימוש
-                        </button>
-                        של האתר.
-                    </span>
-                </label>
-
-                <div class="register-terms-note">
-                    ההרשמה והשימוש באתר כפופים לתנאי השימוש.
-                </div>
-            </div>
-
-            <div class="submit-wrap">
-                <button type="submit" id="register-btn">צור חשבון</button>
-            </div>
-        </form>
-
-        <div class="back-home">
-            <a href="?page=home">חזרה לדף הבית</a>
-        </div>
-    </div>
-</section>
-
-<script>
-    const nameInput = document.getElementById("Name");
-    const emailInput = document.getElementById("Email");
-    const registerBtn = document.getElementById("register-btn");
-    const passInput = document.getElementById("Pass");
-    const nameError = document.getElementById("name-error");
-    const emailError = document.getElementById("email-error");
-    const passError = document.getElementById("pass-error");
-    const termsAgree = document.getElementById("termsAgree");
-    const registerTermsLink = document.getElementById("registerTermsLink");
-
-    let nameValid = false;
-    let emailValid = false;
-    let passValid = false;
-
-    function showError(element, input, message) {
-        element.innerText = message;
-        element.classList.add("show");
-        input.classList.add("input-error");
-        input.classList.remove("input-ok");
-    }
-
-    function clearError(element, input) {
-        element.innerText = "";
-        element.classList.remove("show");
-        input.classList.remove("input-error");
-        input.classList.add("input-ok");
-    }
-
-    function checkFormValidity() {
-        const requiredFields = document.querySelectorAll(".register-form input[required], .register-form select[required]");
-        let allFilled = true;
-
-        requiredFields.forEach(field => {
-            if (field.type === "checkbox") {
-                if (!field.checked) {
-                    allFilled = false;
-                }
-            } else if (!field.value.trim()) {
-                allFilled = false;
-            }
-        });
-
-        registerBtn.disabled = !allFilled;
-    }
-
-    let nameTimeout;
-    nameInput.addEventListener("input", function() {
-        clearTimeout(nameTimeout);
-
-        const name = this.value.trim();
-        const englishOnly = /^[A-Za-z0-9]+$/;
-
-        nameValid = false;
-        checkFormValidity();
-
-        if (name === "") {
-            nameError.innerText = "";
-            nameError.classList.remove("show");
-            this.classList.remove("input-error", "input-ok");
-            return;
-        }
-
-        if (!englishOnly.test(name)) {
-            showError(nameError, this, "רק אנגלית ומספרים");
-            return;
-        }
-
-        if (name.length > 15) {
-            showError(nameError, this, "עד 15 תווים בלבד");
-            return;
-        }
-
-        nameTimeout = setTimeout(() => {
-            fetch("/check_name.php", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded"
-                    },
-                    body: "name=" + encodeURIComponent(name)
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.valid === false) {
-                        showError(nameError, nameInput, "רק אנגלית ומספרים, עד 15 תווים");
-                        nameValid = false;
-                    } else if (data.exists) {
-                        showError(nameError, nameInput, "שם המשתמש תפוס");
-                        nameValid = false;
-                    } else {
-                        clearError(nameError, nameInput);
-                        nameValid = true;
-                    }
-                    checkFormValidity();
-                })
-                .catch(() => {
-                    nameValid = true;
-                    checkFormValidity();
-                });
-        }, 400);
-    });
-
-    let emailTimeout;
-    emailInput.addEventListener("input", function() {
-        clearTimeout(emailTimeout);
-
-        const email = this.value.trim();
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-        emailValid = false;
-        checkFormValidity();
-
-        if (email === "") {
-            emailError.innerText = "";
-            emailError.classList.remove("show");
-            this.classList.remove("input-error", "input-ok");
-            return;
-        }
-
-        if (!emailPattern.test(email)) {
-            showError(emailError, this, "פורמט אימייל לא תקין");
-            return;
-        }
-
-        emailTimeout = setTimeout(() => {
-            fetch("/check_email.php", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded"
-                    },
-                    body: "email=" + encodeURIComponent(email)
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.exists) {
-                        showError(emailError, emailInput, "האימייל כבר קיים");
-                        emailValid = false;
-                    } else {
-                        clearError(emailError, emailInput);
-                        emailValid = true;
-                    }
-                    checkFormValidity();
-                })
-                .catch(() => {
-                    emailValid = true;
-                    checkFormValidity();
-                });
-        }, 400);
-    });
-
-    passInput.addEventListener("input", function() {
-        const pass = this.value.trim();
-        const passPattern = /^(?=.*[A-Za-z])(?=.*[0-9])[A-Za-z0-9]{4,}$/;
-
-        passValid = false;
-        checkFormValidity();
-
-        if (pass === "") {
-            passError.innerText = "";
-            passError.classList.remove("show");
-            this.classList.remove("input-error", "input-ok");
-            return;
-        }
-
-        if (!passPattern.test(pass)) {
-            showError(passError, this, "לפחות 4 תווים, אנגלית ומספרים");
-            return;
-        }
-
-        clearError(passError, this);
-        passValid = true;
-        checkFormValidity();
-    });
-
-    document.querySelectorAll(".register-form input, .register-form select").forEach(el => {
-        el.addEventListener("input", checkFormValidity);
-        el.addEventListener("change", checkFormValidity);
-    });
-
-    if (termsAgree) {
-        termsAgree.addEventListener("change", checkFormValidity);
-    }
-
-    const togglePass = document.getElementById("togglePass");
-
-    togglePass.addEventListener("click", function() {
-        if (passInput.type === "password") {
-            passInput.type = "text";
-            togglePass.textContent = "🙈";
-        } else {
-            passInput.type = "password";
-            togglePass.textContent = "👁";
-        }
-    });
-
-    if (registerTermsLink) {
-        registerTermsLink.addEventListener("click", function() {
-            if (typeof openTermsPopup === "function") {
-                openTermsPopup();
-            }
-        });
-    }
-
-    window.addEventListener('DOMContentLoaded', function() {
-        checkFormValidity();
-    });
-</script>
+header('Location: /mobile/?page=verify_notice');
+exit;

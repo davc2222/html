@@ -1,61 +1,48 @@
 <?php
 // ======================
-// config.php
+// LOADER CONFIG
 // ======================
 
-$config = [
-    'db_host'    => 'localhost',
-    'db_name'    => 'dating',
-    'db_user'    => 'davc22',
-    'db_pass'    => '!Y+c|!rxZ-3x%T:E',
-    'db_charset' => 'utf8mb4',
-    'app_url'    => 'https://lovematch.co.il',
-];
-
-/*
-|--------------------------------------------------------------------------
-| Local override
-|--------------------------------------------------------------------------
-| אם קיים config.local.php, הוא דורס את ברירות המחדל.
-| בלוקאל הוא אמור להיות קיים.
-| בשרת חי בדרך כלל הוא לא אמור להיות קיים בכלל.
-*/
-$localConfigFile = __DIR__ . '/config.local.php';
-
-if (file_exists($localConfigFile)) {
-    $localConfig = require $localConfigFile;
-
-    if (is_array($localConfig)) {
-        $config = array_merge($config, $localConfig);
-    }
+// עדיפות ללוקאל
+if (file_exists(__DIR__ . '/config.local.php')) {
+    $config = require __DIR__ . '/config.local.php';
+} else {
+    $config = require __DIR__ . '/config.remote.php';
 }
 
-/*
-|--------------------------------------------------------------------------
-| Constants
-|--------------------------------------------------------------------------
-*/
-define('DB_HOST', $config['db_host']);
-define('DB_NAME', $config['db_name']);
-define('DB_USER', $config['db_user']);
-define('DB_PASS', $config['db_pass']);
-define('DB_CHARSET', $config['db_charset']);
-define('APP_URL', rtrim($config['app_url'], '/'));
+// ======================
+// תאימות לאחור (constants)
+// ======================
+if (!defined('APP_URL') && isset($config['app_url'])) {
+    define('APP_URL', $config['app_url']);
+}
 
-/*
-|--------------------------------------------------------------------------
-| PDO
-|--------------------------------------------------------------------------
-*/
-$dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
+// אם תרצה גם DB constants (לא חובה)
+if (!defined('DB_HOST') && isset($config['db_host'])) {
+    define('DB_HOST', $config['db_host']);
+}
+if (!defined('DB_NAME') && isset($config['db_name'])) {
+    define('DB_NAME', $config['db_name']);
+}
+if (!defined('DB_USER') && isset($config['db_user'])) {
+    define('DB_USER', $config['db_user']);
+}
+if (!defined('DB_PASS') && isset($config['db_pass'])) {
+    define('DB_PASS', $config['db_pass']);
+}
 
-$options = [
-    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-];
+// ======================
+// חיבור למסד
+// ======================
+$dsn = "mysql:host={$config['db_host']};dbname={$config['db_name']};charset={$config['db_charset']}";
 
 try {
-    $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+    $pdo = new PDO($dsn, $config['db_user'], $config['db_pass'], [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    ]);
 } catch (PDOException $e) {
     die("חיבור למסד נכשל: " . $e->getMessage());
 }
+
+return $config;

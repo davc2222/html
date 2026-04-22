@@ -3,7 +3,6 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-//require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../config/config.php';
 $genders = [];
 $lookGenders = [];
@@ -257,109 +256,109 @@ $success = $_GET['success'] ?? '';
             <div class="message-box success">ההרשמה בוצעה בהצלחה</div>
         <?php endif; ?>
 
-        <form class="mobile-register-form" method="POST" action="/mobile/register_action.php">
-            <div class=" form-group">
-            <label for="Name">שם משתמש</label>
-            <input type="text" name="Name" id="Name" required>
-            <div class="error-text" id="name-error"></div>
-    </div>
+        <form class="mobile-register-form" method="POST" action="<?= APP_URL ?>/mobile/register_action.php">
+            <div class="form-group">
+                <label for="Name">שם משתמש</label>
+                <input type="text" name="Name" id="Name" required>
+                <div class="error-text" id="name-error"></div>
+            </div>
 
-    <div class="form-group">
-        <label for="Email">אימייל</label>
-        <input type="email" id="Email" name="Email" autocomplete="username" required>
-        <div class="error-text" id="email-error"></div>
-    </div>
+            <div class="form-group">
+                <label for="Email">אימייל</label>
+                <input type="email" id="Email" name="Email" autocomplete="username" required>
+                <div class="error-text" id="email-error"></div>
+            </div>
 
-    <div class="form-group">
-        <label for="Pass">סיסמה</label>
-        <div class="password-wrapper">
-            <input type="password" id="Pass" name="Pass" autocomplete="new-password" required>
-            <button type="button" class="toggle-pass" id="togglePass">👁</button>
+            <div class="form-group">
+                <label for="Pass">סיסמה</label>
+                <div class="password-wrapper">
+                    <input type="password" id="Pass" name="Pass" autocomplete="new-password" required>
+                    <button type="button" class="toggle-pass" id="togglePass">👁</button>
+                </div>
+                <div class="error-text" id="pass-error"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="DOB">תאריך לידה</label>
+                <input type="date" name="DOB" id="DOB" required>
+            </div>
+
+            <div class="form-group">
+                <label for="Gender_Id">אני</label>
+                <select name="Gender_Id" id="Gender_Id" required>
+                    <option value="">בחר</option>
+                    <?php foreach ($genders as $gender): ?>
+                        <option value="<?= htmlspecialchars($gender['Gender_Id']) ?>">
+                            <?= htmlspecialchars($gender['Gender_Str']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="Look_Gender">מחפש/ת</label>
+                <select name="Look_Gender" id="Look_Gender" required>
+                    <option value="">בחר</option>
+                    <?php foreach ($lookGenders as $g): ?>
+                        <option value="<?= htmlspecialchars($g['Id']) ?>">
+                            <?= htmlspecialchars($g['Str']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="Zone_Id">אזור</label>
+                <select name="Zone_Id" id="Zone_Id" required>
+                    <option value="">בחר אזור</option>
+                    <?php foreach ($zones as $zone): ?>
+                        <option value="<?= htmlspecialchars($zone['Zone_Id']) ?>">
+                            <?= htmlspecialchars($zone['Zone_Str']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="Place_Id">מקום</label>
+                <select name="Place_Id" id="Place_Id" required>
+                    <option value="">בחר מקום</option>
+                    <?php foreach ($places as $place): ?>
+                        <option value="<?= htmlspecialchars($place['Place_Id']) ?>">
+                            <?= htmlspecialchars($place['Place_Str']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="Open_Date">תאריך פתיחת פרופיל</label>
+                <input type="date" name="Open_Date" id="Open_Date" value="<?= date('Y-m-d') ?>" required>
+            </div>
+
+            <div class="register-terms-wrap">
+                <label class="register-terms-label">
+                    <input type="checkbox" id="termsAgree" name="terms_agree" value="1" required>
+                    <span>
+                        אני מאשר/ת שקראתי ואני מסכים/ה ל
+                        <button type="button" id="registerTermsLink" class="inline-terms-link">תנאי השימוש</button>
+                        של האתר.
+                    </span>
+                </label>
+
+                <div class="register-terms-note">
+                    ההרשמה והשימוש באתר כפופים לתנאי השימוש.
+                </div>
+            </div>
+
+            <div class="submit-wrap">
+                <button type="submit" id="register-btn" disabled>צור חשבון</button>
+            </div>
+        </form>
+
+        <div class="back-home">
+            <a href="?page=home">חזרה לדף הבית</a>
         </div>
-        <div class="error-text" id="pass-error"></div>
-    </div>
-
-    <div class="form-group">
-        <label for="DOB">תאריך לידה</label>
-        <input type="date" name="DOB" id="DOB" required>
-    </div>
-
-    <div class="form-group">
-        <label for="Gender_Id">אני</label>
-        <select name="Gender_Id" id="Gender_Id" required>
-            <option value="">בחר</option>
-            <?php foreach ($genders as $gender): ?>
-                <option value="<?= htmlspecialchars($gender['Gender_Id']) ?>">
-                    <?= htmlspecialchars($gender['Gender_Str']) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label for="Look_Gender">מחפש/ת</label>
-        <select name="Look_Gender" id="Look_Gender" required>
-            <option value="">בחר</option>
-            <?php foreach ($lookGenders as $g): ?>
-                <option value="<?= htmlspecialchars($g['Id']) ?>">
-                    <?= htmlspecialchars($g['Str']) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label for="Zone_Id">אזור</label>
-        <select name="Zone_Id" id="Zone_Id" required>
-            <option value="">בחר אזור</option>
-            <?php foreach ($zones as $zone): ?>
-                <option value="<?= htmlspecialchars($zone['Zone_Id']) ?>">
-                    <?= htmlspecialchars($zone['Zone_Str']) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label for="Place_Id">מקום</label>
-        <select name="Place_Id" id="Place_Id" required>
-            <option value="">בחר מקום</option>
-            <?php foreach ($places as $place): ?>
-                <option value="<?= htmlspecialchars($place['Place_Id']) ?>">
-                    <?= htmlspecialchars($place['Place_Str']) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label for="Open_Date">תאריך פתיחת פרופיל</label>
-        <input type="date" name="Open_Date" id="Open_Date" value="<?= date('Y-m-d') ?>" required>
-    </div>
-
-    <div class="register-terms-wrap">
-        <label class="register-terms-label">
-            <input type="checkbox" id="termsAgree" name="terms_agree" value="1" required>
-            <span>
-                אני מאשר/ת שקראתי ואני מסכים/ה ל
-                <button type="button" id="registerTermsLink" class="inline-terms-link">תנאי השימוש</button>
-                של האתר.
-            </span>
-        </label>
-
-        <div class="register-terms-note">
-            ההרשמה והשימוש באתר כפופים לתנאי השימוש.
-        </div>
-    </div>
-
-    <div class="submit-wrap">
-        <button type="submit" id="register-btn" disabled>צור חשבון</button>
-    </div>
-    </form>
-
-    <div class="back-home">
-        <a href="?page=home">חזרה לדף הבית</a>
-    </div>
     </div>
 </section>
 

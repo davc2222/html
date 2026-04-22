@@ -10,16 +10,23 @@ if ($email === '') {
     exit;
 }
 
-/* חריג למייל הפיתוח שלך */
-if (strcasecmp($email, 'davc22@gmail.com') === 0) {
+/* בדיקת פורמט (לא חובה אבל מומלץ) */
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     echo json_encode(['exists' => false]);
     exit;
 }
 
-$stmt = $pdo->prepare("SELECT 1 FROM users_profile WHERE Email = :email LIMIT 1");
+$stmt = $pdo->prepare("
+    SELECT 1 
+    FROM users_profile 
+    WHERE Email = :email 
+    LIMIT 1
+");
+
 $stmt->execute([':email' => $email]);
 
 echo json_encode([
     'exists' => (bool)$stmt->fetchColumn()
 ]);
+
 exit;

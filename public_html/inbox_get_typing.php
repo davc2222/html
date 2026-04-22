@@ -39,7 +39,7 @@ try {
     if ($row) {
         $isTyping = (int)$row['is_typing'] === 1;
         $updatedAt = strtotime((string)$row['updated_at']);
-        $fresh = $updatedAt && (time() - $updatedAt <= 6);
+        $fresh = $updatedAt && (time() - $updatedAt <=12);
 
         $typing = $isTyping && $fresh;
     }

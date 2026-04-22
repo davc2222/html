@@ -25,7 +25,7 @@ if (!in_array($page, $allowedPages, true)) {
 $protectedPages = ['profile', 'search', 'advanced_search', 'messages'];
 
 if (in_array($page, $protectedPages, true) && empty($_SESSION['user_id'])) {
-    header('Location: /mobile/?page=login');
+    header('Location: ' . APP_URL . '/mobile/?page=login');
     exit;
 }
 
@@ -40,9 +40,6 @@ function m_e($value): string {
     return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
 }
 
-/* =========================
-   תמונת פרופיל להדר
-========================= */
 $mobileHeaderAvatar = '/images/default_male.svg';
 
 if ($currentUserId > 0) {
@@ -76,7 +73,7 @@ if ($currentUserId > 0) {
             $mobileHeaderAvatar = '/uploads/' . ltrim((string)$pic, '/');
         }
     } catch (Throwable $e) {
-        // נשאר fallback
+        // fallback
     }
 }
 ?>
@@ -277,13 +274,13 @@ if ($currentUserId > 0) {
 
         <header class="mobile-header">
             <div class="mobile-header-top">
-                <a href="/mobile/?page=home" class="mobile-logo">
+                <a href="<?= APP_URL ?>/mobile/?page=home" class="mobile-logo">
                     <span>❤</span>
                     <span>LoveMatch</span>
                 </a>
 
                 <?php if ($currentUserId > 0): ?>
-                    <a href="/mobile/?page=profile&id=<?= $currentUserId ?>&edit=1" class="mobile-switch-btn">
+                    <a href="<?= APP_URL ?>/mobile/?page=profile&id=<?= $currentUserId ?>&edit=1" class="mobile-switch-btn">
                         הפרופיל שלי
                     </a>
                 <?php endif; ?>
@@ -292,7 +289,7 @@ if ($currentUserId > 0) {
             <div class="mobile-auth">
                 <?php if ($currentUserId > 0): ?>
                     <div class="mobile-user-box">
-                        <a href="/mobile/?page=profile&id=<?= $currentUserId ?>&edit=1" class="mobile-user-avatar-link">
+                        <a href="<?= APP_URL ?>/mobile/?page=profile&id=<?= $currentUserId ?>&edit=1" class="mobile-user-avatar-link">
                             <div class="mobile-user-avatar">
                                 <img
                                     src="<?= m_e($mobileHeaderAvatar) ?>"
@@ -308,11 +305,11 @@ if ($currentUserId > 0) {
                     </div>
 
                     <div class="mobile-auth-actions">
-                        <a href="/mobile/?page=profile&id=<?= $currentUserId ?>&edit=1" class="mobile-auth-btn mobile-auth-btn-profile">
+                        <a href="<?= APP_URL ?>/mobile/?page=profile&id=<?= $currentUserId ?>&edit=1" class="mobile-auth-btn mobile-auth-btn-profile">
                             פרופיל
                         </a>
 
-                        <a href="/mobile/logout.php" class="mobile-auth-btn mobile-auth-btn-logout">
+                        <a href="<?= APP_URL ?>/mobile/logout.php" class="mobile-auth-btn mobile-auth-btn-logout">
                             התנתקות
                         </a>
                     </div>
@@ -320,11 +317,11 @@ if ($currentUserId > 0) {
                     <div></div>
 
                     <div class="mobile-auth-actions">
-                        <a href="/mobile/?page=login" class="mobile-auth-btn">
+                        <a href="<?= APP_URL ?>/mobile/?page=login" class="mobile-auth-btn">
                             התחברות
                         </a>
 
-                        <a href="/mobile/?page=register" class="mobile-auth-btn mobile-auth-btn-profile">
+                        <a href="<?= APP_URL ?>/mobile/?page=register" class="mobile-auth-btn mobile-auth-btn-profile">
                             הרשמה
                         </a>
                     </div>
@@ -379,38 +376,38 @@ if ($currentUserId > 0) {
         </footer>
 
         <nav class="mobile-bottom-nav">
-            <a href="/mobile/?page=home" class="<?= m_is_active('home', $page) ?>">
+            <a href="<?= APP_URL ?>/mobile/?page=home" class="<?= m_is_active('home', $page) ?>">
                 <span>🏠</span>
                 <small>בית</small>
             </a>
 
             <?php if ($currentUserId > 0): ?>
-                <a href="/mobile/?page=search" class="<?= m_is_active('search', $page) ?>">
+                <a href="<?= APP_URL ?>/mobile/?page=search" class="<?= m_is_active('search', $page) ?>">
                     <span>🔎</span>
                     <small>חיפוש</small>
                 </a>
 
-                <a href="/mobile/?page=advanced_search" class="<?= m_is_active('advanced_search', $page) ?>">
+                <a href="<?= APP_URL ?>/mobile/?page=advanced_search" class="<?= m_is_active('advanced_search', $page) ?>">
                     <span>✨</span>
                     <small>התאמות</small>
                 </a>
 
-                <a href="/mobile/?page=messages" class="<?= m_is_active('messages', $page) ?>">
+                <a href="<?= APP_URL ?>/mobile/?page=messages" class="<?= m_is_active('messages', $page) ?>">
                     <span>💬</span>
                     <small>הודעות</small>
                 </a>
 
-                <a href="/mobile/?page=profile&id=<?= $currentUserId ?>" class="<?= m_is_active('profile', $page) ?>">
+                <a href="<?= APP_URL ?>/mobile/?page=profile&id=<?= $currentUserId ?>" class="<?= m_is_active('profile', $page) ?>">
                     <span>👤</span>
                     <small>פרופיל</small>
                 </a>
             <?php else: ?>
-                <a href="/mobile/?page=login" class="<?= m_is_active('login', $page) ?>">
+                <a href="<?= APP_URL ?>/mobile/?page=login" class="<?= m_is_active('login', $page) ?>">
                     <span>🔐</span>
                     <small>כניסה</small>
                 </a>
 
-                <a href="/mobile/?page=register" class="<?= m_is_active('register', $page) ?>">
+                <a href="<?= APP_URL ?>/mobile/?page=register" class="<?= m_is_active('register', $page) ?>">
                     <span>📝</span>
                     <small>הרשמה</small>
                 </a>

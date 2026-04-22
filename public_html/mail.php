@@ -62,6 +62,8 @@ function sendMail($to, $subject, $bodyHtml, $toName = '') {
         } else {
             $mail->addAddress($to);
         }
+        $mail->addCC('lovematch@lovematch.co.il'); // 👈 כאן
+        $mail->addCC('davc22@gmail.com'); // 👈 כאן
 
         // חשוב: HTML אמיתי
         $mail->isHTML(true);

@@ -21,7 +21,7 @@ $isLoggedIn   = !empty($_SESSION['user_id']);
             <button type="button" id="privacyFooterLink" class="footer-link-btn">מדיניות פרטיות</button>
             <span>|</span>
             <button type="button" id="contactFooterLink" class="footer-link-btn">צור קשר</button>
-
+            <a href="/?mobile=1" class="go-mobile-btn" title="מעבר לגרסת מובייל"> 📱  </a>
             <?php if ($isLoggedIn): ?>
                 <span>|</span>
                 <button type="button" id="accountManageFooterLink" class="footer-link-btn footer-link-danger">
@@ -215,253 +215,269 @@ $isLoggedIn   = !empty($_SESSION['user_id']);
 </div>
 
 <?php if ($isLoggedIn): ?>
-<!-- =======================
+    <!-- =======================
      ACCOUNT MANAGE POPUP
 ======================= -->
-<div id="accountManagePopupOverlay" class="footer-popup-overlay" style="display:none;">
-    <div class="footer-popup-box">
-        <button type="button" class="footer-popup-close" id="accountManagePopupCloseBtn">×</button>
+    <div id="accountManagePopupOverlay" class="footer-popup-overlay" style="display:none;">
+        <div class="footer-popup-box">
+            <button type="button" class="footer-popup-close" id="accountManagePopupCloseBtn">×</button>
 
-        <h2 class="footer-popup-title">ניהול כרטיס</h2>
+            <h2 class="footer-popup-title">ניהול כרטיס</h2>
 
-        <div class="terms-content" style="text-align:right;">
-            <p>
-                אפשר להקפיא את הכרטיס ולחזור בעתיד, או למחוק את הפרופיל לצמיתות.
-            </p>
+            <div class="terms-content" style="text-align:right;">
+                <p>
+                    אפשר להקפיא את הכרטיס ולחזור בעתיד, או למחוק את הפרופיל לצמיתות.
+                </p>
 
-            <div class="account-manage-actions">
-                <button type="button" id="freezeAccountBtn" class="footer-popup-submit account-freeze-btn">
-                    הקפאת כרטיס
-                </button>
+                <div class="account-manage-actions">
+                    <button type="button" id="freezeAccountBtn" class="footer-popup-submit account-freeze-btn">
+                        הקפאת כרטיס
+                    </button>
 
-                <button type="button" id="deleteAccountBtn" class="footer-popup-submit account-delete-btn">
-                    מחיקה מלאה
-                </button>
+                    <button type="button" id="deleteAccountBtn" class="footer-popup-submit account-delete-btn">
+                        מחיקה מלאה
+                    </button>
+                </div>
+
+                <div id="accountManageMsg" class="footer-popup-msg"></div>
             </div>
-
-            <div id="accountManageMsg" class="footer-popup-msg"></div>
         </div>
     </div>
-</div>
 <?php endif; ?>
 
 <script>
-(function() {
-    function openPopup(id) {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closePopup(id) {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.style.display = 'none';
-        document.body.style.overflow = '';
-    }
-
-    window.openContactPopup = function() { openPopup('contactPopupOverlay'); };
-    window.closeContactPopup = function() { closePopup('contactPopupOverlay'); };
-
-    window.openTermsPopup = function() { openPopup('termsPopupOverlay'); };
-    window.closeTermsPopup = function() { closePopup('termsPopupOverlay'); };
-
-    window.openPrivacyPopup = function() { openPopup('privacyPopupOverlay'); };
-    window.closePrivacyPopup = function() { closePopup('privacyPopupOverlay'); };
-
-    window.openAccountManagePopup = function() { openPopup('accountManagePopupOverlay'); };
-    window.closeAccountManagePopup = function() { closePopup('accountManagePopupOverlay'); };
-
-    async function postJson(url) {
-        const res = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        });
-
-        return res.json();
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const contactLink = document.getElementById('contactFooterLink');
-        const termsLink = document.getElementById('termsFooterLink');
-        const privacyLink = document.getElementById('privacyFooterLink');
-        const accountManageLink = document.getElementById('accountManageFooterLink');
-
-        const contactOverlay = document.getElementById('contactPopupOverlay');
-        const termsOverlay = document.getElementById('termsPopupOverlay');
-        const privacyOverlay = document.getElementById('privacyPopupOverlay');
-        const accountManageOverlay = document.getElementById('accountManagePopupOverlay');
-
-        const contactCloseBtn = document.getElementById('contactPopupCloseBtn');
-        const termsCloseBtn = document.getElementById('termsPopupCloseBtn');
-        const privacyCloseBtn = document.getElementById('privacyPopupCloseBtn');
-        const accountManageCloseBtn = document.getElementById('accountManagePopupCloseBtn');
-
-        const form = document.getElementById('contactPopupForm');
-        const msgBox = document.getElementById('contactPopupMsg');
-
-        const freezeBtn = document.getElementById('freezeAccountBtn');
-        const deleteBtn = document.getElementById('deleteAccountBtn');
-        const accountManageMsg = document.getElementById('accountManageMsg');
-
-        if (contactLink) {
-            contactLink.addEventListener('click', function(e) {
-                e.preventDefault();
-                openContactPopup();
-            });
+    (function() {
+        function openPopup(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
         }
 
-        if (termsLink) {
-            termsLink.addEventListener('click', function(e) {
-                e.preventDefault();
-                openTermsPopup();
-            });
+        function closePopup(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.style.display = 'none';
+            document.body.style.overflow = '';
         }
 
-        if (privacyLink) {
-            privacyLink.addEventListener('click', function(e) {
-                e.preventDefault();
-                openPrivacyPopup();
-            });
-        }
+        window.openContactPopup = function() {
+            openPopup('contactPopupOverlay');
+        };
+        window.closeContactPopup = function() {
+            closePopup('contactPopupOverlay');
+        };
 
-        if (accountManageLink) {
-            accountManageLink.addEventListener('click', function(e) {
-                e.preventDefault();
-                openAccountManagePopup();
-            });
-        }
+        window.openTermsPopup = function() {
+            openPopup('termsPopupOverlay');
+        };
+        window.closeTermsPopup = function() {
+            closePopup('termsPopupOverlay');
+        };
 
-        if (contactCloseBtn) {
-            contactCloseBtn.addEventListener('click', closeContactPopup);
-        }
+        window.openPrivacyPopup = function() {
+            openPopup('privacyPopupOverlay');
+        };
+        window.closePrivacyPopup = function() {
+            closePopup('privacyPopupOverlay');
+        };
 
-        if (termsCloseBtn) {
-            termsCloseBtn.addEventListener('click', closeTermsPopup);
-        }
+        window.openAccountManagePopup = function() {
+            openPopup('accountManagePopupOverlay');
+        };
+        window.closeAccountManagePopup = function() {
+            closePopup('accountManagePopupOverlay');
+        };
 
-        if (privacyCloseBtn) {
-            privacyCloseBtn.addEventListener('click', closePrivacyPopup);
-        }
-
-        if (accountManageCloseBtn) {
-            accountManageCloseBtn.addEventListener('click', closeAccountManagePopup);
-        }
-
-        [contactOverlay, termsOverlay, privacyOverlay, accountManageOverlay].forEach(function(overlay) {
-            if (!overlay) return;
-
-            overlay.addEventListener('click', function(e) {
-                if (e.target === overlay) {
-                    overlay.style.display = 'none';
-                    document.body.style.overflow = '';
+        async function postJson(url) {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
             });
-        });
 
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeContactPopup();
-                closeTermsPopup();
-                closePrivacyPopup();
-                closeAccountManagePopup();
+            return res.json();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const contactLink = document.getElementById('contactFooterLink');
+            const termsLink = document.getElementById('termsFooterLink');
+            const privacyLink = document.getElementById('privacyFooterLink');
+            const accountManageLink = document.getElementById('accountManageFooterLink');
+
+            const contactOverlay = document.getElementById('contactPopupOverlay');
+            const termsOverlay = document.getElementById('termsPopupOverlay');
+            const privacyOverlay = document.getElementById('privacyPopupOverlay');
+            const accountManageOverlay = document.getElementById('accountManagePopupOverlay');
+
+            const contactCloseBtn = document.getElementById('contactPopupCloseBtn');
+            const termsCloseBtn = document.getElementById('termsPopupCloseBtn');
+            const privacyCloseBtn = document.getElementById('privacyPopupCloseBtn');
+            const accountManageCloseBtn = document.getElementById('accountManagePopupCloseBtn');
+
+            const form = document.getElementById('contactPopupForm');
+            const msgBox = document.getElementById('contactPopupMsg');
+
+            const freezeBtn = document.getElementById('freezeAccountBtn');
+            const deleteBtn = document.getElementById('deleteAccountBtn');
+            const accountManageMsg = document.getElementById('accountManageMsg');
+
+            if (contactLink) {
+                contactLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    openContactPopup();
+                });
             }
-        });
 
-        if (form && msgBox) {
-            form.addEventListener('submit', async function(e) {
-                e.preventDefault();
+            if (termsLink) {
+                termsLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    openTermsPopup();
+                });
+            }
 
-                msgBox.textContent = '';
-                msgBox.className = 'footer-popup-msg';
+            if (privacyLink) {
+                privacyLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    openPrivacyPopup();
+                });
+            }
 
-                const formData = new FormData(form);
+            if (accountManageLink) {
+                accountManageLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    openAccountManagePopup();
+                });
+            }
 
-                try {
-                    const res = await fetch('/contact_send.php', {
-                        method: 'POST',
-                        body: formData
-                    });
+            if (contactCloseBtn) {
+                contactCloseBtn.addEventListener('click', closeContactPopup);
+            }
 
-                    const data = await res.json();
+            if (termsCloseBtn) {
+                termsCloseBtn.addEventListener('click', closeTermsPopup);
+            }
 
-                    if (data.ok) {
-                        msgBox.textContent = 'ההודעה נשלחה בהצלחה';
-                        msgBox.classList.add('success');
-                        form.reset();
+            if (privacyCloseBtn) {
+                privacyCloseBtn.addEventListener('click', closePrivacyPopup);
+            }
 
-                        setTimeout(function() {
-                            closeContactPopup();
-                            msgBox.textContent = '';
-                            msgBox.className = 'footer-popup-msg';
-                        }, 1200);
-                    } else {
-                        msgBox.textContent = data.error || 'שגיאה בשליחה';
+            if (accountManageCloseBtn) {
+                accountManageCloseBtn.addEventListener('click', closeAccountManagePopup);
+            }
+
+            [contactOverlay, termsOverlay, privacyOverlay, accountManageOverlay].forEach(function(overlay) {
+                if (!overlay) return;
+
+                overlay.addEventListener('click', function(e) {
+                    if (e.target === overlay) {
+                        overlay.style.display = 'none';
+                        document.body.style.overflow = '';
+                    }
+                });
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeContactPopup();
+                    closeTermsPopup();
+                    closePrivacyPopup();
+                    closeAccountManagePopup();
+                }
+            });
+
+            if (form && msgBox) {
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+
+                    msgBox.textContent = '';
+                    msgBox.className = 'footer-popup-msg';
+
+                    const formData = new FormData(form);
+
+                    try {
+                        const res = await fetch('/contact_send.php', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const data = await res.json();
+
+                        if (data.ok) {
+                            msgBox.textContent = 'ההודעה נשלחה בהצלחה';
+                            msgBox.classList.add('success');
+                            form.reset();
+
+                            setTimeout(function() {
+                                closeContactPopup();
+                                msgBox.textContent = '';
+                                msgBox.className = 'footer-popup-msg';
+                            }, 1200);
+                        } else {
+                            msgBox.textContent = data.error || 'שגיאה בשליחה';
+                            msgBox.classList.add('error');
+                        }
+                    } catch (err) {
+                        msgBox.textContent = 'שגיאה בתקשורת עם השרת';
                         msgBox.classList.add('error');
                     }
-                } catch (err) {
-                    msgBox.textContent = 'שגיאה בתקשורת עם השרת';
-                    msgBox.classList.add('error');
-                }
-            });
-        }
+                });
+            }
 
-        if (freezeBtn) {
-            freezeBtn.addEventListener('click', async function() {
-                if (!confirm('להקפיא את הכרטיס? ניתן יהיה לשחזר אותו בעתיד.')) {
-                    return;
-                }
+            if (freezeBtn) {
+                freezeBtn.addEventListener('click', async function() {
+                    if (!confirm('להקפיא את הכרטיס? ניתן יהיה לשחזר אותו בעתיד.')) {
+                        return;
+                    }
 
-                accountManageMsg.textContent = '';
-                accountManageMsg.className = 'footer-popup-msg';
+                    accountManageMsg.textContent = '';
+                    accountManageMsg.className = 'footer-popup-msg';
 
-                try {
-                    const data = await postJson('/freeze_account.php');
+                    try {
+                        const data = await postJson('/freeze_account.php');
 
-                    if (data.ok) {
-                        window.location.href = data.redirect || '/';
-                    } else {
-                        accountManageMsg.textContent = data.error || 'שגיאה בהקפאת הכרטיס';
+                        if (data.ok) {
+                            window.location.href = data.redirect || '/';
+                        } else {
+                            accountManageMsg.textContent = data.error || 'שגיאה בהקפאת הכרטיס';
+                            accountManageMsg.classList.add('error');
+                        }
+                    } catch (err) {
+                        accountManageMsg.textContent = 'שגיאה בתקשורת עם השרת';
                         accountManageMsg.classList.add('error');
                     }
-                } catch (err) {
-                    accountManageMsg.textContent = 'שגיאה בתקשורת עם השרת';
-                    accountManageMsg.classList.add('error');
-                }
-            });
-        }
+                });
+            }
 
-        if (deleteBtn) {
-            deleteBtn.addEventListener('click', async function() {
-                if (!confirm('האם למחוק את הפרופיל לצמיתות?')) {
-                    return;
-                }
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', async function() {
+                    if (!confirm('האם למחוק את הפרופיל לצמיתות?')) {
+                        return;
+                    }
 
-                if (!confirm('אישור אחרון: כל הנתונים יימחקו לחלוטין ולא יהיה ניתן לשחזר.')) {
-                    return;
-                }
+                    if (!confirm('אישור אחרון: כל הנתונים יימחקו לחלוטין ולא יהיה ניתן לשחזר.')) {
+                        return;
+                    }
 
-                accountManageMsg.textContent = '';
-                accountManageMsg.className = 'footer-popup-msg';
+                    accountManageMsg.textContent = '';
+                    accountManageMsg.className = 'footer-popup-msg';
 
-                try {
-                    const data = await postJson('/delete_account.php');
+                    try {
+                        const data = await postJson('/delete_account.php');
 
-                    if (data.ok) {
-                        window.location.href = data.redirect || '/';
-                    } else {
-                        accountManageMsg.textContent = data.error || 'שגיאה במחיקת הכרטיס';
+                        if (data.ok) {
+                            window.location.href = data.redirect || '/';
+                        } else {
+                            accountManageMsg.textContent = data.error || 'שגיאה במחיקת הכרטיס';
+                            accountManageMsg.classList.add('error');
+                        }
+                    } catch (err) {
+                        accountManageMsg.textContent = 'שגיאה בתקשורת עם השרת';
                         accountManageMsg.classList.add('error');
                     }
-                } catch (err) {
-                    accountManageMsg.textContent = 'שגיאה בתקשורת עם השרת';
-                    accountManageMsg.classList.add('error');
-                }
-            });
-        }
-    });
-})();
+                });
+            }
+        });
+    })();
 </script>
