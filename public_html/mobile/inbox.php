@@ -52,7 +52,7 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
                     <input type="checkbox" id="inboxEnterToggle">
                     <span>שלח עם Enter</span>
                 </label>
-                <div class="inbox-enter-hint">כשלא מסומן, Enter לא ישלח</div>
+                <div class="inbox-enter-hint"שלח עם Enter</div>
             </div>
         </div>
 

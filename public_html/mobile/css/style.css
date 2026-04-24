@@ -1170,3 +1170,53 @@ select {
 .adv-actions {
     padding-bottom: 90px;
 }
+
+/* ===== MOBILE SIDEBAR ===== */
+@media (max-width: 768px) {
+
+    .hamburger-btn {
+        font-size: 22px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        margin-right: 10px;
+    }
+
+    .mobile-sidebar {
+        position: fixed;
+        top: 0;
+        right: -260px;
+        width: 260px;
+        height: 100%;
+        background: #fff;
+        box-shadow: -4px 0 15px rgba(0, 0, 0, 0.2);
+        z-index: 9999;
+        padding-top: 60px;
+        transition: right 0.3s;
+    }
+
+    .mobile-sidebar.open {
+        right: 0;
+    }
+
+    .mobile-sidebar a {
+        display: block;
+        padding: 14px;
+        border-bottom: 1px solid #eee;
+        text-decoration: none;
+        color: #222;
+        font-size: 15px;
+    }
+
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 9998;
+    }
+
+    .sidebar-overlay.show {
+        display: block;
+    }
+}

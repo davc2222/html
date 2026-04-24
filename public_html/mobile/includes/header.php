@@ -1,6 +1,6 @@
 <?php
-// ===== FILE: includes/header.php =====
-
+        // ===== FILE: includes/header.php =====
+       
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -120,7 +120,23 @@ $menu = [
         <?php endforeach; ?>
     </nav>
 
+    <!-- ☰ -->
+    <button class="hamburger-btn" onclick="toggleSidebar()">☰</button>
+
+    <!-- SIDEBAR -->
+    <div id="mobileSidebar" class="mobile-sidebar">
+        <a href="/mobile/?page=blocked">חסומים</a>
+        <a href="/mobile/?page=contact">קונטקט</a>
+        <a href="/mobile/?page=terms">תנאי שימוש</a>
+        <a href="/mobile/?page=privacy">פרטיות</a>
+        <a href="/mobile/?page=settings">הגדרות</a>
+    </div>
+
+    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- AUTH -->
     <div class="auth">
+
         <?php if ($sessionUserId > 0): ?>
 
             <span class="welcome-user">
@@ -142,10 +158,10 @@ $menu = [
             <a href="?page=register" class="auth-btn">הרשמה</a>
 
         <?php endif; ?>
+
     </div>
 
 </header>
-
 <script>
     /* ===== TITLE BLINK FALLBACK =====
        אם index.php כבר הגדיר את startTitleBlink/stopTitleBlink - זה לא ידרוס.
@@ -279,3 +295,118 @@ $menu = [
         setInterval(updatePresence, 60000);
     })();
 </script>
+
+<style>
+    .top-menu-wrapper {
+        position: relative;
+        margin-right: 10px;
+    }
+
+    .top-menu-btn {
+        width: 36px;
+        height: 36px;
+        border: none;
+        background: transparent;
+        font-size: 22px;
+        cursor: pointer;
+    }
+
+    .top-menu-dropdown {
+        display: none;
+        position: absolute;
+        top: 40px;
+        right: 0;
+        width: 160px;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+        z-index: 9999;
+    }
+
+    .top-menu-dropdown a {
+        display: block;
+        padding: 10px 12px;
+        font-size: 14px;
+        color: #222;
+        text-decoration: none;
+        border-bottom: 1px solid #eee;
+    }
+
+    .top-menu-dropdown a:last-child {
+        border-bottom: none;
+    }
+
+    .top-menu-dropdown.show {
+        display: block;
+    }
+</style>
+
+<script>
+    function toggleTopMenu() {
+        document.getElementById('topMenuDropdown')?.classList.toggle('show');
+    }
+
+    document.addEventListener('click', function(e) {
+        const menu = document.querySelector('.top-menu-wrapper');
+        if (menu && !menu.contains(e.target)) {
+            document.getElementById('topMenuDropdown')?.classList.remove('show');
+        }
+    });
+</script>
+
+<script>
+    function toggleSidebar() {
+        document.getElementById('mobileSidebar')?.classList.toggle('open');
+        document.getElementById('sidebarOverlay')?.classList.toggle('show');
+    }
+</script>
+<style>
+    /* ===== SIDEBAR ===== */
+    @media (max-width: 768px) {
+
+        .hamburger-btn {
+            font-size: 22px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .mobile-sidebar {
+            position: fixed;
+            top: 0;
+            right: -260px;
+            width: 260px;
+            height: 100%;
+            background: #fff;
+            z-index: 99999;
+            transition: right 0.3s;
+            padding-top: 60px;
+        }
+
+        .mobile-sidebar.open {
+            right: 0;
+        }
+
+        .mobile-sidebar a {
+            display: block;
+            padding: 14px;
+            border-bottom: 1px solid #eee;
+            text-decoration: none;
+            color: #222;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 99998;
+        }
+
+        .sidebar-overlay.show {
+            display: block;
+        }
+    }
+</style>
