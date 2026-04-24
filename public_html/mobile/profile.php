@@ -791,28 +791,28 @@ try {
                 const newValue = textarea.value.trim();
 
                 fetch('/save_profile_field.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: 'id=' + encodeURIComponent(PROFILE_ID) +
-                        '&field=' + encodeURIComponent(field) +
-                        '&value=' + encodeURIComponent(newValue)
-                })
-                .then(function() {
-                    view.dataset.editing = '0';
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: 'id=' + encodeURIComponent(PROFILE_ID) +
+                            '&field=' + encodeURIComponent(field) +
+                            '&value=' + encodeURIComponent(newValue)
+                    })
+                    .then(function() {
+                        view.dataset.editing = '0';
 
-                    if (newValue === '') {
-                        view.classList.add('is-empty');
-                        view.innerHTML = 'לא מולא';
-                    } else {
-                        view.classList.remove('is-empty');
-                        view.innerHTML = escapeHtml(newValue).replace(/\n/g, '<br>');
-                    }
-                })
-                .catch(function() {
-                    alert('שגיאה בשמירה');
-                });
+                        if (newValue === '') {
+                            view.classList.add('is-empty');
+                            view.innerHTML = 'לא מולא';
+                        } else {
+                            view.classList.remove('is-empty');
+                            view.innerHTML = escapeHtml(newValue).replace(/\n/g, '<br>');
+                        }
+                    })
+                    .catch(function() {
+                        alert('שגיאה בשמירה');
+                    });
                 return;
             }
 
@@ -897,18 +897,8 @@ try {
                 const userId = Number(chatBtn.getAttribute('data-user-id'));
                 if (!userId) return;
 
-                const nameEl = document.querySelector('.profile-main-title');
-                const imgEl = document.querySelector('.profile-main-image');
-
-                const userName = nameEl ? nameEl.textContent.trim() : 'משתמש';
-                const userImage = imgEl ? imgEl.getAttribute('src') : '/images/no_photo.jpg';
-
-                if (typeof openMessageModal !== 'function') {
-                    window.location.href = '/mobile/?page=messages&id=' + userId;
-                    return;
-                }
-
-                openMessageModal(userId, userName, userImage);
+                // מובייל: פתיחת מסך צ'אט ישיר מול המשתמש
+                window.location.href = '/mobile/?page=messages&user_id=' + encodeURIComponent(userId);
                 return;
             }
 
@@ -985,38 +975,38 @@ try {
         formData.append('user_id', currentBlockedUserId);
 
         fetch('/block_user.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(function(r) {
-            return r.text();
-        })
-        .then(function(text) {
-            let data = null;
+                method: 'POST',
+                body: formData
+            })
+            .then(function(r) {
+                return r.text();
+            })
+            .then(function(text) {
+                let data = null;
 
-            try {
-                data = JSON.parse(text);
-            } catch (e) {
-                console.error('Invalid JSON from block_user.php:', text);
+                try {
+                    data = JSON.parse(text);
+                } catch (e) {
+                    console.error('Invalid JSON from block_user.php:', text);
+                    closeBlockModal();
+                    alert('תגובה לא תקינה מהשרת');
+                    return;
+                }
+
                 closeBlockModal();
-                alert('תגובה לא תקינה מהשרת');
-                return;
-            }
 
-            closeBlockModal();
+                if (!data.ok) {
+                    alert(data.error || 'שגיאה בחסימה');
+                    return;
+                }
 
-            if (!data.ok) {
-                alert(data.error || 'שגיאה בחסימה');
-                return;
-            }
-
-            window.location.href = '/mobile/?page=search';
-        })
-        .catch(function(err) {
-            console.error(err);
-            closeBlockModal();
-            alert('שגיאת רשת');
-        });
+                window.location.href = '/mobile/?page=search';
+            })
+            .catch(function(err) {
+                console.error(err);
+                closeBlockModal();
+                alert('שגיאת רשת');
+            });
     }
 
     document.addEventListener('click', function(e) {

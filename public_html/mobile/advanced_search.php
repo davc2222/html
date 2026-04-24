@@ -339,6 +339,7 @@ try {
         font-weight: 600;
     }
 
+
     .advanced-search-panel {
         display: none;
         position: fixed;
@@ -521,6 +522,61 @@ try {
         border-radius: 12px;
         border: 1px solid #ececec;
     }
+
+    .select-wrap {
+        position: relative;
+    }
+
+    .select-wrap select {
+        width: 100%;
+        height: 42px;
+        padding: 0 12px;
+        padding-left: 30px;
+        /* מקום לחץ */
+        border-radius: 12px;
+        border: 1px solid #d1d5db;
+        background: #fff;
+
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+    }
+
+    /* החץ */
+    .select-wrap::after {
+        content: "▼";
+        position: absolute;
+        left: 10px;
+        /* RTL → שמאל */
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 11px;
+        color: #666;
+        pointer-events: none;
+    }
+
+    .advanced-search-section {
+        padding: 10px 12px;
+        /* היה גדול יותר */
+        margin-bottom: 10px;
+        /* פחות רווח בין בלוקים */
+    }
+
+    .advanced-search-section h3 {
+        font-size: 14px;
+        margin-bottom: 6px;
+    }
+
+    .advanced-search-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px 10px;
+        /* קטן יותר */
+    }
+
+    .advanced-search-section .form-group {
+        margin-bottom: 6px;
+    }
 </style>
 
 <main class="page-shell">
@@ -567,15 +623,13 @@ try {
                             </div>
                         </div>
 
-                        <div class="advanced-search-section">
-                            <h3 class="advanced-search-section-title">ילדים</h3>
-                            <select class="adv-select" name="children">
-                                <option value="" <?= $prefs['children'] === '' ? 'selected' : '' ?>>לא משנה</option>
-                                <option value="yes" <?= $prefs['children'] === 'yes' ? 'selected' : '' ?>>יש</option>
-                                <option value="no" <?= $prefs['children'] === 'no' ? 'selected' : '' ?>>אין</option>
+                        <div class="select-wrap">
+                            <select name="children">
+                                <option value="">בחר</option>
+                                <option>אין</option>
+                                <option>יש</option>
                             </select>
                         </div>
-
                         <div class="advanced-search-section">
                             <h3 class="advanced-search-section-title">אזור</h3>
                             <div class="adv-check-grid">

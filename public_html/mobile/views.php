@@ -1,15 +1,15 @@
 <?php
-// ===== FILE: views.php =====
+// ===== FILE: mobile/views.php =====
 
-require_once __DIR__ . '/config/config.php';
-require_once __DIR__ . '/includes/profile_helpers.php';
+require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../includes/profile_helpers.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
 if (empty($_SESSION['user_id'])) {
-    header('Location: ?page=login');
+    header('Location: /mobile/?page=login');
     exit;
 }
 
@@ -28,13 +28,6 @@ if (!empty($_SESSION['user_id'])) {
 }
 
 $session_user_id = (int)$_SESSION['user_id'];
-
-/* סימון צפיות כנקראו רק בכניסה לדף צפיות */
-$pdo->prepare("
-    UPDATE views
-    SET `New` = 0
-    WHERE Id = :id AND `New` = 1
-")->execute([':id' => $session_user_id]);
 
 $stmt = $pdo->prepare("
     SELECT
@@ -81,81 +74,156 @@ $stmt = $pdo->prepare("
 
 $stmt->execute([':id' => $session_user_id]);
 $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+/* רק אחרי השליפה - סימון צפיות כנקראו */
+$pdo->prepare("
+    UPDATE views
+    SET `New` = 0
+    WHERE Id = :id AND `New` = 1
+")->execute([':id' => $session_user_id]);
 ?>
+<style>
+    .mobile-views-page {
+        padding: 14px;
+        padding-bottom: 90px;
+    }
 
-<main class="page-shell">
-    <div class="views-layout">
+    .mobile-views-title {
+        margin: 0 0 14px;
+        font-size: 24px;
+        font-weight: 800;
+        color: #222;
+        text-align: right;
+    }
 
-        <aside class="views-sidebar">
-            <h2 class="views-sidebar-title">צפיות</h2>
+    .mobile-views-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
 
-            <a href="/?page=views" class="views-sidebar-link is-active">
-                <span class="views-sidebar-icon">↩👤</span>
-                <span>צפו בפרופיל שלי</span>
-            </a>
+    .view-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 16px;
+        padding: 12px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+    }
 
-            <a href="/?page=viewed_by_me" class="views-sidebar-link">
-                <span class="views-sidebar-icon">↪👤</span>
-                <span>פרופילים שצפיתי</span>
-            </a>
+    .view-card-link {
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+    }
 
-            <a href="/?page=blocked_users" class="views-sidebar-link">
-                <span class="views-sidebar-icon">⊘</span>
-                <span>פרופילים שחסמתי</span>
-            </a>
-        </aside>
+    .view-card-img-wrap {
+        position: relative;
+        flex: 0 0 auto;
+    }
 
-        <section class="search-container views-main-content">
+    .view-card-img {
+        width: 74px;
+        height: 74px;
+        object-fit: cover;
+        border-radius: 14px;
+        display: block;
+        background: #f5f5f5;
+    }
 
-            <h2 class="views-page-title">צפיות</h2>
+    .view-card-info {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 6px;
+    }
 
-            <?php if (!$results): ?>
-                <div class="no-results">אין צפיות עדיין</div>
-            <?php else: ?>
+    .view-card-name {
+        font-size: 17px;
+        font-weight: 700;
+        color: #222;
+        line-height: 1.3;
+        word-break: break-word;
+    }
 
-                <div class="results">
+    .view-card-date {
+        font-size: 13px;
+        color: #777;
+    }
 
-                    <?php foreach ($results as $row): ?>
-                        <?php
-                        $user = $row;
+    .no-results {
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 16px;
+        padding: 18px;
+        text-align: center;
+        color: #666;
+    }
+</style>
 
-                        $user['Age'] = '';
-                        if (!empty($user['DOB'])) {
-                            try {
-                                $user['Age'] = date_diff(date_create((string)$user['DOB']), date_create('today'))->y;
-                            } catch (Throwable $e) {
-                                $user['Age'] = '';
-                            }
-                        }
+<main class="mobile-views-page">
+    <h2 class="mobile-views-title">צפיות</h2>
 
-                        $newViews = (int)($row['new_views_count'] ?? 0);
+    <?php if (!$results): ?>
+        <div class="no-results">אין צפיות עדיין</div>
+    <?php else: ?>
 
-                        $cardId = '';
-                        $cardTopBadge = $newViews > 0 ? '👁 ' . $newViews . ' חדשות' : '';
-                        $cardSubline = '';
-                        $cardShowOnline = true;
+        <div class="mobile-views-list">
 
-                        $cardIconsHtml = '
-                        <div style="display:flex;justify-content:center;gap:10px;width:100%;">
-                            <span title="צפייה נכנסת">↙️ 👁️</span>
-                            <span title="צפייה יוצאת">↗️ 👁️</span>
-                            <span title="הודעה נכנסת">↙️ 💬</span>
-                            <span title="הודעה יוצאת">↗️ 💬</span>
-                        </div>';
+            <?php foreach ($results as $user): ?>
+                <?php
+                $age = '';
+                if (!empty($user['DOB'])) {
+                    try {
+                        $age = date_diff(date_create((string)$user['DOB']), date_create('today'))->y;
+                    } catch (Throwable $e) {
+                        $age = '';
+                    }
+                }
 
-                        $cardActionsHtml = '<a href="/?page=profile&id=' . (int)$user['Id'] . '" class="view-card-profile-link">צפייה בפרופיל</a>';
+                $img = getMainProfileImage($pdo, (int)$user['Id']);
 
-                        $user['Image'] = getMainProfileImage($pdo, (int)$user['Id']);
-                        $user['is_online'] = is_user_online($pdo, (int)$user['Id']);
+                $lastViewText = '';
+                if (!empty($user['last_view_date'])) {
+                    try {
+                        $dt = new DateTime((string)$user['last_view_date']);
+                        $lastViewText = $dt->format('d/m/Y H:i');
+                    } catch (Throwable $e) {
+                        $lastViewText = '';
+                    }
+                }
+                ?>
 
-                        include __DIR__ . '/includes/view_card.php';
-                        ?>
-                    <?php endforeach; ?>
+                <div class="view-card">
+                    <a href="/mobile/?page=profile&id=<?= (int)$user['Id'] ?>" class="view-card-link">
+                        <div class="view-card-img-wrap">
+                            <img
+                                src="<?= htmlspecialchars($img, ENT_QUOTES, 'UTF-8') ?>"
+                                class="view-card-img"
+                                alt="<?= htmlspecialchars((string)($user['Name'] ?? ''), ENT_QUOTES, 'UTF-8') ?>">
+                        </div>
 
+                        <div class="view-card-info">
+                            <div class="view-card-name">
+                                <?= htmlspecialchars((string)($user['Name'] ?? ''), ENT_QUOTES, 'UTF-8') ?>
+                                <?= $age !== '' ? ', ' . (int)$age : '' ?>
+                            </div>
+
+                            <?php if ($lastViewText !== ''): ?>
+                                <div class="view-card-date">צפה/תה לאחרונה: <?= htmlspecialchars($lastViewText, ENT_QUOTES, 'UTF-8') ?></div>
+                            <?php endif; ?>
+                        </div>
+                    </a>
                 </div>
+            <?php endforeach; ?>
 
-            <?php endif; ?>
+        </div>
 
-        </section>
-    </div>
+    <?php endif; ?>
 </main>

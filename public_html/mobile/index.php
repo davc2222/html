@@ -13,16 +13,18 @@ $allowedPages = [
     'search',
     'advanced_search',
     'messages',
+    'inbox', // 🔥
     'login',
     'register',
-    'verify_notice'
+    'verify_notice',
+    'views'
 ];
 
 if (!in_array($page, $allowedPages, true)) {
     $page = 'home';
 }
 
-$protectedPages = ['profile', 'search', 'advanced_search', 'messages'];
+$protectedPages = ['profile', 'search', 'advanced_search', 'messages', 'inbox'];
 
 if (in_array($page, $protectedPages, true) && empty($_SESSION['user_id'])) {
     header('Location: /mobile/?page=login');
@@ -40,43 +42,17 @@ function m_e($value): string {
     return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
 }
 
-/* =========================
-   תמונת פרופיל להדר
-========================= */
 $mobileHeaderAvatar = '/images/default_male.svg';
 
 if ($currentUserId > 0) {
     try {
-        $stmt = $pdo->prepare("
-            SELECT Gender_Str
-            FROM users_profile
-            WHERE Id = :id
-            LIMIT 1
-        ");
-        $stmt->execute([':id' => $currentUserId]);
-
-        $genderStr = trim((string)$stmt->fetchColumn());
-
-        if ($genderStr === 'אישה') {
-            $mobileHeaderAvatar = '/images/default_female.svg';
-        }
-
-        $stmt = $pdo->prepare("
-            SELECT Pic_Name
-            FROM user_pics
-            WHERE Id = :id
-              AND Pic_Status = 1
-            ORDER BY Main_Pic DESC, Pic_Num ASC
-            LIMIT 1
-        ");
+        $stmt = $pdo->prepare("SELECT Pic_Name FROM user_pics WHERE Id=:id AND Pic_Status=1 ORDER BY Main_Pic DESC LIMIT 1");
         $stmt->execute([':id' => $currentUserId]);
         $pic = $stmt->fetchColumn();
-
         if ($pic) {
-            $mobileHeaderAvatar = '/uploads/' . ltrim((string)$pic, '/');
+            $mobileHeaderAvatar = '/uploads/' . ltrim($pic, '/');
         }
     } catch (Throwable $e) {
-        // נשאר fallback
     }
 }
 ?>
@@ -90,6 +66,36 @@ if ($currentUserId > 0) {
     <link rel="stylesheet" href="/mobile/css/style.css?v=<?= time() ?>">
 
     <style>
+        .eye-icon {
+            font-size: 30px;
+        }
+
+        .mobile-nav-icon-wrap {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            overflow: visible;
+        }
+
+        .mobile-nav-badge {
+            position: absolute;
+            top: -6px;
+            right: -10px;
+            min-width: 16px;
+            height: 16px;
+            padding: 0 4px;
+            border-radius: 999px;
+            background: #e11d48;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 16px;
+            text-align: center;
+            display: none;
+            z-index: 10;
+        }
+
         .mobile-site {
             min-height: 100vh;
             display: flex;
@@ -128,21 +134,6 @@ if ($currentUserId > 0) {
         .mobile-logo span:first-child {
             font-size: 18px;
             line-height: 1;
-        }
-
-        .mobile-switch-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 36px;
-            padding: 0 14px;
-            border-radius: 12px;
-            background: #ff4d6d;
-            color: #fff;
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 700;
-            white-space: nowrap;
         }
 
         .mobile-auth {
@@ -245,6 +236,10 @@ if ($currentUserId > 0) {
             padding: 14px 10px 84px;
         }
 
+        .mobile-bottom-nav a {
+            position: relative;
+        }
+
         @media (max-width: 520px) {
 
             .mobile-header-top,
@@ -257,8 +252,7 @@ if ($currentUserId > 0) {
                 font-size: 13px;
             }
 
-            .mobile-auth-btn,
-            .mobile-switch-btn {
+            .mobile-auth-btn {
                 min-height: 34px;
                 padding: 0 12px;
                 font-size: 12px;
@@ -278,15 +272,8 @@ if ($currentUserId > 0) {
         <header class="mobile-header">
             <div class="mobile-header-top">
                 <a href="/mobile/?page=home" class="mobile-logo">
-                    <span>❤</span>
-                    <span>LoveMatch</span>
+                    <span>❤</span><span>LoveMatch</span>
                 </a>
-
-                <?php if ($currentUserId > 0): ?>
-                    <a href="/mobile/?page=profile&id=<?= $currentUserId ?>&edit=1" class="mobile-switch-btn">
-                        הפרופיל שלי
-                    </a>
-                <?php endif; ?>
             </div>
 
             <div class="mobile-auth">
@@ -294,10 +281,7 @@ if ($currentUserId > 0) {
                     <div class="mobile-user-box">
                         <a href="/mobile/?page=profile&id=<?= $currentUserId ?>&edit=1" class="mobile-user-avatar-link">
                             <div class="mobile-user-avatar">
-                                <img
-                                    src="<?= m_e($mobileHeaderAvatar) ?>"
-                                    alt="תמונת פרופיל"
-                                    onerror="this.onerror=null;this.src='/images/default_male.svg';">
+                                <img src="<?= m_e($mobileHeaderAvatar) ?>">
                             </div>
                         </a>
 
@@ -308,25 +292,14 @@ if ($currentUserId > 0) {
                     </div>
 
                     <div class="mobile-auth-actions">
-                        <a href="/mobile/?page=profile&id=<?= $currentUserId ?>&edit=1" class="mobile-auth-btn mobile-auth-btn-profile">
-                            פרופיל
-                        </a>
-
-                        <a href="/mobile/logout.php" class="mobile-auth-btn mobile-auth-btn-logout">
-                            התנתקות
-                        </a>
+                        <a href="/mobile/logout.php" class="mobile-auth-btn mobile-auth-btn-logout">התנתקות</a>
                     </div>
                 <?php else: ?>
                     <div></div>
 
                     <div class="mobile-auth-actions">
-                        <a href="/mobile/?page=login" class="mobile-auth-btn">
-                            התחברות
-                        </a>
-
-                        <a href="/mobile/?page=register" class="mobile-auth-btn mobile-auth-btn-profile">
-                            הרשמה
-                        </a>
+                        <a href="/mobile/?page=login" class="mobile-auth-btn">התחברות</a>
+                        <a href="/mobile/?page=register" class="mobile-auth-btn mobile-auth-btn-profile">הרשמה</a>
                     </div>
                 <?php endif; ?>
             </div>
@@ -338,86 +311,123 @@ if ($currentUserId > 0) {
                 case 'home':
                     include __DIR__ . '/home.php';
                     break;
-
                 case 'profile':
                     include __DIR__ . '/profile.php';
                     break;
-
                 case 'search':
                     include __DIR__ . '/search.php';
                     break;
-
                 case 'advanced_search':
                     include __DIR__ . '/advanced_search.php';
                     break;
-
                 case 'messages':
                     include __DIR__ . '/messages.php';
                     break;
-
                 case 'login':
                     include __DIR__ . '/login.php';
                     break;
-
                 case 'register':
                     include __DIR__ . '/register.php';
                     break;
-
                 case 'verify_notice':
                     include __DIR__ . '/verify_notice.php';
+                    break;
+                case 'views':
+                    include __DIR__ . '/views.php';
+                    break;
+                case 'inbox':
+                    include __DIR__ . '/inbox.php';
                     break;
 
                 default:
                     include __DIR__ . '/home.php';
-                    break;
             }
+
             ?>
         </main>
 
-        <footer class="mobile-footer">
-            LoveMatch
-        </footer>
+        <footer class="mobile-footer">LoveMatch</footer>
 
         <nav class="mobile-bottom-nav">
             <a href="/mobile/?page=home" class="<?= m_is_active('home', $page) ?>">
-                <span>🏠</span>
-                <small>בית</small>
+                <span>🏠</span><small>בית</small>
             </a>
 
             <?php if ($currentUserId > 0): ?>
                 <a href="/mobile/?page=search" class="<?= m_is_active('search', $page) ?>">
-                    <span>🔎</span>
-                    <small>חיפוש</small>
+                    <span>🔎</span><small>חיפוש</small>
                 </a>
 
                 <a href="/mobile/?page=advanced_search" class="<?= m_is_active('advanced_search', $page) ?>">
-                    <span>✨</span>
-                    <small>התאמות</small>
+                    <span>✨</span><small>התאמות</small>
                 </a>
 
-                <a href="/mobile/?page=messages" class="<?= m_is_active('messages', $page) ?>">
-                    <span>💬</span>
+                <a href="/mobile/?page=inbox" class="<?= m_is_active('inbox', $page) ?>">
+                    <span class="mobile-nav-icon-wrap">
+                        <span>💬</span>
+                        <em id="messages-badge" class="mobile-nav-badge"></em>
+                    </span>
                     <small>הודעות</small>
                 </a>
 
-                <a href="/mobile/?page=profile&id=<?= $currentUserId ?>" class="<?= m_is_active('profile', $page) ?>">
-                    <span>👤</span>
-                    <small>פרופיל</small>
+                <a href="/mobile/?page=views" class="<?= m_is_active('views', $page) ?>">
+                    <span class="mobile-nav-icon-wrap">
+                        <span class="eye-icon">👁</span>
+                        <em id="views-badge" class="mobile-nav-badge"></em>
+                    </span>
+                    <small>צפיות</small>
                 </a>
             <?php else: ?>
-                <a href="/mobile/?page=login" class="<?= m_is_active('login', $page) ?>">
-                    <span>🔐</span>
-                    <small>כניסה</small>
-                </a>
-
-                <a href="/mobile/?page=register" class="<?= m_is_active('register', $page) ?>">
-                    <span>📝</span>
-                    <small>הרשמה</small>
-                </a>
+                <a href="/mobile/?page=login"><span>🔐</span><small>כניסה</small></a>
+                <a href="/mobile/?page=register"><span>📝</span><small>הרשמה</small></a>
             <?php endif; ?>
         </nav>
 
     </div>
+
+    <script>
+        function updateMobileBadges() {
+            fetch('/get_header_counts.php', {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    cache: 'no-store'
+                })
+                .then(r => r.json())
+                .then(d => {
+
+                    // 🔥 הודעות
+                    const msgBadge = document.getElementById('messages-badge');
+                    if (msgBadge) {
+                        if (Number(d.messages || 0) > 0) {
+                            msgBadge.textContent = Number(d.messages) > 99 ? '99+' : d.messages;
+                            msgBadge.style.display = 'inline-block';
+                        } else {
+                            msgBadge.style.display = 'none';
+                        }
+                    }
+
+                    // 🔥 צפיות
+                    const viewsBadge = document.getElementById('views-badge');
+                    if (viewsBadge) {
+                        if (Number(d.views || 0) > 0) {
+                            viewsBadge.textContent = Number(d.views) > 99 ? '99+' : d.views;
+                            viewsBadge.style.display = 'inline-block';
+                        } else {
+                            viewsBadge.style.display = 'none';
+                        }
+                    }
+
+                })
+                .catch(err => console.log('badge error:', err));
+        }
+
+        // טעינה ראשונית + רענון
+        document.addEventListener('DOMContentLoaded', function() {
+            updateMobileBadges();
+            setInterval(updateMobileBadges, 3000);
+        });
+    </script>
+
 </body>
 
 </html>

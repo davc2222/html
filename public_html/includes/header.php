@@ -81,7 +81,7 @@ $isDefaultHeaderAvatar =
 $menu = [
     'home'            => ['label' => 'בית', 'icon' => '🏠'],
     'search'          => ['label' => 'חיפוש', 'icon' => '🔎'],
-    'advanced_search' => ['label' =>' התאמות', 'icon' => '✨'],
+    'advanced_search' => ['label' => ' התאמות', 'icon' => '✨'],
     'messages'        => ['label' => 'הודעות', 'icon' => '💌'],
     'inbox'           => ['label' => 'תיבת דואר', 'icon' => '💬'],
     'views'           => ['label' => 'צפיות', 'icon' => '👀']
@@ -90,16 +90,16 @@ $menu = [
 
 <header class="site-header">
 
-  <a href="?page=home" class="site-logo-text">
-    <span class="logo-heart left">❤ </span>
-    <span class="logo-text">LoveMatch</span>
-    <span class="logo-heart right">&nbsp❤</span>
-</a>
+    <a href="?page=home" class="site-logo-text">
+        <span class="logo-heart left">❤ </span>
+        <span class="logo-text">LoveMatch</span>
+        <span class="logo-heart right">&nbsp❤</span>
+    </a>
 
     <nav class="links">
         <?php foreach ($menu as $p => $item): ?>
             <a href="?page=<?= htmlspecialchars($p, ENT_QUOTES, 'UTF-8') ?>"
-               class="menu-link <?= ($page === $p) ? 'active' : '' ?>">
+                class="menu-link <?= ($page === $p) ? 'active' : '' ?>">
 
                 <span class="menu-link-icon"><?= $item['icon'] ?></span>
                 <span class="menu-link-text"><?= htmlspecialchars($item['label'], ENT_QUOTES, 'UTF-8') ?></span>
@@ -134,7 +134,7 @@ $menu = [
                     alt="תמונת משתמש">
             </a>
 
-            <a href="logout.php" class="auth-btn logout-btn">התנתקות</a>
+            <a href="/mobile/logout.php" class="auth-btn logout-btn">התנתקות</a>
 
         <?php else: ?>
 
@@ -147,125 +147,123 @@ $menu = [
 </header>
 
 <script>
-/* ===== TITLE BLINK FALLBACK =====
-   אם index.php כבר הגדיר את startTitleBlink/stopTitleBlink - זה לא ידרוס.
-*/
-(function () {
-    if (typeof window.startTitleBlink === 'function' && typeof window.stopTitleBlink === 'function') {
-        return;
-    }
-
-    const normalTitle = document.title.trim() || 'LoveMatch';
-    const alertTitle = '💬 הודעה חדשה!';
-    let blinkInterval = null;
-    let blinking = false;
-
-    window.startTitleBlink = function () {
-        if (blinking) return;
-
-        blinking = true;
-        let showAlert = true;
-
-        blinkInterval = setInterval(function () {
-            document.title = showAlert ? alertTitle : normalTitle;
-            showAlert = !showAlert;
-        }, 1000);
-    };
-
-    window.stopTitleBlink = function () {
-        blinking = false;
-
-        if (blinkInterval) {
-            clearInterval(blinkInterval);
-            blinkInterval = null;
+    /* ===== TITLE BLINK FALLBACK =====
+       אם index.php כבר הגדיר את startTitleBlink/stopTitleBlink - זה לא ידרוס.
+    */
+    (function() {
+        if (typeof window.startTitleBlink === 'function' && typeof window.stopTitleBlink === 'function') {
+            return;
         }
 
-        document.title = normalTitle;
-    };
+        const normalTitle = document.title.trim() || 'LoveMatch';
+        const alertTitle = '💬 הודעה חדשה!';
+        let blinkInterval = null;
+        let blinking = false;
 
-    document.addEventListener('visibilitychange', function () {
-        if (!document.hidden) {
+        window.startTitleBlink = function() {
+            if (blinking) return;
+
+            blinking = true;
+            let showAlert = true;
+
+            blinkInterval = setInterval(function() {
+                document.title = showAlert ? alertTitle : normalTitle;
+                showAlert = !showAlert;
+            }, 1000);
+        };
+
+        window.stopTitleBlink = function() {
+            blinking = false;
+
+            if (blinkInterval) {
+                clearInterval(blinkInterval);
+                blinkInterval = null;
+            }
+
+            document.title = normalTitle;
+        };
+
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                window.stopTitleBlink();
+            }
+        });
+
+        window.addEventListener('focus', function() {
             window.stopTitleBlink();
-        }
-    });
-
-    window.addEventListener('focus', function () {
-        window.stopTitleBlink();
-    });
-})();
+        });
+    })();
 </script>
 
 <script>
-/* ===== HEADER BADGES + NEW MESSAGE DETECTION ===== */
-(function () {
+    /* ===== HEADER BADGES + NEW MESSAGE DETECTION ===== */
+
     function updateHeaderBadges() {
         fetch('/get_header_counts.php', {
-            method: 'GET',
-            credentials: 'same-origin',
-            cache: 'no-store'
-        })
-        .then(function (res) {
-            return res.json();
-        })
-        .then(function (data) {
-            const currentMessages = Number(data.messages || 0);
-            const currentViews = Number(data.views || 0);
+                method: 'GET',
+                credentials: 'same-origin',
+                cache: 'no-store'
+            })
+            .then(function(res) {
+                return res.json();
+            })
+            .then(function(data) {
+                const currentMessages = Number(data.messages || 0);
+                const currentViews = Number(data.views || 0);
 
-            const msgBadge = document.getElementById('headerMessagesBadge');
-            const viewsBadge = document.getElementById('headerViewsBadge');
-            const inboxBadge = document.getElementById('headerInboxBadge');
+                const msgBadge = document.getElementById('headerMessagesBadge');
+                const viewsBadge = document.getElementById('headerViewsBadge');
+                const inboxBadge = document.getElementById('headerInboxBadge');
 
-            if (inboxBadge) {
-                if (currentMessages > 0) {
-                    inboxBadge.textContent = currentMessages;
-                    inboxBadge.style.display = 'inline-flex';
+                if (inboxBadge) {
+                    if (currentMessages > 0) {
+                        inboxBadge.textContent = currentMessages;
+                        inboxBadge.style.display = 'inline-flex';
+                    } else {
+                        inboxBadge.style.display = 'none';
+                    }
+                }
+
+                if (msgBadge) {
+                    if (currentMessages > 0) {
+                        msgBadge.textContent = currentMessages;
+                        msgBadge.style.display = 'inline-flex';
+                    } else {
+                        msgBadge.style.display = 'none';
+                    }
+                }
+
+                if (viewsBadge) {
+                    if (currentViews > 0) {
+                        viewsBadge.textContent = currentViews;
+                        viewsBadge.style.display = 'inline-flex';
+                    } else {
+                        viewsBadge.style.display = 'none';
+                    }
+                }
+
+                const isMessagePage =
+                    window.location.search.includes('page=messages') ||
+                    window.location.search.includes('page=inbox');
+
+                if (!isMessagePage && currentMessages > 0) {
+                    if (typeof window.startTitleBlink === 'function') {
+                        window.startTitleBlink();
+                    }
                 } else {
-                    inboxBadge.style.display = 'none';
+                    if (typeof window.stopTitleBlink === 'function') {
+                        window.stopTitleBlink();
+                    }
                 }
-            }
-
-            if (msgBadge) {
-                if (currentMessages > 0) {
-                    msgBadge.textContent = currentMessages;
-                    msgBadge.style.display = 'inline-flex';
-                } else {
-                    msgBadge.style.display = 'none';
-                }
-            }
-
-            if (viewsBadge) {
-                if (currentViews > 0) {
-                    viewsBadge.textContent = currentViews;
-                    viewsBadge.style.display = 'inline-flex';
-                } else {
-                    viewsBadge.style.display = 'none';
-                }
-            }
-
-            const isMessagePage =
-                window.location.search.includes('page=messages') ||
-                window.location.search.includes('page=inbox');
-
-            if (!isMessagePage && currentMessages > 0) {
-                if (typeof window.startTitleBlink === 'function') {
-                    window.startTitleBlink();
-                }
-            } else {
-                if (typeof window.stopTitleBlink === 'function') {
-                    window.stopTitleBlink();
-                }
-            }
-        })
-        .catch(function () {});
+            })
+            .catch(function() {});
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
         updateHeaderBadges();
         setInterval(updateHeaderBadges, 3000);
     });
-})();
 </script>
-
 
 <script>
     (function() {

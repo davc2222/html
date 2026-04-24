@@ -148,8 +148,8 @@ $menu = [
 
 <script>
     /* ===== TITLE BLINK FALLBACK =====
-   אם index.php כבר הגדיר את startTitleBlink/stopTitleBlink - זה לא ידרוס.
-*/
+       אם index.php כבר הגדיר את startTitleBlink/stopTitleBlink - זה לא ידרוס.
+    */
     (function() {
         if (typeof window.startTitleBlink === 'function' && typeof window.stopTitleBlink === 'function') {
             return;
@@ -197,75 +197,73 @@ $menu = [
 
 <script>
     /* ===== HEADER BADGES + NEW MESSAGE DETECTION ===== */
-    (function() {
-        function updateHeaderBadges() {
-            fetch('/get_header_counts.php', {
-                    method: 'GET',
-                    credentials: 'same-origin',
-                    cache: 'no-store'
-                })
-                .then(function(res) {
-                    return res.json();
-                })
-                .then(function(data) {
-                    const currentMessages = Number(data.messages || 0);
-                    const currentViews = Number(data.views || 0);
 
-                    const msgBadge = document.getElementById('headerMessagesBadge');
-                    const viewsBadge = document.getElementById('headerViewsBadge');
-                    const inboxBadge = document.getElementById('headerInboxBadge');
+    function updateHeaderBadges() {
+        fetch('/get_header_counts.php', {
+                method: 'GET',
+                credentials: 'same-origin',
+                cache: 'no-store'
+            })
+            .then(function(res) {
+                return res.json();
+            })
+            .then(function(data) {
+                const currentMessages = Number(data.messages || 0);
+                const currentViews = Number(data.views || 0);
 
-                    if (inboxBadge) {
-                        if (currentMessages > 0) {
-                            inboxBadge.textContent = currentMessages;
-                            inboxBadge.style.display = 'inline-flex';
-                        } else {
-                            inboxBadge.style.display = 'none';
-                        }
-                    }
+                const msgBadge = document.getElementById('headerMessagesBadge');
+                const viewsBadge = document.getElementById('headerViewsBadge');
+                const inboxBadge = document.getElementById('headerInboxBadge');
 
-                    if (msgBadge) {
-                        if (currentMessages > 0) {
-                            msgBadge.textContent = currentMessages;
-                            msgBadge.style.display = 'inline-flex';
-                        } else {
-                            msgBadge.style.display = 'none';
-                        }
-                    }
-
-                    if (viewsBadge) {
-                        if (currentViews > 0) {
-                            viewsBadge.textContent = currentViews;
-                            viewsBadge.style.display = 'inline-flex';
-                        } else {
-                            viewsBadge.style.display = 'none';
-                        }
-                    }
-
-                    const isMessagePage =
-                        window.location.search.includes('page=messages') ||
-                        window.location.search.includes('page=inbox');
-
-                    if (!isMessagePage && currentMessages > 0) {
-                        if (typeof window.startTitleBlink === 'function') {
-                            window.startTitleBlink();
-                        }
+                if (inboxBadge) {
+                    if (currentMessages > 0) {
+                        inboxBadge.textContent = currentMessages;
+                        inboxBadge.style.display = 'inline-flex';
                     } else {
-                        if (typeof window.stopTitleBlink === 'function') {
-                            window.stopTitleBlink();
-                        }
+                        inboxBadge.style.display = 'none';
                     }
-                })
-                .catch(function() {});
-        }
+                }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            updateHeaderBadges();
-            setInterval(updateHeaderBadges, 3000);
-        });
-    })();
+                if (msgBadge) {
+                    if (currentMessages > 0) {
+                        msgBadge.textContent = currentMessages;
+                        msgBadge.style.display = 'inline-flex';
+                    } else {
+                        msgBadge.style.display = 'none';
+                    }
+                }
+
+                if (viewsBadge) {
+                    if (currentViews > 0) {
+                        viewsBadge.textContent = currentViews;
+                        viewsBadge.style.display = 'inline-flex';
+                    } else {
+                        viewsBadge.style.display = 'none';
+                    }
+                }
+
+                const isMessagePage =
+                    window.location.search.includes('page=messages') ||
+                    window.location.search.includes('page=inbox');
+
+                if (!isMessagePage && currentMessages > 0) {
+                    if (typeof window.startTitleBlink === 'function') {
+                        window.startTitleBlink();
+                    }
+                } else {
+                    if (typeof window.stopTitleBlink === 'function') {
+                        window.stopTitleBlink();
+                    }
+                }
+            })
+            .catch(function() {});
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        updateHeaderBadges();
+        setInterval(updateHeaderBadges, 3000);
+    });
 </script>
-
 
 <script>
     (function() {

@@ -99,7 +99,13 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
             if (item.dataset.bound === '1') return;
             item.dataset.bound = '1';
 
-            item.addEventListener('click', function() {
+            item.addEventListener('click', function(e) {
+
+                // 🔥 אם לחצו על התמונה → אל תפתח שיחה
+                if (e.target.closest('a')) {
+                    return;
+                }
+
                 const userId = parseInt(this.getAttribute('data-user-id') || '0', 10);
                 const name =
                     this.getAttribute('data-name') ||
@@ -113,7 +119,7 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
     }
 
     function inboxLoadConversations() {
-        fetch('/inbox_get_conversations.php')
+        fetch('/mobile/inbox_get_conversations.php')
             .then(r => r.text())
             .then(html => {
                 document.getElementById('inboxConversationsList').innerHTML = html;
@@ -294,6 +300,7 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
 </script>
 
 <style>
+    /* ===== CONTAINER ===== */
     .inbox-page {
         display: flex;
         width: 100%;
@@ -305,47 +312,39 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
         overflow: hidden;
         background: #f4f5f7;
         box-sizing: border-box;
-        align-items: stretch;
     }
 
+    /* ===== LEFT - CONVERSATIONS ===== */
     .inbox-conversations {
-        width: 260px;
-        min-width: 260px;
+        width: 150px;
+        min-width: 150px;
+        max-width: 180px;
         border-left: 1px solid #d9dde3;
-        background: #ffffff;
+        background: #fff;
         display: flex;
         flex-direction: column;
-        overflow: hidden;
+        flex-shrink: 0;
     }
 
     .inbox-conversations-header {
-        padding: 18px 16px;
+        padding: 16px;
         font-weight: 700;
-        font-size: 22px;
-        color: #1f2937;
-        border-bottom: 1px solid #e5e7eb;
-        background: #ffffff;
-        flex-shrink: 0;
+        font-size: 20px;
         text-align: center;
-        height: 72px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-sizing: border-box;
+        border-bottom: 1px solid #e5e7eb;
     }
 
     #inboxConversationsList {
         flex: 1;
         overflow-y: auto;
-        background: #ffffff;
     }
 
+    /* ===== CONVERSATION ITEM ===== */
     .inbox-conversation-item {
-        padding: 14px 14px 12px;
-        cursor: pointer;
+        padding: 12px;
         border-bottom: 1px solid #edf0f3;
-        transition: background 0.2s ease;
-        background: #ffffff;
+        cursor: pointer;
+        transition: 0.2s;
     }
 
     .inbox-conversation-item:hover {
@@ -356,35 +355,17 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
         background: #e7eaee;
     }
 
-    .inbox-unread {
-        background: #f3f6f9;
-    }
-
-    .inbox-conversation-item.active.inbox-unread {
-        background: #dde3e9;
-    }
-
-    .inbox-conversation-date {
-        font-size: 13px;
-        color: #6b7280;
-        text-align: right;
-        margin-bottom: 10px;
-    }
-
     .inbox-conversation-main {
         display: flex;
+        gap: 8px;
         align-items: center;
-        gap: 10px;
     }
 
     .inbox-conversation-avatar {
-        width: 48px;
-        height: 48px;
-        object-fit: cover;
+        width: 42px;
+        height: 42px;
         border-radius: 10px;
-        flex-shrink: 0;
-        background: #fff;
-        border: 1px solid #dfe3e8;
+        object-fit: cover;
     }
 
     .inbox-conversation-content {
@@ -394,57 +375,46 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
     }
 
     .inbox-conversation-name {
+        font-size: 14px;
         font-weight: 700;
-        font-size: 15px;
-        color: #1f2937;
-        margin-bottom: 4px;
-        line-height: 1.2;
     }
 
     .inbox-conversation-preview {
-        font-size: 13px;
+        font-size: 12px;
         color: #6b7280;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
+    /* ===== RIGHT - CHAT ===== */
     .inbox-chat {
         flex: 1;
         display: flex;
         flex-direction: column;
-        min-width: 0;
         background: #f7f8fa;
     }
 
     .inbox-chat-header {
-        padding: 18px 20px;
-        border-bottom: 1px solid #e2e5e9;
+        padding: 16px;
+        font-size: 18px;
         font-weight: 700;
-        font-size: 20px;
-        color: #1f2937;
-        background: #ffffff;
-        flex-shrink: 0;
         text-align: center;
-        height: 72px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-sizing: border-box;
+        border-bottom: 1px solid #e2e5e9;
     }
 
+    /* ===== MESSAGES ===== */
     .inbox-messages {
         flex: 1;
         overflow-y: auto;
-        padding: 22px 24px;
+        padding: 16px;
         background: #f3f4f6;
         direction: rtl;
-        min-height: 0;
     }
 
     .inbox-message-row {
         display: flex;
-        margin-bottom: 14px;
+        margin-bottom: 10px;
     }
 
     .inbox-message-row-me {
@@ -455,156 +425,88 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
         justify-content: flex-end;
     }
 
+    /* 🔥 הרחבנו בועות */
     .inbox-message {
-        max-width: 64%;
-        padding: 12px 14px;
-        border-radius: 16px;
-        text-align: right;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        max-width: 82%;
+        padding: 10px 12px;
+        border-radius: 14px;
     }
 
     .inbox-message-me {
         background: #dfeadf;
-        color: #2f3e2f;
-        border: 1px solid #d3e0d3;
     }
 
     .inbox-message-other {
-        background: #ffffff;
-        color: #2c2f33;
-        border: 1px solid #e2e5e9;
-    }
-
-    .inbox-message-sender {
-        font-size: 12px;
-        font-weight: 700;
-        margin-bottom: 4px;
-        color: #475569;
+        background: #fff;
     }
 
     .inbox-message-text {
-        font-size: 15px;
-        line-height: 1.45;
-        word-break: break-word;
+        font-size: 14px;
     }
 
-    .inbox-message-meta {
-        font-size: 11px;
-        color: #6b7280;
-        margin-top: 6px;
-        display: flex;
-        gap: 8px;
-    }
-
+    /* ===== TYPING ===== */
     .inbox-typing-indicator {
-        padding: 6px 18px 10px;
+        padding: 6px 12px;
         font-size: 13px;
         color: #6b7280;
-        background: #ffffff;
-        border-top: 1px solid #eceff2;
-        min-height: 22px;
+        background: #fff;
     }
 
+    /* ===== SEND BOX ===== */
     .inbox-send-box {
-        padding: 12px;
+        padding: 10px;
+        background: #fff;
         border-top: 1px solid #dfe3e8;
-        background: #ffffff;
-        flex-shrink: 0;
     }
 
     .inbox-send-box form {
         display: flex;
-        align-items: center;
-        gap: 8px;
+        gap: 6px;
     }
 
     .inbox-send-box input {
         flex: 1;
-        height: 44px;
-        padding: 0 14px;
-        border: 1px solid #d1d5db;
-        border-radius: 10px;
-        background: #f9fafb;
-        color: #111827;
-        font-size: 14px;
-        outline: none;
-    }
-
-    .inbox-send-box input:focus {
-        border-color: #b7bec8;
-        background: #ffffff;
+        height: 40px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 0 10px;
     }
 
     .inbox-send-box button {
-        height: 44px;
-        min-width: 64px;
-        padding: 0 18px;
-        border: none;
         background: #e86a7a;
-        color: white;
-        border-radius: 10px;
-        cursor: pointer;
-        font-weight: 700;
-        font-size: 14px;
+        color: #fff;
+        border: none;
+        padding: 0 14px;
+        border-radius: 8px;
     }
 
-    .inbox-send-box button:hover {
-        background: #d85b6b;
-    }
-
-    .inbox-enter-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        margin-top: 8px;
-        font-size: 12px;
-        color: #6b7280;
-    }
-
-    .inbox-enter-label {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        cursor: pointer;
-        user-select: none;
-    }
-
-    .inbox-enter-label input {
-        margin: 0;
-    }
-
-    .inbox-enter-hint {
-        font-size: 11px;
-        color: #8a94a3;
-        white-space: nowrap;
-    }
-
-    .inbox-empty {
-        padding: 28px 20px;
-        text-align: center;
-        color: #8a94a3;
-        font-size: 15px;
-    }
-
+    /* ===== MOBILE ===== */
     @media (max-width: 900px) {
+
+        /* ❗ שומרים על שני טורים */
         .inbox-page {
-            flex-direction: column;
-            height: auto;
-            min-height: 78vh;
+            flex-direction: row;
+            height: calc(100vh - 160px);
+            margin: 10px;
         }
 
         .inbox-conversations {
-            width: 100%;
-            min-width: 0;
-            border-left: none;
-            border-bottom: 1px solid #d9dde3;
+            width: 38%;
+            min-width: 140px;
+            max-width: 180px;
         }
 
-        .inbox-enter-row {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 4px;
+        .inbox-chat {
+            flex: 1;
         }
+
+        .inbox-message {
+            max-width: 88%;
+        }
+    }
+
+    .inbox-unread-count {
+        color: #e11d48;
+        font-weight: 700;
     }
 </style>

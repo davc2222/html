@@ -1151,3 +1151,22 @@ select {
     cursor: pointer;
     font-size: 18px;
 }
+
+.view-card-badge {
+    font-size: 14px;
+}
+
+.view-card-badge::first-letter {
+    font-size: 22px;
+}
+
+.advanced-search-page,
+.matches-page,
+.search-page,
+.profile-page {
+    padding-bottom: 95px;
+}
+
+.adv-actions {
+    padding-bottom: 90px;
+}
