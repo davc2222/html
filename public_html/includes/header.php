@@ -134,7 +134,7 @@ $menu = [
                     alt="תמונת משתמש">
             </a>
 
-            <a href="/mobile/logout.php" class="auth-btn logout-btn">התנתקות</a>
+            <a href="/logout.php" class="auth-btn logout-btn">התנתקות</a>
 
         <?php else: ?>
 

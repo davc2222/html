@@ -117,7 +117,13 @@ function renderMessagesHtml(array $messages, int $me, string $meImg, string $oth
         if (!empty($msg['Date_Sent'])) {
             $ts = strtotime((string)$msg['Date_Sent']);
             if ($ts) {
-                $time = date('H:i', $ts);
+                if (date('Y-m-d') === date('Y-m-d', $ts)) {
+                    $time = date('H:i', $ts);
+                } elseif (date('Y-m-d', strtotime('-1 day')) === date('Y-m-d', $ts)) {
+                    $time = 'אתמול ' . date('H:i', $ts);
+                } else {
+                    $time = date('d/m H:i', $ts);
+                }
                 $fullDate = date('d/m/Y H:i', $ts);
             }
         }
@@ -147,7 +153,7 @@ function renderMessagesHtml(array $messages, int $me, string $meImg, string $oth
                 <?php endif; ?>
             </div>
         </div>
-<?php
+    <?php
     }
 
     return (string)ob_get_clean();
@@ -171,7 +177,267 @@ if ($otherId <= 0 || $otherId === $me) {
         jsonOut(['ok' => false, 'message' => 'משתמש לא תקין'], 400);
     }
 
-    echo '<div class="chat-empty">משתמש לא תקין</div>';
+    /* =======================================================
+       מצב רשימת משתמשים:
+       בלי user_id מציגים משתמשים ששלחו לי / ששלחתי להם הודעות.
+       עם user_id ממשיכים לצ'אט הרגיל שבהמשך הקובץ.
+    ======================================================= */
+    try {
+        $stmt = $pdo->prepare("
+            SELECT
+                up.*,
+                MAX(m.Date_Sent) AS last_msg_date,
+                COUNT(*) AS total_count,
+                SUM(
+                    CASE
+                        WHEN m.ById = up.Id
+                         AND m.Id = :me
+                         AND m.`New` = 1
+                         AND (m.Deleted_By_Id = 0 OR m.Deleted_By_Id IS NULL)
+                        THEN 1
+                        ELSE 0
+                    END
+                ) AS unread_count
+            FROM messages m
+            JOIN users_profile up
+                ON up.Id = CASE
+                    WHEN m.ById = :me THEN m.Id
+                    ELSE m.ById
+                END
+            WHERE
+                (m.ById = :me OR m.Id = :me)
+                AND up.Id <> :me
+                AND (up.Is_Frozen = 0 OR up.Is_Frozen IS NULL)
+                AND (
+                    (m.ById = :me AND (m.Deleted_By_ById = 0 OR m.Deleted_By_ById IS NULL))
+                    OR
+                    (m.Id = :me AND (m.Deleted_By_Id = 0 OR m.Deleted_By_Id IS NULL))
+                )
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM blocked_users bu
+                    WHERE (bu.Id = up.Id AND bu.Blocked_ById = :me)
+                       OR (bu.Id = :me AND bu.Blocked_ById = up.Id)
+                )
+            GROUP BY up.Id
+            ORDER BY last_msg_date DESC
+        ");
+        $stmt->execute([':me' => $me]);
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Throwable $e) {
+        error_log('MOBILE MESSAGE USERS LIST ERROR: ' . $e->getMessage());
+        $results = [];
+    }
+    ?>
+
+    <style>
+        .mobile-views-page {
+            padding: 14px;
+            padding-bottom: 90px;
+        }
+
+        .mobile-views-title {
+            margin: 0 0 14px;
+            font-size: 24px;
+            font-weight: 800;
+            color: #222;
+            text-align: right;
+        }
+
+        .mobile-views-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .view-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 16px;
+            padding: 12px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+        }
+
+        .view-card-link {
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .view-card-img-wrap {
+            position: relative;
+            flex: 0 0 auto;
+        }
+
+        .view-card-img {
+            width: 74px;
+            height: 74px;
+            object-fit: cover;
+            border-radius: 14px;
+            display: block;
+            background: #f5f5f5;
+        }
+
+        .view-card-info {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 6px;
+            flex: 1 1 auto;
+        }
+
+        .view-card-name {
+            font-size: 17px;
+            font-weight: 700;
+            color: #222;
+            line-height: 1.3;
+            word-break: break-word;
+        }
+
+        .view-card-date {
+            font-size: 13px;
+            color: #777;
+        }
+
+        .msg-card-side {
+            position: relative;
+            flex: 0 0 auto;
+            min-width: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: auto;
+        }
+
+        .msg-total-count {
+            width: 38px;
+            height: 38px;
+            border-radius: 999px;
+            background: #f3f3f3;
+            color: #333;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 800;
+            border: 1px solid #e8e8e8;
+        }
+
+        .msg-new-top-badge {
+            position: absolute;
+            top: -10px;
+            right: -26px;
+            background: #e11d48;
+            color: #fff;
+            border-radius: 999px;
+            padding: 3px 8px;
+            font-size: 11px;
+            font-weight: 800;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(225, 29, 72, 0.25);
+        }
+
+        .no-results {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 16px;
+            padding: 18px;
+            text-align: center;
+            color: #666;
+        }
+    </style>
+
+    <main class="mobile-views-page">
+        <h2 class="mobile-views-title">הודעות</h2>
+
+        <?php if (!$results): ?>
+            <div class="no-results">אין הודעות עדיין</div>
+        <?php else: ?>
+            <div class="mobile-views-list">
+                <?php foreach ($results as $user): ?>
+                    <?php
+                    $userId = (int)($user['Id'] ?? 0);
+                    $age = '';
+                    if (!empty($user['DOB'])) {
+                        try {
+                            $age = date_diff(date_create((string)$user['DOB']), date_create('today'))->y;
+                        } catch (Throwable $e) {
+                            $age = '';
+                        }
+                    }
+
+                    $img = getChatUserImage($pdo, $userId);
+
+                    $lastMsgText = '';
+                    if (!empty($user['last_msg_date'])) {
+                        try {
+                            $dt = new DateTime((string)$user['last_msg_date']);
+                            $lastMsgText = $dt->format('d/m/Y H:i');
+                        } catch (Throwable $e) {
+                            $lastMsgText = '';
+                        }
+                    }
+
+                    $totalCount = (int)($user['total_count'] ?? 0);
+                    $unreadCount = (int)($user['unread_count'] ?? 0);
+                    ?>
+
+                    <div class="view-card">
+                        <a href="/mobile/?page=messages&user_id=<?= $userId ?>" class="view-card-link">
+                            <div class="view-card-img-wrap">
+                                <img
+                                    src="<?= h($img) ?>"
+                                    class="view-card-img"
+                                    onerror="this.onerror=null;this.src='/images/default_male.svg';"
+                                    alt="<?= h($user['Name'] ?? '') ?>">
+                            </div>
+
+                            <div class="view-card-info">
+                                <div class="view-card-name">
+                                    <?= h($user['Name'] ?? 'משתמש') ?><?= $age !== '' ? ', ' . (int)$age : '' ?>
+                                </div>
+
+                                <?php if ($lastMsgText !== ''): ?>
+                                    <div class="view-card-date">הודעה אחרונה: <?= h($lastMsgText) ?></div>
+                                <?php endif; ?>
+                            </div>
+
+                            <div class="msg-card-side">
+                                <div class="msg-total-count"><?= $totalCount ?></div>
+
+                                <?php if ($unreadCount > 0): ?>
+                                    <div style="
+    position:absolute;
+    top:-22px;
+    right:-10px;
+    background:#e11d48;
+    color:#fff;
+    font-size:10px;
+    font-weight:800;
+    padding:3px 7px;
+    border-radius:999px;
+    white-space:nowrap;
+    z-index:999;
+">
+                                        הודעה חדשה
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </a>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </main>
+
+<?php
     return;
 }
 
@@ -845,17 +1111,57 @@ $messages = fetchChatMessages($pdo, $me, $otherId);
         }
     }
 
-    .msg-time-popup {
+    .msg-new-top {
         position: absolute;
-        bottom: -18px;
-        right: 0;
-        background: #111;
+        top: -35px;
+        /* 👈 יותר גבוה */
+        right: -6px;
+        /* 👈 קצת פחות ימינה */
+        background: #e11d48;
         color: #fff;
-        font-size: 11px;
-        padding: 3px 6px;
-        border-radius: 6px;
+        font-size: 10px;
+        font-weight: 800;
+        padding: 2px 6px;
+        border-radius: 999px;
         white-space: nowrap;
-        opacity: 0.9;
+    }
+
+    .msg-side {
+        margin-right: auto;
+        position: relative;
+        min-width: 50px;
+        height: 42px;
+        /* 👈 נותן מקום לבאדג׳ */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .msg-side {
+        position: relative !important;
+        min-width: 70px !important;
+        height: 54px !important;
+        display: flex !important;
+        align-items: flex-end !important;
+        justify-content: center !important;
+    }
+
+    .msg-new-top {
+        position: absolute !important;
+        top: -4px !important;
+        right: 0 !important;
+        background: #e11d48 !important;
+        color: #fff !important;
+        font-size: 10px !important;
+        font-weight: 800 !important;
+        padding: 2px 7px !important;
+        border-radius: 999px !important;
+        white-space: nowrap !important;
+        z-index: 5 !important;
+    }
+
+    .msg-total {
+        margin-top: 16px !important;
     }
 </style>
 

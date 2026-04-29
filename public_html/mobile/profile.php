@@ -330,8 +330,6 @@ try {
 }
 ?>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css">
-
 <style>
     .profile-lookingfor-title {
         display: flex;
@@ -381,12 +379,12 @@ try {
                 <?php endif; ?>
 
                 <div class="profile-main-image-wrap">
-                    <a
-                        href="<?= e($profileImage) ?>"
+                    <button
+                        type="button"
                         id="profileMainImageLink"
-                        class="profile-main-image-link"
-                        data-lightbox="profile-gallery"
-                        data-title="תמונה ראשית">
+                        class="profile-main-image-link js-open-gallery"
+                        data-src="<?= e($profileImage) ?>"
+                        onclick="return openMobileGalleryFromButton(this, event);">
 
                         <img src="<?= e($profileImage) ?>" class="profile-main-image" id="profileMainImage" alt="">
 
@@ -395,7 +393,7 @@ try {
                         <?php endif; ?>
 
                         <span class="profile-main-zoom">⌕</span>
-                    </a>
+                    </button>
                 </div>
 
                 <h2 class="profile-main-title">
@@ -438,7 +436,7 @@ try {
 
                 <?php if (!$isOwner && $viewerId > 0): ?>
                     <div class="profile-actions-bottom-right">
-                        <a href="#"
+                        <a href="#" class="profile-block-link"
                             onclick='openBlockModal(<?= (int)$user["Id"] ?>, <?= json_encode($user["Name"] ?? "", JSON_UNESCAPED_UNICODE) ?>); return false;'>
                             חסימה
                         </a>
@@ -530,14 +528,13 @@ try {
                             ?>
 
                             <div class="profile-gallery-item">
-                                <a
-                                    href="<?= e($picUrl) ?>"
-                                    data-lightbox="profile-gallery"
-                                    data-title="תמונה <?= $imgNo ?>"
-                                    class="profile-gallery-link js-gallery-link"
-                                    data-full="<?= e($picUrl) ?>">
+                                <button
+                                    type="button"
+                                    class="profile-gallery-link js-open-gallery"
+                                    data-src="<?= e($picUrl) ?>"
+                                    onclick="return openMobileGalleryFromButton(this, event);">
                                     <img src="<?= e($picUrl) ?>" alt="תמונה <?= $imgNo ?>" class="profile-gallery-thumb">
-                                </a>
+                                </button>
 
                                 <?php if ($isMainPic): ?>
                                     <div class="profile-photo-main-badge">ראשית</div>
@@ -582,6 +579,422 @@ try {
     </div>
 </div>
 
+<!-- MOBILE INTERNAL GALLERY -->
+<div id="mobileGalleryOverlay" class="mobile-gallery-overlay" aria-hidden="true">
+    <button type="button" id="mobileGalleryClose" class="mobile-gallery-close" aria-label="סגור">×</button>
+    <button type="button" id="mobileGalleryPrev" class="mobile-gallery-arrow mobile-gallery-prev" aria-label="תמונה קודמת">‹</button>
+    <img id="mobileGalleryImg" src="" alt="">
+    <button type="button" id="mobileGalleryNext" class="mobile-gallery-arrow mobile-gallery-next" aria-label="תמונה הבאה">›</button>
+</div>
+
+<style>
+    .profile-main-image-link,
+    .profile-gallery-link {
+        border: 0;
+        background: transparent;
+        padding: 0;
+        margin: 0;
+        display: block;
+        width: 100%;
+        cursor: pointer;
+        font: inherit;
+        color: inherit;
+        text-align: inherit;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+
+    #profileMainImageLink {
+        width: auto;
+        margin: 0 auto;
+    }
+
+    #mobileGalleryOverlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.92);
+        z-index: 999999;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        box-sizing: border-box;
+    }
+
+    #mobileGalleryOverlay.is-open {
+        display: flex;
+    }
+
+    #mobileGalleryOverlay img,
+    #mobileGalleryImg {
+        display: block !important;
+        max-width: 94vw !important;
+        max-height: 86vh !important;
+        width: auto !important;
+        height: auto !important;
+        object-fit: contain !important;
+        border-radius: 12px;
+        opacity: 1 !important;
+        visibility: visible !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    #mobileGalleryClose {
+        position: fixed;
+        top: 14px;
+        left: 18px;
+        background: none;
+        border: 0;
+        color: #fff;
+        font-size: 38px;
+        line-height: 1;
+        cursor: pointer;
+        z-index: 1000000;
+    }
+
+    .mobile-gallery-arrow {
+        position: fixed;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 48px;
+        height: 64px;
+        border: 0;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.18);
+        color: #fff;
+        font-size: 54px;
+        line-height: 54px;
+        cursor: pointer;
+        z-index: 1000000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .mobile-gallery-prev {
+        right: 14px;
+    }
+
+    .mobile-gallery-next {
+        left: 14px;
+    }
+
+    @media (max-width: 520px) {
+        .mobile-gallery-arrow {
+            width: 42px;
+            height: 58px;
+            font-size: 48px;
+        }
+
+        .mobile-gallery-prev {
+            right: 8px;
+        }
+
+        .mobile-gallery-next {
+            left: 8px;
+        }
+
+        #mobileGalleryOverlay img,
+        #mobileGalleryImg {
+            max-width: 86vw !important;
+        }
+    }
+
+    /* ===== Block link + block modal cleanup ===== */
+    .profile-actions-bottom-right {
+        margin-top: 16px;
+        display: flex;
+        justify-content: flex-start;
+        /* RTL: visually right */
+        direction: rtl;
+    }
+
+    .profile-block-link,
+    .profile-actions-bottom-right a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 32px;
+        padding: 0 12px;
+        border-radius: 999px;
+        background: #f2f2f2;
+        color: #666;
+        border: 1px solid #dddddd;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        line-height: 1;
+    }
+
+    .profile-block-link:active,
+    .profile-actions-bottom-right a:active {
+        background: #e6e6e6;
+        color: #444;
+    }
+
+    .lm-modal-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 1000002;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+        background: rgba(0, 0, 0, 0.55);
+        box-sizing: border-box;
+        direction: rtl;
+    }
+
+    .lm-modal {
+        position: relative;
+        width: min(92vw, 380px);
+        background: #ffffff;
+        border-radius: 22px;
+        padding: 26px 22px 20px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.28);
+        text-align: center;
+        color: #222;
+        animation: lmModalIn 0.18s ease-out;
+    }
+
+    @keyframes lmModalIn {
+        from {
+            transform: translateY(10px) scale(0.98);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0) scale(1);
+            opacity: 1;
+        }
+    }
+
+    .lm-modal-close {
+        position: absolute;
+        top: 10px;
+        left: 12px;
+        width: 34px;
+        height: 34px;
+        border: 0;
+        border-radius: 50%;
+        background: #f5f5f5;
+        color: #777;
+        font-size: 28px;
+        line-height: 30px;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .lm-modal-icon-wrap {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 12px;
+    }
+
+    .lm-modal-icon {
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        background: #f3f3f3;
+        color: #777;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        font-weight: 900;
+        border: 1px solid #e1e1e1;
+    }
+
+    .lm-modal-title {
+        margin: 0 0 10px;
+        font-size: 20px;
+        font-weight: 900;
+        color: #333;
+    }
+
+    .lm-modal-text {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.7;
+        color: #666;
+    }
+
+    .lm-modal-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 20px;
+    }
+
+    .lm-btn {
+        min-width: 116px;
+        min-height: 42px;
+        border: 0;
+        border-radius: 14px;
+        font-size: 14px;
+        font-weight: 800;
+        cursor: pointer;
+        padding: 0 16px;
+    }
+
+    .lm-btn-secondary {
+        background: #eeeeee;
+        color: #555;
+    }
+
+    .lm-btn-danger {
+        background: #777777;
+        color: #ffffff;
+    }
+
+    .lm-btn-danger:active {
+        background: #555555;
+    }
+
+    body.modal-open {
+        overflow: hidden;
+    }
+</style>
+
+<script>
+    var mobileGalleryImages = [];
+    var mobileGalleryIndex = 0;
+
+    function getGallerySrc(btn) {
+        if (!btn) return '';
+        var src = btn.getAttribute('data-src') || btn.getAttribute('data-full') || '';
+        if (!src) {
+            var innerImg = btn.querySelector('img');
+            if (innerImg) src = innerImg.getAttribute('src') || '';
+        }
+        return String(src || '').trim();
+    }
+
+    function collectMobileGalleryImages() {
+        mobileGalleryImages = [];
+        document.querySelectorAll('.js-open-gallery').forEach(function(btn) {
+            var src = getGallerySrc(btn);
+            if (src && mobileGalleryImages.indexOf(src) === -1) {
+                mobileGalleryImages.push(src);
+            }
+        });
+        return mobileGalleryImages;
+    }
+
+    function showMobileGalleryImage(index) {
+        var img = document.getElementById('mobileGalleryImg');
+        if (!img || !mobileGalleryImages.length) return false;
+        if (index < 0) index = mobileGalleryImages.length - 1;
+        if (index >= mobileGalleryImages.length) index = 0;
+        mobileGalleryIndex = index;
+        var src = mobileGalleryImages[mobileGalleryIndex];
+        img.onload = function() {
+            img.style.display = 'block';
+            img.style.opacity = '1';
+        };
+        img.onerror = function() {
+            console.log('gallery image failed:', src);
+            img.removeAttribute('src');
+        };
+        img.style.display = 'block';
+        img.style.opacity = '1';
+        img.src = src;
+        return false;
+    }
+
+    function openMobileGallery(src) {
+        var overlay = document.getElementById('mobileGalleryOverlay');
+        src = String(src || '').trim();
+        if (!overlay || src === '') {
+            console.log('gallery missing data', {
+                overlay: !!overlay,
+                src: src
+            });
+            return false;
+        }
+        collectMobileGalleryImages();
+        mobileGalleryIndex = mobileGalleryImages.indexOf(src);
+        if (mobileGalleryIndex < 0) {
+            mobileGalleryImages.unshift(src);
+            mobileGalleryIndex = 0;
+        }
+        showMobileGalleryImage(mobileGalleryIndex);
+        overlay.classList.add('is-open');
+        overlay.setAttribute('aria-hidden', 'false');
+        overlay.style.cssText = 'display:flex !important; position:fixed !important; inset:0 !important; background:rgba(0,0,0,0.92) !important; z-index:999999 !important; align-items:center !important; justify-content:center !important; padding:16px !important; box-sizing:border-box !important;';
+        document.body.style.overflow = 'hidden';
+        return false;
+    }
+
+    function openMobileGalleryFromButton(btn, event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        return openMobileGallery(getGallerySrc(btn));
+    }
+
+    function nextMobileGalleryImage(event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        if (!mobileGalleryImages.length) collectMobileGalleryImages();
+        return showMobileGalleryImage(mobileGalleryIndex + 1);
+    }
+
+    function prevMobileGalleryImage(event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        if (!mobileGalleryImages.length) collectMobileGalleryImages();
+        return showMobileGalleryImage(mobileGalleryIndex - 1);
+    }
+
+    function closeMobileGallery() {
+        var overlay = document.getElementById('mobileGalleryOverlay');
+        var img = document.getElementById('mobileGalleryImg');
+        if (img) img.setAttribute('src', '');
+        if (overlay) {
+            overlay.classList.remove('is-open');
+            overlay.setAttribute('aria-hidden', 'true');
+            overlay.style.display = 'none';
+        }
+        document.body.style.overflow = '';
+        return false;
+    }
+
+    document.addEventListener('click', function(e) {
+        var galleryBtn = e.target.closest('.js-open-gallery');
+        if (galleryBtn) {
+            e.preventDefault();
+            e.stopPropagation();
+            return openMobileGallery(getGallerySrc(galleryBtn));
+        }
+        if (e.target.closest('#mobileGalleryPrev')) return prevMobileGalleryImage(e);
+        if (e.target.closest('#mobileGalleryNext')) return nextMobileGalleryImage(e);
+        if (e.target && e.target.id === 'mobileGalleryOverlay') return closeMobileGallery();
+        if (e.target.closest('#mobileGalleryClose')) {
+            e.preventDefault();
+            e.stopPropagation();
+            return closeMobileGallery();
+        }
+    }, true);
+
+    document.addEventListener('keydown', function(e) {
+        var overlay = document.getElementById('mobileGalleryOverlay');
+        var isOpen = overlay && overlay.classList.contains('is-open');
+        if (e.key === 'Escape') closeMobileGallery();
+        if (!isOpen) return;
+        if (e.key === 'ArrowLeft') nextMobileGalleryImage(e);
+        if (e.key === 'ArrowRight') prevMobileGalleryImage(e);
+    });
+</script>
+
 <div id="blockModal" class="lm-modal-overlay" style="display:none;">
     <div class="lm-modal" role="dialog" aria-modal="true" aria-labelledby="blockModalTitle">
         <button type="button" class="lm-modal-close" onclick="closeBlockModal(); return false;" aria-label="סגור">
@@ -610,7 +1023,6 @@ try {
     </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox.min.js"></script>
 
 <script>
     const PROFILE_ID = <?= (int)$id ?>;
@@ -908,16 +1320,6 @@ try {
                     menu.style.display = 'none';
                 });
             }
-        });
-
-        document.querySelectorAll('.js-gallery-link').forEach(function(link) {
-            link.addEventListener('click', function() {
-                const full = this.getAttribute('data-full');
-                const mainImg = document.getElementById('profileMainImage');
-                if (full && mainImg) {
-                    mainImg.src = full;
-                }
-            });
         });
     }
 

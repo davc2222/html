@@ -29,7 +29,7 @@ $name    = trim((string)($_POST['name'] ?? ''));
 $email   = trim((string)($_POST['email'] ?? ''));
 $message = trim((string)($_POST['message'] ?? ''));
 
-if ($name === '' || $email === '' || $message === '') {
+if ($email === '' || $message === '') {
     json_out(false, 'נא למלא את כל השדות');
 }
 

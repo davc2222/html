@@ -182,7 +182,11 @@ return [
         'label' => 'ספרים אהובים',
         'type'  => 'input',
     ],
-
+    'Favorite_Music' => [
+        'label' => 'מוזיקה אהובה',
+        'type'  => 'text',
+        'side'  => 'left'
+    ],
     'Sport' => [
         'side'  => 'left',
         'label' => 'ספורט',

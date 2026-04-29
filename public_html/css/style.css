@@ -5415,7 +5415,19 @@ transform: translateX(-50px);
     gap: 12px;
     margin-top: 18px;
     flex-wrap: wrap;
-    justify-content: flex-start;
+    transform: translateX(-15px);
+    align-items: center;
+    direction: ltr;
+    text-align: center;
+        /* זה מה שמזיז שמאלה */
+    
+        /* מרכז */
+}
+
+.account-manage-actions button {
+    min-width: 170px;
+    text-align: center;
+    direction: rtl;
 }
 
 .account-freeze-btn {
@@ -5583,4 +5595,262 @@ transform: translateX(-50px);
 
 .register-page {
     padding-bottom: 100px;
+}
+
+.lm-modal {
+    max-width: 92vw;
+    width: 420px;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+.lm-modal * {
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+.lm-modal-text {
+    word-break: break-word;
+}
+
+.lm-modal-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    /* 🔥 זה קריטי */
+    justify-content: center;
+}
+
+.lm-btn {
+    max-width: 100%;
+    white-space: normal;
+    /* 🔥 מונע גלילה */
+}
+
+body.modal-open {
+    overflow: hidden;
+}
+
+.footer-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.footer-popup-box {
+    width: 100%;
+    max-width: 420px;
+    max-height: 90vh;
+
+    background: #fff;
+    border-radius: 16px;
+    padding: 18px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    box-sizing: border-box;
+}
+
+.account-manage-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.account-manage-actions button {
+    width: 100%;
+}
+
+html,
+body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.footer-popup-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+    padding: 12px !important;
+}
+
+.footer-popup-box,
+.footer-popup-box-terms {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    min-width: 0 !important;
+    max-height: 88vh !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+}
+
+.footer-popup-box *,
+.footer-popup-box-terms * {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.terms-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    word-break: break-word !important;
+}
+
+.terms-content ul,
+.terms-content li,
+.terms-content p {
+    max-width: 100% !important;
+    overflow-wrap: anywhere !important;
+}
+
+.account-manage-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 10px !important;
+}
+
+.account-manage-actions button {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+}
+
+/* =======================================================
+   FINAL FIX - FOOTER POPUPS OUTSIDE FIXED FOOTER
+   Desktop/local regular site
+======================================================= */
+
+html,
+body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.site-page {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.footer-popup-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100dvh !important;
+    display: none;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 16px !important;
+    background: rgba(0, 0, 0, 0.55) !important;
+    z-index: 100000 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+}
+
+.footer-popup-box,
+.footer-popup-box-terms {
+    position: relative !important;
+    width: min(520px, calc(100vw - 32px)) !important;
+    max-width: calc(100vw - 32px) !important;
+    min-width: 0 !important;
+    max-height: calc(100dvh - 32px) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    background: #fff !important;
+    border-radius: 20px !important;
+    padding: 28px 24px 22px !important;
+    box-sizing: border-box !important;
+    direction: rtl !important;
+    text-align: right !important;
+}
+
+.footer-popup-box-terms {
+    width: min(760px, calc(100vw - 32px)) !important;
+}
+
+.footer-popup-box *,
+.footer-popup-box-terms * {
+    box-sizing: border-box !important;
+    max-width: 100% !important;
+}
+
+.terms-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 65vh !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    word-break: normal !important;
+    overflow-wrap: anywhere !important;
+}
+
+.account-manage-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 12px !important;
+    width: 100% !important;
+    margin-top: 18px !important;
+    transform: none !important;
+    direction: rtl !important;
+    text-align: center !important;
+    flex-wrap: wrap !important;
+}
+
+.account-manage-actions .footer-popup-submit,
+.account-manage-actions button {
+    width: auto !important;
+    min-width: 150px !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+}
+
+@media (max-width: 600px) {
+    .footer-popup-overlay {
+        align-items: flex-end !important;
+        padding: 10px !important;
+    }
+
+    .footer-popup-box,
+    .footer-popup-box-terms {
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: calc(100dvh - 20px) !important;
+        border-radius: 18px 18px 0 0 !important;
+        padding: 22px 16px 18px !important;
+    }
+
+    .account-manage-actions {
+        flex-direction: column !important;
+    }
+
+    .account-manage-actions .footer-popup-submit,
+    .account-manage-actions button {
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+}
+
+.account-manage-actions button.account-freeze-btn {
+    background: orange !important;
+    color: #fff !important;
 }

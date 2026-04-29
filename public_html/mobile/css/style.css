@@ -1220,3 +1220,16 @@ select {
         display: block;
     }
 }
+
+.page-shell {
+    padding: 16px;
+    line-height: 1.6;
+}
+
+.page-shell h2 {
+    margin-bottom: 10px;
+}
+
+.page-shell ul {
+    padding-right: 18px;
+}

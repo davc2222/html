@@ -1,76 +1,91 @@
 <?php
-require_once __DIR__ . '/config/config.php';
+// ===== FILE: contact.php =====
+// תוכן פופאפ צור קשר לגרסה הרגילה / לוקאל
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-function e($v) {
-    return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
-}
-
-$success = false;
-$error = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-    $name    = trim($_POST['name'] ?? '');
-    $email   = trim($_POST['email'] ?? '');
-    $message = trim($_POST['message'] ?? '');
-
-    if ($name === '' || $email === '' || $message === '') {
-        $error = 'נא למלא את כל השדות';
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error = 'אימייל לא תקין';
-    } else {
-
-        $to = 'davc22@gmail.com';
-        $subject = 'פנייה חדשה מהאתר';
-
-        $body = "שם: $name\n";
-        $body .= "אימייל: $email\n\n";
-        $body .= "הודעה:\n$message\n";
-
-        $headers = "From: $email\r\n";
-        $headers .= "Reply-To: $email\r\n";
-
-        if (mail($to, $subject, $body, $headers)) {
-            $success = true;
-        } else {
-            $error = 'שגיאה בשליחה';
-        }
+if (!function_exists('e')) {
+    function e($v) {
+        return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
     }
 }
+
+$userEmail = trim((string)($_SESSION['user_email'] ?? ''));
 ?>
 
-<main class="page-shell">
-    <section class="search-container">
+<h2 class="footer-popup-title">צור קשר</h2>
 
-        <h2 style="text-align:center;">צור קשר</h2>
+<p class="contact-desc">
+    יש לך שאלה, תקלה, הצעה לשיפור או בקשה בנושא החשבון?
+    שלח לנו הודעה ונחזור אליך בהקדם.
+</p>
 
-        <?php if ($success): ?>
-            <div style="text-align:center; color:green; margin-bottom:15px;">
-                ההודעה נשלחה בהצלחה ✔
-            </div>
-        <?php endif; ?>
+<div class="contact-email-box">
+    📧 lovematch@lovematch.co.il
+</div>
 
-        <?php if ($error): ?>
-            <div style="text-align:center; color:red; margin-bottom:15px;">
-                <?= e($error) ?>
-            </div>
-        <?php endif; ?>
+<form id="contactPopupForm" class="footer-popup-form">
+    <input
+        type="email"
+        name="email"
+        placeholder="הכנס אימייל..."
+        value="<?= e($userEmail) ?>"
+        <?= $userEmail !== '' ? 'readonly' : '' ?>
+        required>
 
-        <form method="POST" style="max-width:400px; margin:0 auto; display:flex; flex-direction:column; gap:10px;">
+    <textarea
+        name="message"
+        rows="6"
+        placeholder="כתוב כאן את ההודעה שלך..."
+        required></textarea>
 
-            <input type="text" name="name" placeholder="שם" required>
+    <button type="submit" class="footer-popup-submit">שלח הודעה</button>
 
-            <input type="email" name="email" placeholder="אימייל" required>
+    <div id="contactPopupMsg" class="footer-popup-msg"></div>
+</form>
 
-            <textarea name="message" placeholder="הודעה" rows="5" required></textarea>
+<style>
+    .contact-desc {
+        text-align: center;
+        font-size: 14px;
+        color: #666;
+        line-height: 1.6;
+        margin-bottom: 14px;
+    }
 
-            <button type="submit" class="lm-btn lm-btn-primary">שליחה</button>
+    .contact-email-box {
+        background: #fff;
+        border: 1px solid #eee;
+        padding: 12px;
+        text-align: center;
+        border-radius: 14px;
+        margin-bottom: 15px;
+        font-weight: bold;
+        color: #333;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+    }
 
-        </form>
+    #contactPopupForm input,
+    #contactPopupForm textarea {
+        padding: 12px;
+        border-radius: 14px;
+        border: 1px solid #ddd;
+        font-family: inherit;
+        font-size: 14px;
+        box-sizing: border-box;
+        width: 100%;
+    }
 
-    </section>
-</main>
+    #contactPopupForm input[readonly] {
+        background: #f5f5f5;
+        color: #666;
+        cursor: not-allowed;
+    }
+
+    #contactPopupForm textarea {
+        resize: vertical;
+        min-height: 130px;
+    }
+</style>

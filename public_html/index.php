@@ -10,7 +10,24 @@ if (session_status() === PHP_SESSION_NONE) {
 $userAgent  = $_SERVER['HTTP_USER_AGENT'] ?? '';
 $host       = $_SERVER['HTTP_HOST'] ?? '';
 $requestUri = $_SERVER['REQUEST_URI'] ?? '';
+    /*
+|------------------------------------------------------------
+| אחרי logout לא מעבירים למובייל
+|------------------------------------------------------------
+*/
+    $forceDesktop =
+        (isset($_GET['desktop']) && $_GET['desktop'] === '1') ||
+        (isset($_GET['from_logout']) && $_GET['from_logout'] === '1') ||
+        (!empty($_COOKIE['force_desktop_after_logout']) && $_COOKIE['force_desktop_after_logout'] === '1');
 
+    if ($forceDesktop) {
+        $_SESSION['force_desktop'] = true;
+    }
+/*
+|------------------------------------------------------------
+| זיהוי סביבת לוקאל
+|------------------------------------------------------------
+*/
 $isLocalhost =
     stripos($host, 'localhost') !== false ||
     stripos($host, '127.0.0.1') !== false ||
@@ -18,12 +35,22 @@ $isLocalhost =
 
 $isMobile = false;
 
-/* זיהוי אייפון */
+/*
+|------------------------------------------------------------
+| זיהוי אייפון
+|------------------------------------------------------------
+*/
 if (preg_match('/iPhone|iPod/i', $userAgent)) {
     $isMobile = true;
 }
 
-/* זיהוי אנדרואיד (רק טלפונים, לא מחשב) */
+/*
+|------------------------------------------------------------
+| זיהוי אנדרואיד
+|------------------------------------------------------------
+| רק טלפונים אמיתיים.
+| לא מחשב, לא Windows, לא מצב דפדפן שמתחזה חלקית.
+*/
 if (
     preg_match('/Android/i', $userAgent) &&
     preg_match('/Mobile/i', $userAgent) &&
@@ -34,31 +61,64 @@ if (
 
 /*
 |------------------------------------------------------------
-| מעבר ידני למובייל (האייקון)
-| עובד גם בלוקאל וגם ברמוט
+| כפיית אתר רגיל
 |------------------------------------------------------------
+| אחרי logout אנחנו מגיעים עם:
+| /?desktop=1
+|
+| זה אומר:
+| אל תעביר אוטומטית למובייל.
 */
-if (isset($_GET['mobile']) && strpos($requestUri, '/mobile') !== 0) {
+if (isset($_GET['desktop']) && $_GET['desktop'] === '1') {
+    $_SESSION['force_desktop'] = true;
+}
+
+/*
+|------------------------------------------------------------
+| מעבר ידני למובייל
+|------------------------------------------------------------
+| מאפשר מעבר רק כאשר יש לחיצה אמיתית באתר.
+*/
+if (
+    isset($_GET['mobile']) &&
+    $_GET['mobile'] === '1' &&
+    strpos($requestUri, '/mobile') !== 0 &&
+    !empty($_SERVER['HTTP_REFERER']) &&
+    strpos($_SERVER['HTTP_REFERER'], '/mobile') === false
+) {
+    unset($_SESSION['force_desktop']);
+
     header('Location: /mobile/');
     exit;
 }
 
 /*
 |------------------------------------------------------------
-| מעבר אוטומטי רק ברמוט ורק בנייד אמיתי
+| מעבר אוטומטי למובייל
 |------------------------------------------------------------
+| עובד רק אם:
+| - זה לא לוקאל
+| - זה באמת נייד
+| - לא נמצאים כבר במובייל
+| - לא הופעל force_desktop
 */
-if (!$isLocalhost && $isMobile && strpos($requestUri, '/mobile') !== 0) {
+if (
+    !$forceDesktop &&
+    empty($_COOKIE['force_desktop_after_logout']) &&
+    !$isLocalhost &&
+    $isMobile &&
+    strpos($requestUri, '/mobile') !== 0
+) {
     header('Location: /mobile/');
     exit;
 }
 
 //*----------------------------------------------------------------------------------------------------------------------*?/
+
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/includes/profile_helpers.php';
 
 $page = $_GET['page'] ?? 'home';
-
 
 $protectedPages = ['profile', 'search', 'advanced_search', 'messages', 'views', 'inbox'];
 
@@ -74,7 +134,7 @@ if (in_array($page, $protectedPages, true) && empty($_SESSION['user_id'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LoveMatch - אתר הכרויות חכם למציאת אהבה</title>
-
+    <meta name="googlebot" content="index, follow">
     <meta name="description" content="LoveMatch הוא אתר הכרויות חכם למציאת זוגיות אמיתית. הירשם עכשיו, מצא התאמות ושלח הודעות בקלות.">
     <meta name="keywords" content="אתר הכרויות, הכרויות בישראל, זוגיות, דייטים, אהבה, LoveMatch , טינדר  לאבמי  רוסיות, אתר חינמי">
     <meta name="author" content="LoveMatch">
@@ -110,39 +170,51 @@ if (in_array($page, $protectedPages, true) && empty($_SESSION['user_id'])) {
                 case 'home':
                     include 'home.php';
                     break;
+
                 case 'profile':
                     include 'profile.php';
                     break;
+
                 case 'search':
                     include 'search.php';
                     break;
+
                 case 'advanced_search':
                     include 'advanced_search.php';
                     break;
+
                 case 'messages':
                     include 'messages.php';
                     break;
+
                 case 'views':
                     include 'views.php';
                     break;
+
                 case 'login':
                     include 'login.php';
                     break;
+
                 case 'register':
                     include 'register.php';
                     break;
+
                 case 'verify_notice':
                     include 'verify_notice.php';
                     break;
+
                 case 'inbox':
                     include 'inbox.php';
                     break;
+
                 case 'blocked_users':
                     include __DIR__ . '/blocked_users.php';
                     break;
+
                 case 'viewed_by_me':
                     require 'viewed_by_me.php';
                     break;
+
                 default:
                     include 'home.php';
                     break;
@@ -157,6 +229,8 @@ if (in_array($page, $protectedPages, true) && empty($_SESSION['user_id'])) {
         <?php include __DIR__ . '/includes/footer.php'; ?>
 
     </div>
+
+    <?php include __DIR__ . '/popups.php'; ?>
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.5/js/lightbox.min.js"></script>

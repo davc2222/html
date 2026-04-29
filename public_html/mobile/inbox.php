@@ -20,7 +20,7 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
 <div class="inbox-page">
 
     <div class="inbox-conversations">
-        <div class="inbox-conversations-header">שיחות</div>
+        <div class="inbox-conversations-header">בחר שיחה</div>
 
         <div id="inboxConversationsList">
             <div class="inbox-empty">טוען שיחות...</div>
@@ -30,7 +30,7 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
     <div class="inbox-chat">
 
         <div class="inbox-chat-header" id="inboxChatHeader">
-            <div class="inbox-empty">בחר שיחה</div>
+            <div class="inbox-empty">שיחות</div>
         </div>
 
         <div class="inbox-messages" id="inboxMessages">

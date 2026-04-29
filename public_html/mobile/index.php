@@ -13,21 +13,17 @@ $allowedPages = [
     'search',
     'advanced_search',
     'messages',
-    'inbox', // 🔥
     'login',
     'register',
     'verify_notice',
     'views',
     'blocked',
-    'contact',
-    'terms',
-    'privacy',
-    'settings',
     'blocked_users',
     'contact',
     'terms',
     'privacy',
-    'settings'
+    'settings',
+    'manage_account'
 ];
 
 if (!in_array($page, $allowedPages, true)) {
@@ -76,6 +72,283 @@ if ($currentUserId > 0) {
     <link rel="stylesheet" href="/mobile/css/style.css?v=<?= time() ?>">
 
 
+    <style>
+        .eye-icon {
+            font-size: 30px;
+        }
+
+        .mobile-nav-icon-wrap {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            overflow: visible;
+        }
+
+        .mobile-nav-badge {
+            position: absolute;
+            top: -6px;
+            right: -10px;
+            min-width: 16px;
+            height: 16px;
+            padding: 0 4px;
+            border-radius: 999px;
+            background: #e11d48;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 16px;
+            text-align: center;
+            display: none;
+            z-index: 10;
+        }
+
+        .mobile-site {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mobile-main {
+            flex: 1;
+        }
+
+        .mobile-header {
+            background: #fff;
+            border-bottom: 1px solid #f0f0f0;
+            padding: 12px 14px 10px;
+        }
+
+        .mobile-header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+
+        .mobile-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 800;
+            color: #d81b60;
+            white-space: nowrap;
+            order: 1;
+            /* שמאל */
+        }
+
+        /* חשוב מאוד למנוע שבירה */
+        .mobile-header-top>* {
+            flex-shrink: 0;
+        }
+
+        .mobile-logo span:first-child {
+            font-size: 18px;
+            line-height: 1;
+        }
+
+        .mobile-auth {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .mobile-user-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .mobile-user-avatar-link {
+            display: inline-flex;
+            text-decoration: none;
+            flex: 0 0 auto;
+        }
+
+        .mobile-user-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid #f2f2f2;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .mobile-user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .mobile-user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            line-height: 1.15;
+            min-width: 0;
+        }
+
+        .mobile-user-hello {
+            font-size: 11px;
+            color: #777;
+        }
+
+        .mobile-user-name {
+            font-size: 14px;
+            font-weight: 800;
+            color: #d81b60;
+            max-width: 130px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .mobile-auth-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .mobile-auth-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 36px;
+            padding: 0 14px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+            background: #f3f3f3;
+            color: #333;
+        }
+
+        .mobile-auth-btn-profile {
+            background: #d81b60;
+            color: #fff;
+        }
+
+        .mobile-auth-btn-logout {
+            background: #7a7a7a;
+            color: #fff;
+        }
+
+        .mobile-footer {
+            text-align: center;
+            color: #888;
+            font-size: 12px;
+            padding: 14px 10px 84px;
+        }
+
+        .mobile-bottom-nav a {
+            position: relative;
+        }
+
+
+        /* ===== MOBILE SIDEBAR ===== */
+        .hamburger-btn {
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            background: transparent;
+            color: #333;
+            font-size: 24px;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0;
+            flex: 0 0 auto;
+        }
+
+        .mobile-sidebar {
+            position: fixed;
+            top: 0;
+            right: -270px;
+            width: 270px;
+            max-width: 82vw;
+            height: 100vh;
+            background: #fff;
+            z-index: 100000;
+            transition: right 0.25s ease;
+            padding: 18px 0 24px;
+            box-shadow: -6px 0 22px rgba(0, 0, 0, 0.18);
+            direction: rtl;
+        }
+
+        .mobile-sidebar.open {
+            right: 0;
+        }
+
+        .mobile-sidebar-title {
+            padding: 0 18px 14px;
+            font-size: 18px;
+            font-weight: 800;
+            color: #d81b60;
+            border-bottom: 1px solid #f0f0f0;
+            margin-bottom: 6px;
+        }
+
+        .mobile-sidebar a {
+            display: block;
+            padding: 14px 18px;
+            color: #222;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 700;
+            border-bottom: 1px solid #f3f3f3;
+        }
+
+        .mobile-sidebar a:active {
+            background: #f7f7f7;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.35);
+            z-index: 99999;
+        }
+
+        .sidebar-overlay.show {
+            display: block;
+        }
+
+        @media (max-width: 520px) {
+
+            .mobile-header-top,
+            .mobile-auth {
+                gap: 8px;
+            }
+
+            .mobile-user-name {
+                max-width: 90px;
+                font-size: 13px;
+            }
+
+            .mobile-auth-btn {
+                min-height: 34px;
+                padding: 0 12px;
+                font-size: 12px;
+            }
+
+            .mobile-user-avatar {
+                width: 38px;
+                height: 38px;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -121,13 +394,19 @@ if ($currentUserId > 0) {
 
         <div id="mobileSidebar" class="mobile-sidebar">
             <div class="mobile-sidebar-title">תפריט</div>
-            <a href="/mobile/?page=blocked_users">חסומים</a>
-            <a href="/mobile/?page=contact">קונטקט</a>
+
+            <?php if ($currentUserId > 0): ?>
+                <a href="/mobile/?page=blocked_users">חסומים</a>
+            <?php endif; ?>
+
+            <a href="/mobile/?page=contact">צור קשר</a>
             <a href="/mobile/?page=terms">תנאי שימוש</a>
             <a href="/mobile/?page=privacy">פרטיות</a>
-            <a href="/mobile/?page=settings">הגדרות</a>
-        </div>
 
+            <?php if ($currentUserId > 0): ?>
+                <a href="/mobile/?page=manage_account">ניהול כרטיס</a>
+            <?php endif; ?>
+        </div>
         <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
         <main class="mobile-main">
@@ -157,12 +436,13 @@ if ($currentUserId > 0) {
                 case 'verify_notice':
                     include __DIR__ . '/verify_notice.php';
                     break;
+                case 'manage_account':
+                    require __DIR__ . '/manage_account.php';
+                    break;
                 case 'views':
                     include __DIR__ . '/views.php';
                     break;
-                case 'inbox':
-                    include __DIR__ . '/inbox.php';
-                    break;
+
                 case 'blocked':
                     include file_exists(__DIR__ . '/blocked.php') ? __DIR__ . '/blocked.php' : __DIR__ . '/home.php';
                     break;
@@ -205,7 +485,7 @@ if ($currentUserId > 0) {
                     <span>✨</span><small>התאמות</small>
                 </a>
 
-                <a href="/mobile/?page=inbox" class="<?= m_is_active('inbox', $page) ?>">
+                <a href="/mobile/?page=messages">
                     <span class="mobile-nav-icon-wrap">
                         <span>💬</span>
                         <em id="messages-badge" class="mobile-nav-badge"></em>
@@ -215,7 +495,7 @@ if ($currentUserId > 0) {
 
                 <a href="/mobile/?page=views" class="<?= m_is_active('views', $page) ?>">
                     <span class="mobile-nav-icon-wrap">
-                        <span class="eye-icon">👁</span>
+                        <span class="eye-icon">👁️</span>
                         <em id="views-badge" class="mobile-nav-badge"></em>
                     </span>
                     <small>צפיות</small>
@@ -284,284 +564,30 @@ if ($currentUserId > 0) {
         });
     </script>
 
+    <script>
+        document.addEventListener('click', function(e) {
+
+            const openLink = e.target.closest('#mobileAccountManageLink');
+            if (!openLink) return;
+
+            e.preventDefault();
+
+            // סוגר סיידבר
+            document.getElementById('mobileSidebar')?.classList.remove('open');
+            document.getElementById('sidebarOverlay')?.classList.remove('show');
+
+            // פותח את הפופאפ של הפוטר
+            const popup = document.getElementById('accountManagePopupOverlay');
+
+            if (popup) {
+                popup.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            } else {
+                console.log('אין popup accountManagePopupOverlay');
+            }
+
+        });
+    </script>
 </body>
 
 </html>
-
-<style>
-    .eye-icon {
-        font-size: 30px;
-    }
-
-    .mobile-nav-icon-wrap {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        overflow: visible;
-    }
-
-    .mobile-nav-badge {
-        position: absolute;
-        top: -6px;
-        right: -10px;
-        min-width: 16px;
-        height: 16px;
-        padding: 0 4px;
-        border-radius: 999px;
-        background: #e11d48;
-        color: #fff;
-        font-size: 10px;
-        font-weight: 700;
-        line-height: 16px;
-        text-align: center;
-        display: none;
-        z-index: 10;
-    }
-
-    .mobile-site {
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .mobile-main {
-        flex: 1;
-    }
-
-    .mobile-header {
-        background: #fff;
-        border-bottom: 1px solid #f0f0f0;
-        padding: 12px 14px 10px;
-    }
-
-    .mobile-header-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-
-    .mobile-logo {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        text-decoration: none;
-        font-size: 18px;
-        font-weight: 800;
-        color: #d81b60;
-        white-space: nowrap;
-        order: 1;
-        /* שמאל */
-    }
-
-    /* חשוב מאוד למנוע שבירה */
-    .mobile-header-top>* {
-        flex-shrink: 0;
-    }
-
-    .mobile-logo span:first-child {
-        font-size: 18px;
-        line-height: 1;
-    }
-
-    .mobile-auth {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-    }
-
-    .mobile-user-box {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        min-width: 0;
-    }
-
-    .mobile-user-avatar-link {
-        display: inline-flex;
-        text-decoration: none;
-        flex: 0 0 auto;
-    }
-
-    .mobile-user-avatar {
-        width: 42px;
-        height: 42px;
-        border-radius: 50%;
-        overflow: hidden;
-        border: 2px solid #f2f2f2;
-        background: #fff;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    }
-
-    .mobile-user-avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-    }
-
-    .mobile-user-info {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        line-height: 1.15;
-        min-width: 0;
-    }
-
-    .mobile-user-hello {
-        font-size: 11px;
-        color: #777;
-    }
-
-    .mobile-user-name {
-        font-size: 14px;
-        font-weight: 800;
-        color: #d81b60;
-        max-width: 130px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .mobile-auth-actions {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-    }
-
-    .mobile-auth-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 36px;
-        padding: 0 14px;
-        border-radius: 12px;
-        text-decoration: none;
-        font-size: 13px;
-        font-weight: 700;
-        white-space: nowrap;
-        background: #f3f3f3;
-        color: #333;
-    }
-
-    .mobile-auth-btn-profile {
-        background: #d81b60;
-        color: #fff;
-    }
-
-    .mobile-auth-btn-logout {
-        background: #7a7a7a;
-        color: #fff;
-    }
-
-    .mobile-footer {
-        text-align: center;
-        color: #888;
-        font-size: 12px;
-        padding: 14px 10px 84px;
-    }
-
-    .mobile-bottom-nav a {
-        position: relative;
-    }
-
-
-    /* ===== MOBILE SIDEBAR ===== */
-    .hamburger-btn {
-        width: 36px;
-        height: 36px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border: none;
-        background: transparent;
-        color: #333;
-        font-size: 24px;
-        line-height: 1;
-        cursor: pointer;
-        padding: 0;
-        flex: 0 0 auto;
-    }
-
-    .mobile-sidebar {
-        position: fixed;
-        top: 0;
-        right: -270px;
-        width: 270px;
-        max-width: 82vw;
-        height: 100vh;
-        background: #fff;
-        z-index: 100000;
-        transition: right 0.25s ease;
-        padding: 18px 0 24px;
-        box-shadow: -6px 0 22px rgba(0, 0, 0, 0.18);
-        direction: rtl;
-    }
-
-    .mobile-sidebar.open {
-        right: 0;
-    }
-
-    .mobile-sidebar-title {
-        padding: 0 18px 14px;
-        font-size: 18px;
-        font-weight: 800;
-        color: #d81b60;
-        border-bottom: 1px solid #f0f0f0;
-        margin-bottom: 6px;
-    }
-
-    .mobile-sidebar a {
-        display: block;
-        padding: 14px 18px;
-        color: #222;
-        text-decoration: none;
-        font-size: 15px;
-        font-weight: 700;
-        border-bottom: 1px solid #f3f3f3;
-    }
-
-    .mobile-sidebar a:active {
-        background: #f7f7f7;
-    }
-
-    .sidebar-overlay {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.35);
-        z-index: 99999;
-    }
-
-    .sidebar-overlay.show {
-        display: block;
-    }
-
-    @media (max-width: 520px) {
-
-        .mobile-header-top,
-        .mobile-auth {
-            gap: 8px;
-        }
-
-        .mobile-user-name {
-            max-width: 90px;
-            font-size: 13px;
-        }
-
-        .mobile-auth-btn {
-            min-height: 34px;
-            padding: 0 12px;
-            font-size: 12px;
-        }
-
-        .mobile-user-avatar {
-            width: 38px;
-            height: 38px;
-        }
-    }
-</style>
