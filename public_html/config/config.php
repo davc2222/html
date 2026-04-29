@@ -2,7 +2,8 @@
 // ======================
 // LOADER CONFIG
 // ======================
-
+ini_set('session.gc_maxlifetime', 86400); // 24 שעות
+session_set_cookie_params(86400);
 // עדיפות ללוקאל
 if (file_exists(__DIR__ . '/config.local.php')) {
     $config = require __DIR__ . '/config.local.php';

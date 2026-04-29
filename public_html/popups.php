@@ -294,6 +294,15 @@ $isLoggedIn = !empty($_SESSION['user_id']);
     .account-freeze-btn {
         background: #777 !important
     }
+
+
+    .footer-popup-box {
+        overflow-x: hidden !important;
+    }
+
+    .footer-popup-overlay {
+        overflow-x: hidden !important;
+    }
 </style>
 
 <script>

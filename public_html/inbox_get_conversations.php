@@ -1,5 +1,6 @@
 <?php
 // ===== inbox_get_conversations.php =====
+// מחזיר רשימת שיחות עבור inbox.php
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -127,20 +128,32 @@ try {
         if ($displayNameRaw === '') {
             $displayNameRaw = 'משתמש';
         }
+
         $displayName = h($displayNameRaw);
 
         $lastMsgRaw = trim((string)($row['last_msg'] ?? ''));
-        $lastMsgShort = $lastMsgRaw !== '' ? mb_strimwidth($lastMsgRaw, 0, 28, '...') : '';
+        $lastMsgShort = $lastMsgRaw !== ''
+            ? mb_strimwidth($lastMsgRaw, 0, 34, '...', 'UTF-8')
+            : 'אין הודעה אחרונה';
+
         $lastMsg = h($lastMsgShort);
 
-        $dateText = '';
+        $timeText = '';
         if (!empty($row['last_date'])) {
             $ts = strtotime((string)$row['last_date']);
             if ($ts) {
-                $dateText = date('d/m/Y', $ts);
+                $today = date('Y-m-d');
+                $msgDay = date('Y-m-d', $ts);
+
+                if ($msgDay === $today) {
+                    $timeText = date('H:i', $ts);
+                } else {
+                    $timeText = date('d/m', $ts);
+                }
             }
         }
-        $dateHtml = h($dateText);
+
+        $dateHtml = h($timeText);
 
         $unread = (int)($row['unread_count'] ?? 0);
         $unreadClass = $unread > 0 ? ' inbox-unread' : '';
@@ -173,36 +186,42 @@ try {
         $avatarHtml = h($avatar);
         $fallbackHtml = h($fallback);
 
+        $badgeHtml = '';
+        if ($unread > 0) {
+            $badgeHtml = "<div class='inbox-badge'>{$unread}</div>";
+        }
+
         echo "
         <div
             class='inbox-conversation-item{$unreadClass}'
             data-user-id='{$userId}'
             data-name='{$displayName}'
         >
-            <div class='inbox-conversation-date'>{$dateHtml}</div>
+            <a
+                href='/?page=profile&id={$userId}'
+                class='inbox-conversation-avatar-link'
+                onclick='event.stopPropagation();'
+            >
+                <img
+                    src='{$avatarHtml}'
+                    alt='{$displayName}'
+                    class='inbox-conversation-avatar'
+                    onerror=\"this.onerror=null;this.src='{$fallbackHtml}';\"
+                >
+            </a>
 
-            <div class='inbox-conversation-main'>
-                <a href='/?page=profile&id={$userId}' onclick='event.stopPropagation()'>
-                    <img
-                        src='{$avatarHtml}'
-                        alt='{$displayName}'
-                        class='inbox-conversation-avatar'
-                        onerror=\"this.onerror=null;this.src='{$fallbackHtml}';\"
-                    >
-                </a>
+            <div class='inbox-conversation-content'>
+                <div class='inbox-conversation-name'>{$displayName}</div>
+                <div class='inbox-conversation-preview'>{$lastMsg}</div>
+            </div>
 
-                <div class='inbox-conversation-content'>
-                    <div class='inbox-conversation-name'>{$displayName}</div>
-                    <div class='inbox-conversation-preview'>"
-            . ($unread > 0 ? "<strong>({$unread})</strong> " : "") .
-            "{$lastMsg}
-                    </div>
-                </div>
+            <div class='inbox-conversation-meta'>
+                <div class='inbox-conversation-time'>{$dateHtml}</div>
+                {$badgeHtml}
             </div>
         </div>
         ";
     }
 } catch (Throwable $e) {
-    // ❌ בלי debug
     echo '<div class="inbox-error">אירעה שגיאה בטעינת השיחות</div>';
 }

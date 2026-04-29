@@ -1,15 +1,20 @@
 <?php
+// ===== inbox_get_messages.php =====
+// מחזיר הודעות בין המשתמש המחובר לבין משתמש אחר
 
-/**
- * inbox_get_messages.php
- * מחזיר את כל ההודעות בין המשתמש המחובר למשתמש אחר
- * כולל שם שולח, שעה וסטטוס "נקרא"
- */
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-session_start();
 require_once __DIR__ . '/config/config.php';
 
 header('Content-Type: text/html; charset=UTF-8');
+
+if (!function_exists('h')) {
+    function h($v): string {
+        return htmlspecialchars((string)($v ?? ''), ENT_QUOTES, 'UTF-8');
+    }
+}
 
 try {
     if (!isset($_SESSION['user_id'])) {
@@ -24,25 +29,25 @@ try {
     }
 
     $sql = "
-    SELECT 
-        m.*,
-        up.Name AS sender_name
-    FROM messages m
-    LEFT JOIN users_profile up
-        ON up.Id = m.ById
-    WHERE
-    (
-        m.ById = :me
-        AND m.Id = :other
-        AND (m.Deleted_By_ById = 0 OR m.Deleted_By_ById IS NULL)
-    )
-    OR
-    (
-        m.ById = :other
-        AND m.Id = :me
-        AND (m.Deleted_By_Id = 0 OR m.Deleted_By_Id IS NULL)
-    )
-    ORDER BY m.Date_Sent ASC, m.Msg_Num ASC
+        SELECT
+            m.*,
+            up.Name AS sender_name
+        FROM messages m
+        LEFT JOIN users_profile up
+            ON up.Id = m.ById
+        WHERE
+        (
+            m.ById = :me
+            AND m.Id = :other
+            AND (m.Deleted_By_ById = 0 OR m.Deleted_By_ById IS NULL)
+        )
+        OR
+        (
+            m.ById = :other
+            AND m.Id = :me
+            AND (m.Deleted_By_Id = 0 OR m.Deleted_By_Id IS NULL)
+        )
+        ORDER BY m.Date_Sent ASC, m.Msg_Num ASC
     ";
 
     $stmt = $pdo->prepare($sql);
@@ -58,30 +63,74 @@ try {
         exit;
     }
 
+    $lastDay = '';
+
     foreach ($rows as $msg) {
         $isMe = ((int)$msg['ById'] === $me);
 
-        $text = nl2br(htmlspecialchars((string)($msg['Msg_Txt'] ?? ''), ENT_QUOTES, 'UTF-8'));
-        $time = !empty($msg['Date_Sent']) ? date('d/m/Y H:i', strtotime($msg['Date_Sent'])) : '';
-        $senderName = htmlspecialchars((string)($msg['sender_name'] ?? 'משתמש'), ENT_QUOTES, 'UTF-8');
+        $rawText = (string)($msg['Msg_Txt'] ?? '');
+        $text = nl2br(h($rawText));
 
-        $rowClass = $isMe ? 'inbox-message-row inbox-message-row-me' : 'inbox-message-row inbox-message-row-other';
-        $bubbleClass = $isMe ? 'inbox-message inbox-message-me' : 'inbox-message inbox-message-other';
+        $dateSent = (string)($msg['Date_Sent'] ?? '');
+        $ts = $dateSent !== '' ? strtotime($dateSent) : false;
 
-        echo "<div class='{$rowClass}'>";
-        echo "  <div class='{$bubbleClass}'>";
-        echo "      <div class='inbox-message-sender'>{$senderName}</div>";
-        echo "      <div class='inbox-message-text'>{$text}</div>";
-        echo "      <div class='inbox-message-meta'>";
-        echo "          <span class='inbox-time'>{$time}</span>";
+        $time = '';
+        $fullDate = '';
+        $dayKey = '';
+        $dayLabel = '';
 
-        if ($isMe && (int)$msg['New'] === 0) {
-            echo "          <span class='inbox-read'>נקרא</span>";
+        if ($ts) {
+            $fullDate = date('d/m/Y H:i', $ts);
+            $time = date('H:i', $ts);
+            $dayKey = date('Y-m-d', $ts);
+
+            $today = date('Y-m-d');
+            $yesterday = date('Y-m-d', strtotime('-1 day'));
+
+            if ($dayKey === $today) {
+                $dayLabel = 'היום';
+            } elseif ($dayKey === $yesterday) {
+                $dayLabel = 'אתמול';
+            } else {
+                $dayLabel = date('d/m/Y', $ts);
+            }
         }
 
-        echo "      </div>";
-        echo "  </div>";
-        echo "</div>";
+        if ($dayKey !== '' && $dayKey !== $lastDay) {
+            echo "<div class='inbox-day-separator'>{$dayLabel}</div>";
+            $lastDay = $dayKey;
+        }
+
+        $rowClass = $isMe
+            ? 'inbox-message-row inbox-message-row-me'
+            : 'inbox-message-row inbox-message-row-other';
+
+        $bubbleClass = $isMe
+            ? 'inbox-message inbox-message-me'
+            : 'inbox-message inbox-message-other';
+
+        $readHtml = '';
+        if ($isMe) {
+            if ((int)($msg['New'] ?? 1) === 0) {
+                $readHtml = "<span class='inbox-read inbox-read-seen'>✓✓</span>";
+            } else {
+                $readHtml = "<span class='inbox-read inbox-read-sent'>✓</span>";
+            }
+        }
+
+        $fullDateHtml = h($fullDate);
+
+        echo "
+        <div class='{$rowClass}'>
+            <div class='{$bubbleClass}'>
+                <div class='inbox-message-text'>{$text}</div>
+                <div class='inbox-message-meta'>
+                    <span class='inbox-time' title='{$fullDateHtml}'>{$time}</span>
+                    {$readHtml}
+                </div>
+            </div>
+        </div>
+        ";
     }
 } catch (Throwable $e) {
     echo '<div class="inbox-empty">שגיאה בטעינת הודעות</div>';
