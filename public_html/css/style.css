@@ -31,10 +31,15 @@ body {
 
 
 footer {
-    position: fixed;
+    position:relative !important;
     bottom: 0;
     left: 0;
     width: 100%;
+    pointer-events: none;
+}
+
+footer * {
+    pointer-events: auto;
 }
 
 
@@ -5824,33 +5829,26 @@ body {
     white-space: normal !important;
 }
 
-@media (max-width: 600px) {
-    .footer-popup-overlay {
-        align-items: flex-end !important;
-        padding: 10px !important;
-    }
-
-    .footer-popup-box,
-    .footer-popup-box-terms {
-        width: 100% !important;
-        max-width: 100% !important;
-        max-height: calc(100dvh - 20px) !important;
-        border-radius: 18px 18px 0 0 !important;
-        padding: 22px 16px 18px !important;
-    }
-
-    .account-manage-actions {
-        flex-direction: column !important;
-    }
-
-    .account-manage-actions .footer-popup-submit,
-    .account-manage-actions button {
-        width: 100% !important;
-        min-width: 0 !important;
-    }
+.inbox-message-avatar {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    max-width: 32px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    flex-shrink: 0 !important;
 }
 
-.account-manage-actions button.account-freeze-btn {
-    background: orange !important;
-    color: #fff !important;
+.inbox-message-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+}
+
+.inbox-message-row-me {
+    justify-content: flex-start;
+}
+
+.inbox-message-row-other {
+    justify-content: flex-end;
 }

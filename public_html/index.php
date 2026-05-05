@@ -7,22 +7,29 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 $userAgent  = $_SERVER['HTTP_USER_AGENT'] ?? '';
 $host       = $_SERVER['HTTP_HOST'] ?? '';
 $requestUri = $_SERVER['REQUEST_URI'] ?? '';
-    /*
+$isGooglebot = preg_match('/Googlebot/i', $userAgent);
+
+/*
 |------------------------------------------------------------
 | אחרי logout לא מעבירים למובייל
 |------------------------------------------------------------
 */
-    $forceDesktop =
-        (isset($_GET['desktop']) && $_GET['desktop'] === '1') ||
-        (isset($_GET['from_logout']) && $_GET['from_logout'] === '1') ||
-        (!empty($_COOKIE['force_desktop_after_logout']) && $_COOKIE['force_desktop_after_logout'] === '1');
+$forceDesktop =
+    (isset($_GET['desktop']) && $_GET['desktop'] === '1') ||
+    (isset($_GET['from_logout']) && $_GET['from_logout'] === '1') ||
+    (!empty($_COOKIE['force_desktop_after_logout']) && $_COOKIE['force_desktop_after_logout'] === '1');
 
-    if ($forceDesktop) {
-        $_SESSION['force_desktop'] = true;
-    }
+if ($forceDesktop) {
+    $_SESSION['force_desktop'] = true;
+}
 /*
 |------------------------------------------------------------
 | זיהוי סביבת לוקאל
@@ -103,6 +110,7 @@ if (
 | - לא הופעל force_desktop
 */
 if (
+    !$isGooglebot &&
     !$forceDesktop &&
     empty($_COOKIE['force_desktop_after_logout']) &&
     !$isLocalhost &&
@@ -140,6 +148,9 @@ if (in_array($page, $protectedPages, true) && empty($_SESSION['user_id'])) {
     <meta name="author" content="LoveMatch">
     <meta name="robots" content="index, follow">
 
+    <link rel="canonical" href="https://lovematch.co.il/">
+    <link rel="alternate" media="only screen and (max-width: 640px)" href="https://lovematch.co.il/mobile/">
+
     <meta property="og:title" content="LoveMatch - אתר הכרויות">
     <meta property="og:description" content="מצא אהבה אמיתית ב-LoveMatch">
     <meta property="og:type" content="website">
@@ -156,6 +167,29 @@ if (in_array($page, $protectedPages, true) && empty($_SESSION['user_id'])) {
 
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.5/css/lightbox.min.css">
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-1039498648"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+
+        gtag('config', 'AW-1039498648');
+    </script>
+
+
+    <!-- Event snippet for צפייה בדף conversion page -->
+    <script>
+        gtag('event', 'conversion', {
+            'send_to': 'AW-1039498648/n0mGCL3x46UcEJj71e8D',
+            'value': 1.0,
+            'currency': 'ILS'
+        });
+    </script>
 </head>
 
 <body>

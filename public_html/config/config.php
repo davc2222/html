@@ -1,49 +1,69 @@
 <?php
 // ======================
-// LOADER CONFIG
+// config.php
 // ======================
-ini_set('session.gc_maxlifetime', 86400); // 24 שעות
-session_set_cookie_params(86400);
-// עדיפות ללוקאל
-if (file_exists(__DIR__ . '/config.local.php')) {
-    $config = require __DIR__ . '/config.local.php';
-} else {
-    $config = require __DIR__ . '/config.remote.php';
+
+$config = [
+    'db_host'    => 'localhost',
+    'db_name'    => 'dating',
+    'db_user'    => 'davc22',
+    'db_pass'    => '!Y+c|!rxZ-3x%T:E',
+    'db_charset' => 'utf8mb4',
+    'app_url'    => 'https://lovematch.co.il',
+];
+
+/*
+|--------------------------------------------------------------------------
+| Environment override
+|--------------------------------------------------------------------------
+| עדיפות:
+| 1) config.local.php  - ללוקאל
+| 2) config.live.php   - לשרת חי
+| אם אף אחד מהם לא קיים - משתמשים בברירות המחדל למעלה
+*/
+$localConfigFile = __DIR__ . '/config.local.php';
+$liveConfigFile  = __DIR__ . '/config.live.php';
+
+if (file_exists($localConfigFile)) {
+    $overrideConfig = require $localConfigFile;
+
+    if (is_array($overrideConfig)) {
+        $config = array_merge($config, $overrideConfig);
+    }
+} elseif (file_exists($liveConfigFile)) {
+    $overrideConfig = require $liveConfigFile;
+
+    if (is_array($overrideConfig)) {
+        $config = array_merge($config, $overrideConfig);
+    }
 }
 
-// ======================
-// תאימות לאחור (constants)
-// ======================
-if (!defined('APP_URL') && isset($config['app_url'])) {
-    define('APP_URL', $config['app_url']);
-}
+/*
+|--------------------------------------------------------------------------
+| Constants
+|--------------------------------------------------------------------------
+*/
+define('DB_HOST', $config['db_host']);
+define('DB_NAME', $config['db_name']);
+define('DB_USER', $config['db_user']);
+define('DB_PASS', $config['db_pass']);
+define('DB_CHARSET', $config['db_charset']);
+define('APP_URL', rtrim($config['app_url'], '/'));
 
-// אם תרצה גם DB constants (לא חובה)
-if (!defined('DB_HOST') && isset($config['db_host'])) {
-    define('DB_HOST', $config['db_host']);
-}
-if (!defined('DB_NAME') && isset($config['db_name'])) {
-    define('DB_NAME', $config['db_name']);
-}
-if (!defined('DB_USER') && isset($config['db_user'])) {
-    define('DB_USER', $config['db_user']);
-}
-if (!defined('DB_PASS') && isset($config['db_pass'])) {
-    define('DB_PASS', $config['db_pass']);
-}
+/*
+|--------------------------------------------------------------------------
+| PDO
+|--------------------------------------------------------------------------
+*/
+$dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
 
-// ======================
-// חיבור למסד
-// ======================
-$dsn = "mysql:host={$config['db_host']};dbname={$config['db_name']};charset={$config['db_charset']}";
+$options = [
+    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+];
 
 try {
-    $pdo = new PDO($dsn, $config['db_user'], $config['db_pass'], [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-    ]);
+    $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
 } catch (PDOException $e) {
     die("חיבור למסד נכשל: " . $e->getMessage());
 }
-
-return $config;

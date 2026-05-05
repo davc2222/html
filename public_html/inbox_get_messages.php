@@ -1,6 +1,5 @@
 <?php
 // ===== inbox_get_messages.php =====
-// מחזיר הודעות בין המשתמש המחובר לבין משתמש אחר
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -31,10 +30,17 @@ try {
     $sql = "
         SELECT
             m.*,
-            up.Name AS sender_name
+            up.Name AS sender_name,
+            pic.Pic_Name AS profile_image
         FROM messages m
+
         LEFT JOIN users_profile up
             ON up.Id = m.ById
+
+        LEFT JOIN user_pics pic
+            ON pic.Id = m.ById
+            AND pic.Main_Pic = 1
+
         WHERE
         (
             m.ById = :me
@@ -66,10 +72,15 @@ try {
     $lastDay = '';
 
     foreach ($rows as $msg) {
+
         $isMe = ((int)$msg['ById'] === $me);
 
         $rawText = (string)($msg['Msg_Txt'] ?? '');
         $text = nl2br(h($rawText));
+
+        $image = !empty($msg['profile_image'])
+            ? '/uploads/' . $msg['profile_image']
+            : '/images/default.png';
 
         $dateSent = (string)($msg['Date_Sent'] ?? '');
         $ts = $dateSent !== '' ? strtotime($dateSent) : false;
@@ -120,17 +131,40 @@ try {
 
         $fullDateHtml = h($fullDate);
 
-        echo "
-        <div class='{$rowClass}'>
-            <div class='{$bubbleClass}'>
-                <div class='inbox-message-text'>{$text}</div>
-                <div class='inbox-message-meta'>
-                    <span class='inbox-time' title='{$fullDateHtml}'>{$time}</span>
-                    {$readHtml}
+        if ($isMe) {
+            // אתה - לא נוגע (כמו שהיה)
+            echo "
+            <div class='{$rowClass}'>
+
+                <img src='" . h($image) . "' class='inbox-message-avatar'>
+
+                <div class='{$bubbleClass}'>
+                    <div class='inbox-message-text'>{$text}</div>
+                    <div class='inbox-message-meta'>
+                        <span class='inbox-time' title='{$fullDateHtml}'>{$time}</span>
+                        {$readHtml}
+                    </div>
                 </div>
+
             </div>
-        </div>
-        ";
+            ";
+        } else {
+            // הצד השני - מתוקן
+            echo "
+            <div class='{$rowClass}'>
+
+                <div class='{$bubbleClass}'>
+                    <div class='inbox-message-text'>{$text}</div>
+                    <div class='inbox-message-meta'>
+                        <span class='inbox-time' title='{$fullDateHtml}'>{$time}</span>
+                    </div>
+                </div>
+
+                <img src='" . h($image) . "' class='inbox-message-avatar'>
+
+            </div>
+            ";
+        }
     }
 } catch (Throwable $e) {
     echo '<div class="inbox-empty">שגיאה בטעינת הודעות</div>';

@@ -20,7 +20,7 @@
         padding: 70px 35px 60px;
         text-align: center;
         color: #fff;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.14);
+        box-shadow: 0 10px 30px rgba(228, 9, 64, 0.14);
     }
 
     .home-demo-hero h1 {
@@ -117,46 +117,27 @@
         margin: 0;
     }
 
-    @media (max-width: 900px) {
-        .home-demo-hero h1 {
-            font-size: 38px;
-        }
-
-        .home-demo-hero p {
-            font-size: 18px;
-        }
-
-        .home-demo-features {
-            grid-template-columns: 1fr;
-        }
+    .home-demo-hero {
+        background: linear-gradient(135deg, #d91f4f, #b9153f) !important;
+        color: #fff !important;
     }
 
-    @media (max-width: 600px) {
-        .home-demo-hero {
-            padding: 50px 20px 42px;
-        }
+    .home-demo-hero h1,
+    .home-demo-hero p,
+    .home-demo-hero .home-logged-in {
+        color: #fff !important;
+    }
 
-        .home-demo-hero h1 {
-            font-size: 30px;
-        }
-
-        .home-demo-actions {
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .home-demo-btn {
-            width: 100%;
-            max-width: 260px;
-            text-align: center;
-        }
+    .home-demo-btn-primary {
+        background: #fff !important;
+        color: #d91f4f !important;
     }
 </style>
 
 <main class="home-page-shell">
     <div class="home-demo-wrap">
         <section class="home-demo-hero">
-            <h1>ברוכים הבאים ל־LoveMatch ❤️</h1>
+            <h1>LoveMatch – אתר הכרויות למציאת זוגיות אמיתית ❤️</h1>
             <p>מצא את ההתאמה המושלמת עבורך במהירות ובקלות.</p>
             <p>קהילה איכותית, התאמות חכמות וחוויית שימוש נעימה ופשוטה.</p>
 
@@ -184,8 +165,11 @@
 
             <div class="home-demo-card">
                 <div class="home-demo-icon">★</div>
-                <h3>התאמות אישיות</h3>
-                <p>מערכת חכמה שמסייעת למצוא התאמות מדויקות וטובות יותר.</p>
+                <h3>אתר הכרויות בישראל</h3>
+                <p>
+                    LoveMatch הוא אתר הכרויות מוביל בישראל למציאת זוגיות אמיתית, דייטים וקשרים רציניים.
+                    חפשו התאמות לפי אזור, גיל והעדפות אישיות, שלחו הודעות והכירו אנשים מכל הארץ בצורה נוחה ובטוחה.
+                </p>
             </div>
 
             <div class="home-demo-card">
