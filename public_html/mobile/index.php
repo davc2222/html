@@ -47,8 +47,8 @@ function m_is_active(string $name, string $page): string {
     return $name === $page ? 'active' : '';
 }
 
-function m_e($value): string {
-    return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
+function h(mixed $v): string {
+    return htmlspecialchars((string)($v ?? ''), ENT_QUOTES, 'UTF-8');
 }
 
 $mobileHeaderAvatar = '/images/default_male.svg';

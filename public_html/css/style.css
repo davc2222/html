@@ -26,21 +26,16 @@ body {
     direction: rtl;
     background: #f2f2f2;
     color: #222;
-    padding-bottom: 100px;
+    padding-bottom: 0;
 }
-
 
 footer {
-    position:relative !important;
-    bottom: 0;
-    left: 0;
+    position: relative;
     width: 100%;
-    pointer-events: none;
-}
-
-footer * {
     pointer-events: auto;
 }
+
+
 
 
 a {
@@ -5088,6 +5083,8 @@ transform: translateX(-50px);
     border-top: 1px solid #eee;
     font-size: 14px;
     color: #666;
+    position: relative;
+    width: 100%;
 }
 
 .footer-inner {
@@ -5851,4 +5848,165 @@ body {
 
 .inbox-message-row-other {
     justify-content: flex-end;
+}
+
+/* ===== FINAL FIX - REMOVE EXTRA VERTICAL SCROLL ===== */
+
+html,
+body {
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 100% !important;
+    overflow-x: hidden !important;
+}
+
+body {
+    padding-bottom: 0 !important;
+    display: block !important;
+}
+
+.site-footer,
+footer {
+    position: static !important;
+    bottom: auto !important;
+    left: auto !important;
+    width: 100% !important;
+    margin-top: 20px !important;
+    pointer-events: auto !important;
+}
+
+.site-footer {
+    margin-bottom: 0 !important;
+}
+
+.page-shell {
+    margin-top: 20px !important;
+    margin-bottom: 20px !important;
+}
+
+.site-footer,
+footer {
+    margin-top: 0 !important;
+}
+
+.home-demo-hero {
+    background: #ffffff !important;
+    filter: none !important;
+    opacity: 1 !important;
+}
+
+.home-demo-wrap {
+    background: #f2f2f2 !important;
+}
+
+.site-main {
+    min-height: 0 !important;
+    height: auto !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+.site-page {
+    min-height: 0 !important;
+    height: auto !important;
+    padding-bottom: 0 !important;
+}
+
+.home-page-shell {
+    min-height: 0 !important;
+    height: auto !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+.home-demo-hero,
+.home-demo-features {
+    margin-bottom: 0 !important;
+}
+
+.home-demo-hero {
+    padding-top: 25px !important;
+    padding-bottom: 25px !important;
+}
+
+/* ===== STICKY FOOTER FIX ===== */
+
+html,
+body {
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 100vh !important;
+    overflow-x: hidden !important;
+}
+
+body {
+    display: block !important;
+}
+
+.site-page {
+    min-height: 100vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.site-main {
+    flex: 1 0 auto !important;
+}
+
+.site-footer,
+footer {
+    flex-shrink: 0 !important;
+    position: relative !important;
+    bottom: auto !important;
+    width: 100% !important;
+    margin-top: auto !important;
+}
+
+html,
+body {
+    overflow-x: hidden;
+}
+
+body {
+    margin: 0;
+}
+
+.site-page {
+    overflow: hidden;
+}
+
+.home-page-shell {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+footer,
+.site-footer {
+    margin-bottom: 0 !important;
+}
+
+.home-demo-features {
+    margin-bottom: 0 !important;
+}
+
+.home-demo-wrap {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+.site-main {
+    padding-bottom: 0 !important;
+}
+
+footer,
+.site-footer {
+    margin-top: 0 !important;
+}
+
+body {
+    overflow-y: clip;
+}
+
+.home-demo-features {
+    margin-top: 14px !important;
 }

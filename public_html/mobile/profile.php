@@ -6,8 +6,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-function e($v) {
-    return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
+function h(mixed $v): string {
+    return htmlspecialchars((string)($v ?? ''), ENT_QUOTES, 'UTF-8');
 }
 
 function murl(string $page, string $params = ''): string {

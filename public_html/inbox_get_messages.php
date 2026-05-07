@@ -10,7 +10,7 @@ require_once __DIR__ . '/config/config.php';
 header('Content-Type: text/html; charset=UTF-8');
 
 if (!function_exists('h')) {
-    function h($v): string {
+    function h(mixed $v): string {
         return htmlspecialchars((string)($v ?? ''), ENT_QUOTES, 'UTF-8');
     }
 }
