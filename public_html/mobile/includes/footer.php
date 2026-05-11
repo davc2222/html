@@ -12,7 +12,7 @@ $isLoggedIn   = !empty($_SESSION['user_id']);
     <div class="footer-inner">
 
         <div class="footer-left">
-            <span>© <?= date('Y') ?> LoveMatch</span>
+    
         </div>
 
         <div class="footer-center">

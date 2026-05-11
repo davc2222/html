@@ -12,43 +12,67 @@ if (empty($_SESSION['user_id'])) {
 
 $session_user_id = (int)$_SESSION['user_id'];
 
-function h($v) {
-    return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
-}
 
-function get_profile_image(PDO $pdo, int $userId): string {
+
+function get_profile_image(PDO $pdo, int $userId): string
+{
+
     try {
         $stmt = $pdo->prepare("
             SELECT Pic_Name
             FROM user_pics
             WHERE Id = :id
               AND Main_Pic = 1
-              AND Pic_Status = 1
             LIMIT 1
         ");
+
         $stmt->execute([':id' => $userId]);
+
         $picName = $stmt->fetchColumn();
 
         if (!$picName) {
+
             $stmt = $pdo->prepare("
                 SELECT Pic_Name
                 FROM user_pics
                 WHERE Id = :id
-                  AND Pic_Status = 1
                 ORDER BY Main_Pic DESC, Pic_Num ASC
                 LIMIT 1
             ");
+
             $stmt->execute([':id' => $userId]);
+
             $picName = $stmt->fetchColumn();
         }
 
         if ($picName) {
-            return '/uploads/' . ltrim((string)$picName, '/');
+            return '/uploads/' . ltrim((string) $picName, '/');
         }
+
     } catch (Throwable $e) {
     }
 
-    return '/images/no_photo.jpg';
+    try {
+
+        $stmt = $pdo->prepare("
+            SELECT Gender_Str
+            FROM users_profile
+            WHERE Id = :id
+            LIMIT 1
+        ");
+
+        $stmt->execute([':id' => $userId]);
+
+        $gender = trim((string) $stmt->fetchColumn());
+
+        if ($gender === 'אישה') {
+            return '/images/default_female.svg';
+        }
+
+    } catch (Throwable $e) {
+    }
+
+    return '/images/default_male.svg';
 }
 
 $stmt = $pdo->prepare("
@@ -95,7 +119,7 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     '<a href="/?page=profile&id=' . $id . '" class="view-card-profile-link">צפייה בפרופיל</a>
                      <span>|</span>
                      <a href="#" class="view-card-profile-link unblock-link" onclick="openUnblockConfirm(' . $id . '); return false;">בטל חסימה</a>';
-
+                $user['Image'] = get_profile_image($pdo, $id);
                 include __DIR__ . '/includes/view_card.php';
                 ?>
             <?php endforeach; ?>

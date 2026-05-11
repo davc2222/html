@@ -116,13 +116,13 @@ if ($currentUserId > 0) {
                     <div class="mobile-user-box">
                         <a href="/mobile/?page=profile&id=<?= $currentUserId ?>&edit=1" class="mobile-user-avatar-link">
                             <div class="mobile-user-avatar">
-                                <img src="<?= m_e($mobileHeaderAvatar) ?>">
+                                <img src="<?= h($mobileHeaderAvatar) ?>" alt="">
                             </div>
                         </a>
 
                         <div class="mobile-user-info">
                             <span class="mobile-user-hello">שלום</span>
-                            <span class="mobile-user-name"><?= m_e($currentUserName) ?></span>
+                            <span class="mobile-user-name"><?= h($currentUserName) ?></span>
                         </div>
                     </div>
 

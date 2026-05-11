@@ -12,9 +12,6 @@ if (empty($_SESSION['user_id'])) {
 
 $session_user_id = (int)$_SESSION['user_id'];
 
-function h($v) {
-    return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
-}
 
 function get_profile_image(PDO $pdo, int $userId): string {
     try {

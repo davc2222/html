@@ -70,7 +70,10 @@ if ($chatViewerId > 0) {
             class="chat-window-textarea"
             rows="2"
             placeholder="כתוב הודעה..."></textarea>
-
+         <label class="chat-enter-toggle">
+    <input type="checkbox" id="sendByEnter" checked>
+    שליחה ב־Enter
+</label>
         <button
             type="button"
             class="chat-window-send"

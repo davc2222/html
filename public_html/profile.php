@@ -64,6 +64,49 @@ if (!$user) {
     exit;
 }
 
+/* ========= השלמת אזור/מקום אם חסר STR ========= */
+
+if (empty($user['Zone_Str']) && !empty($user['Zone_Id'])) {
+    $stmt = $pdo->prepare("
+        SELECT Zone_Str
+        FROM zone
+        WHERE Zone_Id = :id
+        LIMIT 1
+    ");
+    $stmt->execute([
+        ':id' => (int)$user['Zone_Id']
+    ]);
+
+    $zoneStr = $stmt->fetchColumn();
+
+    if ($zoneStr) {
+        $user['Zone_Str'] = $zoneStr;
+    }
+}
+
+if (empty($user['Place_Str']) && !empty($user['Place_Id'])) {
+    $stmt = $pdo->prepare("
+        SELECT Place_Str
+        FROM place
+        WHERE Place_Id = :id
+        LIMIT 1
+    ");
+    $stmt->execute([
+        ':id' => (int)$user['Place_Id']
+    ]);
+
+    $placeStr = $stmt->fetchColumn();
+
+    if ($placeStr) {
+        $user['Place_Str'] = $placeStr;
+    }
+}
+$placeStr = $stmt->fetchColumn();
+
+if ($placeStr) {
+    $user['Place_Str'] = $placeStr;
+}
+
 if ((int)($user['Is_Frozen'] ?? 0) === 1 && $viewerId !== (int)$user['Id']) {
     echo '
     <div class="blocked-profile-box">
@@ -512,13 +555,21 @@ try {
                     <div class="profile-gallery-grid">
 
                         <?php if ($isOwner): ?>
-                            <form action="/upload_photo.php" method="POST" enctype="multipart/form-data" class="profile-upload-form">
-                                <label class="profile-gallery-upload-btn">
+                        
+                            <div class="profile-upload-form">
+                        
+                                <button type="button" class="profile-gallery-upload-btn" onclick="openUploadPhotoBox()">
+                        
                                     <span class="profile-gallery-upload-btn-icon">＋</span>
-                                    <span class="profile-gallery-upload-btn-text">הוסף תמונה</span>
-                                    <input type="file" name="photo" accept="image/*" onchange="this.form.submit()" hidden>
-                                </label>
-                            </form>
+                        
+                                    <span class="profile-gallery-upload-btn-text">
+                                        הוסף תמונה
+                                    </span>
+                        
+                                </button>
+                        
+                            </div>
+                        
                         <?php endif; ?>
 
                         <?php foreach ($pics as $index => $pic): ?>
@@ -609,6 +660,98 @@ try {
         </div>
     </div>
 </div>
+<div id="uploadPhotoBox" class="upload-photo-overlay" style="display:none;">
+
+    <div class="upload-photo-card">
+
+        <button type="button" class="upload-photo-close" onclick="closeUploadPhotoBox()">×</button>
+
+<div class="upload-photo-icon">🖼️</div>
+
+<h2 class="upload-photo-title">העלאת תמונה</h2>
+
+<div class="upload-photo-text">בחר תמונה להוספה לפרופיל</div>
+
+<div id="uploadPhotoMessage" class="upload-photo-message" style="display:none;"></div>
+
+<div class="upload-photo-methods">
+
+    <form action="/upload_photo.php" method="POST" enctype="multipart/form-data" class="upload-photo-method">
+        <label class="upload-method-card">
+            <span class="upload-method-icon">🌄</span>
+            <strong>בחר מתוך המחשב</strong>
+            <small>העלה תמונה מהמחשב שלך</small>
+
+            <input
+                type="file"
+                name="photo"
+                accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                onchange="uploadPhotoAjax(this.form)"
+                hidden>
+        </label>
+    </form>
+
+    <form action="/upload_photo.php" method="POST" enctype="multipart/form-data" class="upload-photo-method">
+        <label class="upload-method-card upload-drop-card" id="uploadDropZone">
+            <span class="upload-method-icon">☁️</span>
+            <strong>גרור לכאן</strong>
+            <small>גרור קובץ לכאן להעלאה</small>
+
+            <input
+                id="uploadPhotoInput"
+                type="file"
+                name="photo"
+                accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                onchange="uploadPhotoAjax(this.form)"
+                hidden>
+        </label>
+    </form>
+
+</div>
+
+</div>
+
+<script>
+function openUploadPhotoBox() {
+    document.getElementById('uploadPhotoBox').style.display = 'flex';
+}
+
+function closeUploadPhotoBox() {
+    document.getElementById('uploadPhotoBox').style.display = 'none';
+}
+</script>
+
+<script>
+const uploadDropZone = document.getElementById('uploadDropZone');
+const uploadPhotoInput = document.getElementById('uploadPhotoInput');
+
+if (uploadDropZone && uploadPhotoInput) {
+
+    uploadDropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadDropZone.classList.add('is-dragover');
+    });
+
+    uploadDropZone.addEventListener('dragleave', function() {
+        uploadDropZone.classList.remove('is-dragover');
+    });
+
+    uploadDropZone.addEventListener('drop', function(e) {
+
+        e.preventDefault();
+
+        uploadDropZone.classList.remove('is-dragover');
+
+        if (e.dataTransfer.files.length > 0) {
+
+            uploadPhotoInput.files = e.dataTransfer.files;
+
+          uploadPhotoAjax(uploadPhotoInput.form);
+        }
+    });
+}
+</script>
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox.min.js"></script>
 
@@ -638,9 +781,13 @@ try {
             let html = `<select class="profile-right-select js-right-input" data-field="${escapeHtml(field)}">`;
             html += `<option value="">בחר</option>`;
 
+            const valueClean = String(value || '').trim();
+
             options.forEach(function(opt) {
-                const selected = String(opt) === String(value) ? ' selected' : '';
-                html += `<option value="${escapeHtml(opt)}"${selected}>${escapeHtml(opt)}</option>`;
+                const optClean = String(opt || '').trim();
+                const selected = optClean === valueClean ? ' selected' : '';
+
+                html += `<option value="${escapeHtml(optClean)}"${selected}>${escapeHtml(optClean)}</option>`;
             });
 
             html += `</select>`;
@@ -1033,4 +1180,52 @@ try {
             closeBlockModal();
         }
     });
+</script>
+
+<script>
+function uploadPhotoAjax(form) {
+
+    const msgBox = document.getElementById('uploadPhotoMessage');
+
+    const formData = new FormData(form);
+
+    fetch('/upload_photo.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+
+        if (!msgBox) return;
+
+        msgBox.style.display = 'block';
+
+        msgBox.className =
+            data.ok
+            ? 'upload-photo-message success'
+            : 'upload-photo-message error';
+
+        msgBox.textContent =
+            data.message || 'שגיאה לא ידועה';
+
+        if (data.ok) {
+
+            setTimeout(() => {
+                window.location.reload();
+            }, 900);
+        }
+    })
+    .catch(() => {
+
+        if (!msgBox) return;
+
+        msgBox.style.display = 'block';
+
+        msgBox.className =
+            'upload-photo-message error';
+
+        msgBox.textContent =
+            'שגיאה בשליחת הקובץ';
+    });
+}
 </script>

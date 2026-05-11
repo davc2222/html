@@ -1233,3 +1233,8 @@ select {
 .page-shell ul {
     padding-right: 18px;
 }
+
+.mobile-footer {
+    font-size: 0 !important;
+    color: transparent !important;
+}

@@ -8,9 +8,19 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-function h($v) {
-    return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
+date_default_timezone_set('Asia/Jerusalem');
+
+try {
+    $pdo->exec("SET time_zone = '+03:00'");
+} catch (Throwable $e) {
 }
+
+if (!function_exists('h')) {
+    function h($v): string {
+        return htmlspecialchars((string)($v ?? ''), ENT_QUOTES, 'UTF-8');
+    }
+}
+
 
 function jsonOut(array $data, int $code = 200): void {
     if (ob_get_length()) {
@@ -160,11 +170,12 @@ function renderMessagesHtml(array $messages, int $me, string $meImg, string $oth
 }
 
 if (empty($_SESSION['user_id'])) {
+
     if (isset($_GET['ajax_action']) || isset($_POST['ajax_action'])) {
         jsonOut(['ok' => false, 'message' => 'המשתמש לא מחובר'], 401);
     }
 
-    header('Location: /mobile/?page=login');
+    echo '<script>window.location.href="/mobile/?page=login";</script>';
     exit;
 }
 
@@ -843,14 +854,14 @@ $messages = fetchChatMessages($pdo, $me, $otherId);
 
 <style>
     .chat-page {
-        display: flex;
-        flex-direction: column;
-        height: calc(100dvh - 220px);
-        min-height: 360px;
-        max-height: calc(100dvh - 220px);
-        overflow: hidden;
-        background: #f3f4f6;
-        border-top: 1px solid #eeeeee;
+       display: flex;
+    flex-direction: column;
+    height: calc(100dvh - 120px);
+    min-height: calc(100dvh - 120px);
+    overflow: hidden;
+    background: #f3f4f6;
+    border-top: 1px solid #eeeeee;
+       margin-bottom: -70px;
     }
 
     .chat-title-bar {
@@ -900,12 +911,15 @@ $messages = fetchChatMessages($pdo, $me, $otherId);
     }
 
     .chat-messages {
-        flex: 1 1 auto;
+        flex: 1;
         min-height: 0;
         overflow-y: auto;
         padding: 10px 10px 12px;
         background: #f3f4f6;
         direction: ltr !important;
+         min-height: 0;
+         padding-bottom: 6px
+
     }
 
     .chat-row {

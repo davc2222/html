@@ -116,7 +116,8 @@ $isLoggedIn = !empty($_SESSION['user_id']);
 
             <h3>איסוף מידע</h3>
             <p>
-                בעת הרשמה לאתר נאסף מידע כגון שם משתמש, כתובת אימייל, תאריך לידה ופרטים נוספים שהמשתמש בוחר להזין בפרופיל.
+                בעת הרשמה לאתר נאסף מידע כגון שם משתמש, כתובת אימייל, תאריך לידה ופרטים נוספים שהמשתמש בוחר להזין
+                בפרופיל.
             </p>
 
             <h3>שימוש במידע</h3>
@@ -149,7 +150,7 @@ $isLoggedIn = !empty($_SESSION['user_id']);
             </p>
 
             <h3>מחיקת מידע</h3>
-            <p>
+            <p style="text-align:center;">
                 המשתמש רשאי לבקש מחיקת חשבונו והמידע המשויך אליו באמצעות פנייה דרך האתר או דרך אפשרויות ניהול הכרטיס.
             </p>
 
@@ -170,23 +171,46 @@ $isLoggedIn = !empty($_SESSION['user_id']);
      ACCOUNT MANAGE POPUP
 ======================= -->
     <div id="accountManagePopupOverlay" class="footer-popup-overlay" style="display:none;">
-        <div class="footer-popup-box">
+        <div class="footer-popup-box account-manage-box">
             <button type="button" class="footer-popup-close" id="accountManagePopupCloseBtn">×</button>
 
-            <h2 class="footer-popup-title">ניהול כרטיס</h2>
+            <h2 class="footer-popup-title account-manage-title">
+                <span class="account-title-text">ניהול כרטיס</span>
+                <span class="account-title-icon">▣</span>
+            </h2>
 
-            <div class="terms-content" style="text-align:right;">
+            <div class="account-manage-content">
                 <p>
-                    אפשר להקפיא את הכרטיס ולחזור בעתיד, או למחוק את הפרופיל לצמיתות.
+                    מאפשר לך לשלוט בסטטוס הנראות והפעילות של הפרופיל שלך.
+                </p>
+                <p>
+                    ניתן להקפיא את הכרטיס ולחזור בעתיד. או למחוק את הפרופיל לצמיתות.
                 </p>
 
                 <div class="account-manage-actions">
+
                     <button type="button" id="freezeAccountBtn" class="footer-popup-submit account-freeze-btn">
-                        הקפאת כרטיס
+                        <div class="account-btn-row">
+                            <span class="account-btn-title">הקפאת כרטיס</span>
+                            <span class="account-btn-icon">❄</span>
+                        </div>
+                        <span class="account-btn-subtitle">הסתרה זמנית</span>
                     </button>
 
                     <button type="button" id="deleteAccountBtn" class="footer-popup-submit account-delete-btn">
-                        מחיקה מלאה
+                        <div class="account-btn-row">
+                            <span class="account-btn-title">מחיקת פרופיל</span>
+                            <span class="account-btn-icon">🗑</span>
+                        </div>
+                        <span class="account-btn-subtitle">מחיקה לצמיתות</span>
+                    </button>
+                </div>
+
+                <div class="account-help-row">
+                    <span>זקוק לעזרה?</span>
+                    <button type="button" class="account-help-link"
+                        onclick="closeAccountManagePopup(); openContactPopup();">
+                        פנה אלינו
                     </button>
                 </div>
 
@@ -195,7 +219,6 @@ $isLoggedIn = !empty($_SESSION['user_id']);
         </div>
     </div>
 <?php endif; ?>
-
 
 <style>
     .footer-popup-overlay {
@@ -208,7 +231,8 @@ $isLoggedIn = !empty($_SESSION['user_id']);
         background: rgba(0, 0, 0, .55) !important;
         z-index: 1000000 !important;
         box-sizing: border-box !important;
-        overflow: auto !important
+        overflow: auto !important;
+        overflow-x: hidden !important;
     }
 
     .footer-popup-box,
@@ -223,58 +247,51 @@ $isLoggedIn = !empty($_SESSION['user_id']);
         direction: rtl !important;
         text-align: right !important;
         box-shadow: 0 18px 50px rgba(0, 0, 0, .25) !important;
-        box-sizing: border-box !important
+        box-sizing: border-box !important;
     }
 
     .footer-popup-box-terms {
-        width: min(760px, calc(100vw - 32px)) !important
+        width: min(760px, calc(100vw - 32px)) !important;
     }
 
     .footer-popup-close {
         position: absolute !important;
-        top: 10px !important;
-        left: 12px !important;
-        width: 34px !important;
-        height: 34px !important;
+        top: 16px !important;
+        left: 18px !important;
+        width: 40px !important;
+        height: 40px !important;
         border: 0 !important;
         border-radius: 50% !important;
-        background: #eee !important;
+        background: #f1f1f1 !important;
         color: #333 !important;
-        font-size: 24px !important;
+        font-size: 28px !important;
         line-height: 1 !important;
-        cursor: pointer !important
+        cursor: pointer !important;
     }
 
     .footer-popup-title {
         margin: 0 0 18px !important;
         text-align: center !important;
-        color: #d91f4f !important
+        color: #d91f4f !important;
     }
 
     .terms-content {
         line-height: 1.8 !important;
-        color: #333 !important
+        color: #333 !important;
     }
 
     .footer-popup-msg {
         min-height: 22px;
         margin-top: 10px;
-        font-size: 14px
+        font-size: 14px;
     }
 
     .footer-popup-msg.success {
-        color: #138a36
+        color: #138a36;
     }
 
     .footer-popup-msg.error {
-        color: #c62828
-    }
-
-    .account-manage-actions {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        margin-top: 16px
+        color: #c62828;
     }
 
     .footer-popup-submit {
@@ -284,29 +301,214 @@ $isLoggedIn = !empty($_SESSION['user_id']);
         font-weight: bold;
         cursor: pointer;
         background: #ff4d6d;
-        color: #fff
+        color: #fff;
     }
 
-    .account-delete-btn {
-        background: #b91c1c !important
+    /* =======================
+       ACCOUNT MANAGE DESIGN ONLY
+    ======================= */
+    #accountManagePopupOverlay {
+        background: rgba(0, 0, 0, .58) !important;
+        backdrop-filter: blur(3px);
     }
 
-    .account-freeze-btn {
-        background: #777 !important
-    }
-
-
-    .footer-popup-box {
+    #accountManagePopupOverlay .account-manage-box {
+        width: min(1080px, calc(100vw - 90px)) !important;
+        max-height: calc(100vh - 48px) !important;
         overflow-x: hidden !important;
+        background: #ffffff !important;
+        border-radius: 26px !important;
+        padding: 74px 72px 52px !important;
+        border: 0 !important;
+        box-shadow: 0 28px 90px rgba(0, 0, 0, .28) !important;
     }
 
-    .footer-popup-overlay {
-        overflow-x: hidden !important;
+    #accountManagePopupOverlay .footer-popup-close {
+        top: 28px !important;
+        left: 30px !important;
+        background: transparent !important;
+        color: #e11d48 !important;
+        font-size: 48px !important;
+        width: 46px !important;
+        height: 46px !important;
+        font-weight: 300 !important;
+    }
+
+    #accountManagePopupOverlay .account-manage-title {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 14px !important;
+        margin: 0 0 26px !important;
+        color: #e11d48 !important;
+        font-size: 44px !important;
+        font-weight: 900 !important;
+        line-height: 1.1 !important;
+    }
+
+    #accountManagePopupOverlay .account-title-icon {
+        font-size: 36px !important;
+        line-height: 1 !important;
+    }
+
+    #accountManagePopupOverlay .account-manage-content {
+        text-align: center !important;
+        color: #333 !important;
+        font-size: 25px !important;
+        line-height: 1.75 !important;
+    }
+
+    #accountManagePopupOverlay .account-manage-content p {
+        margin: 0 0 22px !important;
+    }
+
+    #accountManagePopupOverlay .account-manage-actions {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 20px !important;
+        margin: 48px auto 28px !important;
+        max-width: 880px !important;
+    }
+
+    #accountManagePopupOverlay .footer-popup-submit {
+        min-height: 140px !important;
+        border-radius: 14px !important;
+        padding: 22px 34px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 10px !important;
+        cursor: pointer !important;
+        transition: .2s !important;
+        box-sizing: border-box !important;
+    }
+
+    #accountManagePopupOverlay .footer-popup-submit:hover {
+        transform: translateY(-2px);
+    }
+
+    #accountManagePopupOverlay .account-btn-row {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 22px !important;
+        direction: rtl !important;
+        width: 100% !important;
+    }
+
+    #accountManagePopupOverlay .account-btn-title {
+        font-size: 30px !important;
+        font-weight: 900 !important;
+        line-height: 1.15 !important;
+        white-space: nowrap !important;
+    }
+
+    #accountManagePopupOverlay .account-btn-icon {
+        font-size: 42px !important;
+        line-height: 1 !important;
+    }
+
+    #accountManagePopupOverlay .account-btn-subtitle {
+        font-size: 21px !important;
+        font-weight: 500 !important;
+        line-height: 1.2 !important;
+    }
+
+    #accountManagePopupOverlay .account-freeze-btn {
+        background: linear-gradient(180deg, #ffa200 0%, #ff9800 100%) !important;
+        color: #fff !important;
+        border: 2px solid #c97900 !important;
+        box-shadow: inset 0 2px 0 rgba(255, 255, 255, .22), 0 10px 20px rgba(255, 152, 0, .22) !important;
+    }
+
+    #accountManagePopupOverlay .account-delete-btn {
+        background: #fff !important;
+        color: #e11d48 !important;
+        border: 2px solid #e11d48 !important;
+        box-shadow: 0 10px 22px rgba(225, 29, 72, .12) !important;
+    }
+
+    #accountManagePopupOverlay .account-delete-btn .account-btn-title,
+    #accountManagePopupOverlay .account-delete-btn .account-btn-subtitle,
+    #accountManagePopupOverlay .account-delete-btn .account-btn-icon {
+        color: #e11d48 !important;
+    }
+
+    #accountManagePopupOverlay .account-help-row {
+        border-top: 1px solid #ddd !important;
+        margin-top: 30px !important;
+        padding-top: 28px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        color: #333 !important;
+        font-size: 21px !important;
+    }
+
+    #accountManagePopupOverlay .account-help-link {
+        border: 0 !important;
+        background: transparent !important;
+        color: #e11d48 !important;
+        font-size: 21px !important;
+        font-weight: 700 !important;
+        text-decoration: underline !important;
+        cursor: pointer !important;
+        padding: 0 !important;
+    }
+
+    @media (max-width: 700px) {
+        #accountManagePopupOverlay .account-manage-box {
+            width: min(460px, calc(100vw - 24px)) !important;
+            padding: 48px 22px 28px !important;
+        }
+
+        #accountManagePopupOverlay .account-manage-title {
+            font-size: 24px !important;
+        }
+
+        #accountManagePopupOverlay .account-manage-content {
+            font-size: 16px !important;
+        }
+
+        #accountManagePopupOverlay .account-manage-actions {
+            gap: 16px !important;
+            margin-top: 28px !important;
+        }
+
+        #accountManagePopupOverlay .footer-popup-submit {
+            min-height: 136px !important;
+            padding: 18px 12px !important;
+        }
+
+        #accountManagePopupOverlay .account-btn-row {
+            flex-direction: column-reverse !important;
+            gap: 8px !important;
+        }
+
+        #accountManagePopupOverlay .account-btn-title {
+            font-size: 23px !important;
+            white-space: normal !important;
+        }
+
+        #accountManagePopupOverlay .account-btn-icon {
+            font-size: 28px !important;
+        }
+
+        #accountManagePopupOverlay .account-btn-subtitle {
+            font-size: 14px !important;
+        }
+
+        #accountManagePopupOverlay .account-help-row,
+        #accountManagePopupOverlay .account-help-link {
+            font-size: 16px !important;
+        }
     }
 </style>
 
 <script>
-    (function() {
+    (function () {
         'use strict';
 
         function byId(id) {
@@ -339,41 +541,41 @@ $isLoggedIn = !empty($_SESSION['user_id']);
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
                 }
-            }).then(function(r) {
+            }).then(function (r) {
                 return r.text();
-            }).then(function(html) {
+            }).then(function (html) {
                 box.innerHTML = html;
                 box.setAttribute('data-loaded', '1');
-            }).catch(function() {
+            }).catch(function () {
                 box.innerHTML = '<div class="footer-popup-msg error">שגיאה בטעינת צור קשר</div>';
             });
         }
-        window.openContactPopup = function() {
+        window.openContactPopup = function () {
             loadContactIfNeeded();
             return openPopup('contactPopupOverlay');
         };
-        window.closeContactPopup = function() {
+        window.closeContactPopup = function () {
             return closePopup('contactPopupOverlay');
         };
-        window.openTermsPopup = function() {
+        window.openTermsPopup = function () {
             return openPopup('termsPopupOverlay');
         };
-        window.closeTermsPopup = function() {
+        window.closeTermsPopup = function () {
             return closePopup('termsPopupOverlay');
         };
-        window.openPrivacyPopup = function() {
+        window.openPrivacyPopup = function () {
             return openPopup('privacyPopupOverlay');
         };
-        window.closePrivacyPopup = function() {
+        window.closePrivacyPopup = function () {
             return closePopup('privacyPopupOverlay');
         };
-        window.openAccountManagePopup = function() {
+        window.openAccountManagePopup = function () {
             return openPopup('accountManagePopupOverlay');
         };
-        window.closeAccountManagePopup = function() {
+        window.closeAccountManagePopup = function () {
             return closePopup('accountManagePopupOverlay');
         };
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             var t = e.target;
             if (t.closest('#termsFooterLink')) {
                 e.preventDefault();
@@ -410,12 +612,12 @@ $isLoggedIn = !empty($_SESSION['user_id']);
             if (t.closest('#accountManagePopupCloseBtn')) {
                 closeAccountManagePopup();
                 return;
-            } ['termsPopupOverlay', 'privacyPopupOverlay', 'contactPopupOverlay', 'accountManagePopupOverlay'].forEach(function(id) {
+            } ['termsPopupOverlay', 'privacyPopupOverlay', 'contactPopupOverlay', 'accountManagePopupOverlay'].forEach(function (id) {
                 var o = byId(id);
                 if (o && t === o) closePopup(id);
             });
         });
-        document.addEventListener('keydown', function(e) {
+        document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') {
                 closeContactPopup();
                 closeTermsPopup();
@@ -423,7 +625,7 @@ $isLoggedIn = !empty($_SESSION['user_id']);
                 closeAccountManagePopup();
             }
         });
-        document.addEventListener('submit', function(e) {
+        document.addEventListener('submit', function (e) {
             if (!e.target || e.target.id !== 'contactPopupForm') return;
             e.preventDefault();
             var f = e.target,
@@ -434,14 +636,14 @@ $isLoggedIn = !empty($_SESSION['user_id']);
             fetch('/contact_send.php', {
                 method: 'POST',
                 body: new FormData(f)
-            }).then(function(r) {
+            }).then(function (r) {
                 return r.json();
-            }).then(function(d) {
+            }).then(function (d) {
                 if (d.ok) {
                     m.textContent = 'ההודעה נשלחה בהצלחה';
                     m.className = 'footer-popup-msg success';
                     f.reset();
-                    setTimeout(function() {
+                    setTimeout(function () {
                         closeContactPopup();
                         m.textContent = '';
                         m.className = 'footer-popup-msg';
@@ -450,7 +652,7 @@ $isLoggedIn = !empty($_SESSION['user_id']);
                     m.textContent = d.error || 'שגיאה בשליחה';
                     m.classList.add('error');
                 }
-            }).catch(function() {
+            }).catch(function () {
                 m.textContent = 'שגיאה בתקשורת עם השרת';
                 m.classList.add('error');
             });
@@ -462,11 +664,11 @@ $isLoggedIn = !empty($_SESSION['user_id']);
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
                 }
-            }).then(function(r) {
+            }).then(function (r) {
                 return r.json();
             });
         }
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             var m = byId('accountManageMsg');
             if (e.target.closest('#freezeAccountBtn')) {
                 e.preventDefault();
@@ -475,13 +677,13 @@ $isLoggedIn = !empty($_SESSION['user_id']);
                     m.textContent = '';
                     m.className = 'footer-popup-msg';
                 }
-                postJson('/freeze_account.php').then(function(d) {
+                postJson('/freeze_account.php').then(function (d) {
                     if (d.ok) window.location.href = d.redirect || '/';
                     else if (m) {
                         m.textContent = d.error || 'שגיאה בהקפאת הכרטיס';
                         m.classList.add('error');
                     }
-                }).catch(function() {
+                }).catch(function () {
                     if (m) {
                         m.textContent = 'שגיאה בתקשורת עם השרת';
                         m.classList.add('error');
@@ -496,13 +698,13 @@ $isLoggedIn = !empty($_SESSION['user_id']);
                     m.textContent = '';
                     m.className = 'footer-popup-msg';
                 }
-                postJson('/delete_account.php').then(function(d) {
+                postJson('/delete_account.php').then(function (d) {
                     if (d.ok) window.location.href = d.redirect || '/';
                     else if (m) {
                         m.textContent = d.error || 'שגיאה במחיקת הכרטיס';
                         m.classList.add('error');
                     }
-                }).catch(function() {
+                }).catch(function () {
                     if (m) {
                         m.textContent = 'שגיאה בתקשורת עם השרת';
                         m.classList.add('error');

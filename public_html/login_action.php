@@ -35,7 +35,10 @@ $stmt = $pdo->prepare("
     WHERE Email = :email
     LIMIT 1
 ");
-$stmt->execute([':email' => $email]);
+
+$stmt->execute([
+   ':email' => $email
+]);
 
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -64,11 +67,17 @@ if ((int)$user['email_verified'] !== 1) {
    Frozen profile flow
 ========================= */
 if ((int)($user['Is_Frozen'] ?? 0) === 1) {
-   $_SESSION = [];
+
    session_regenerate_id(true);
+
+   unset($_SESSION['user_id']);
+   unset($_SESSION['user_name']);
+   unset($_SESSION['user_email']);
 
    $_SESSION['restore_user_id']   = (int)$user['Id'];
    $_SESSION['restore_user_name'] = (string)$user['Name'];
+
+   session_write_close();
 
    header('Location: /?page=login&frozen_restore=1');
    exit;
@@ -77,16 +86,19 @@ if ((int)($user['Is_Frozen'] ?? 0) === 1) {
 /* =========================
    Normal login flow
 ========================= */
-$_SESSION = [];
 session_regenerate_id(true);
 
-$_SESSION['user_id']         = (int)$user['Id'];
-$_SESSION['user_name']       = $user['Name'];
-$_SESSION['user_email']      = $user['Email'];
+unset($_SESSION['restore_user_id']);
+unset($_SESSION['restore_user_name']);
 
+$_SESSION['user_id']    = (int)$user['Id'];
+$_SESSION['user_name']  = (string)$user['Name'];
+$_SESSION['user_email'] = (string)$user['Email'];
+
+session_write_close();
 
 /* =========================
    Redirect after login
 ========================= */
-header('Location: /?page=home');
+header('Location: /?page=advanced_search');
 exit;

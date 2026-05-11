@@ -4,20 +4,21 @@
 
 <style>
     .home-demo-wrap {
-        padding: 35px 20px 50px;
-        background: #efefef;
+        padding: 0px 20px 50px;
+        min-height: calc(100vh - 140px);
     }
 
+
     .home-page-shell {
-        min-height: calc(100vh - 190px);
+        min-height: auto;
     }
 
     .home-demo-hero {
         max-width: 1150px;
-        margin: 0 auto 35px;
+        margin: 0 auto 10px;
         background: linear-gradient(135deg, #d91f4f, #b9153f);
         border-radius: 28px;
-        padding: 70px 35px 60px;
+        padding: 0px 35px 10px;
         text-align: center;
         color: #fff;
         box-shadow: 0 10px 30px rgba(228, 9, 64, 0.14);
@@ -46,13 +47,20 @@
     }
 
     .home-demo-btn {
-        display: inline-block;
-        text-decoration: none;
-        padding: 14px 22px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        min-height: 50px;
+
+        padding: 0 22px;
+
         border-radius: 14px;
+
         font-weight: bold;
         font-size: 17px;
-        transition: 0.25s ease;
+
+        text-decoration: none;
     }
 
     .home-demo-btn-primary {

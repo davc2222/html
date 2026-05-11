@@ -1,512 +1,621 @@
 <?php
-
-/**
- * inbox.php
- * דף תיבת הדואר הראשי
- */
-
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-if (!isset($_SESSION['user_id'])) {
-    header("Location: /?page=login");
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+require_once __DIR__ . '/../config/config.php';
+
+$page = $_GET['page'] ?? 'home';
+
+$allowedPages = [
+    'home',
+    'profile',
+    'search',
+    'advanced_search',
+    'messages',
+    'login',
+    'register',
+    'verify_notice',
+    'views',
+    'blocked',
+    'blocked_users',
+    'contact',
+    'terms',
+    'privacy',
+    'settings',
+    'manage_account'
+];
+
+if (!in_array($page, $allowedPages, true)) {
+    $page = 'home';
+}
+
+$protectedPages = ['profile', 'search', 'advanced_search', 'messages', 'inbox'];
+
+if (in_array($page, $protectedPages, true) && empty($_SESSION['user_id'])) {
+    header('Location: /mobile/?page=login');
     exit;
 }
 
-$selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
+$currentUserId   = (int)($_SESSION['user_id'] ?? 0);
+$currentUserName = trim((string)($_SESSION['user_name'] ?? ($_SESSION['username'] ?? 'משתמש')));
+
+function m_is_active(string $name, string $page): string {
+    return $name === $page ? 'active' : '';
+}
+
+function h(mixed $v): string {
+    return htmlspecialchars((string)($v ?? ''), ENT_QUOTES, 'UTF-8');
+}
+
+$mobileHeaderAvatar = '/images/default_male.svg';
+
+if ($currentUserId > 0) {
+    try {
+        $stmt = $pdo->prepare("SELECT Pic_Name FROM user_pics WHERE Id=:id AND Pic_Status=1 ORDER BY Main_Pic DESC LIMIT 1");
+        $stmt->execute([':id' => $currentUserId]);
+        $pic = $stmt->fetchColumn();
+        if ($pic) {
+            $mobileHeaderAvatar = '/uploads/' . ltrim($pic, '/');
+        }
+    } catch (Throwable $e) {
+    }
+}
 ?>
+<!DOCTYPE html>
+<html lang="he">
 
-<div class="inbox-page">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoveMatch Mobile</title>
+    <link rel="stylesheet" href="/mobile/css/style.css?v=<?= time() ?>">
 
-    <div class="inbox-conversations">
-        <div class="inbox-conversations-header">בחר שיחה</div>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=AW-1039498648"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
 
-        <div id="inboxConversationsList">
-            <div class="inbox-empty">טוען שיחות...</div>
-        </div>
-    </div>
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
 
-    <div class="inbox-chat">
+        gtag('config', 'AW-1039498648');
+    </script>
 
-        <div class="inbox-chat-header" id="inboxChatHeader">
-            <div class="inbox-empty">שיחות</div>
-        </div>
 
-        <div class="inbox-messages" id="inboxMessages">
-            <div class="inbox-empty">אין הודעות</div>
-        </div>
+    <!-- Event snippet for צפייה בדף conversion page -->
+    <script>
+        gtag('event', 'conversion', {
+            'send_to': 'AW-1039498648/n0mGCL3x46UcEJj71e8D',
+            'value': 1.0,
+            'currency': 'ILS'
+        });
+    </script>
 
-        <div class="inbox-typing-indicator" id="inboxTypingIndicator" style="display:none;">
-            מקליד...
-        </div>
+</head>
 
-        <div class="inbox-send-box">
-            <form id="inboxSendForm">
-                <input type="text" id="inboxMessageInput" placeholder="כתוב הודעה..." autocomplete="off">
-                <button type="submit">שלח</button>
-            </form>
+<body>
+    <div class="mobile-site">
 
-            <div class="inbox-enter-row">
-                <label class="inbox-enter-label" for="inboxEnterToggle">
-                    <input type="checkbox" id="inboxEnterToggle">
-                    <span>שלח עם Enter</span>
-                </label>
-                <div class="inbox-enter-hint"שלח עם Enter</div>
+        <header class="mobile-header">
+            <div class="mobile-header-top">
+                <a href="/mobile/?page=home" class="mobile-logo">
+                    <span>❤</span><span>LoveMatch</span>
+                </a>
+
+                <button type="button" class="hamburger-btn" onclick="toggleSidebar()" aria-label="פתח תפריט">☰</button>
             </div>
+
+            <div class="mobile-auth">
+                <?php if ($currentUserId > 0): ?>
+                    <div class="mobile-user-box">
+                        <a href="/mobile/?page=profile&id=<?= $currentUserId ?>&edit=1" class="mobile-user-avatar-link">
+                            <div class="mobile-user-avatar">
+                                <img src="<?= m_e($mobileHeaderAvatar) ?>">
+                            </div>
+                        </a>
+
+                        <div class="mobile-user-info">
+                            <span class="mobile-user-hello">שלום</span>
+                            <span class="mobile-user-name"><?= m_e($currentUserName) ?></span>
+                        </div>
+                    </div>
+
+                    <div class="mobile-auth-actions">
+                        <a href="/mobile/logout.php" class="mobile-auth-btn mobile-auth-btn-logout">התנתקות</a>
+                    </div>
+                <?php else: ?>
+                    <div></div>
+
+                    <div class="mobile-auth-actions">
+                        <a href="/mobile/?page=login" class="mobile-auth-btn">התחברות</a>
+                        <a href="/mobile/?page=register" class="mobile-auth-btn mobile-auth-btn-profile">הרשמה</a>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </header>
+
+        <div id="mobileSidebar" class="mobile-sidebar">
+            <div class="mobile-sidebar-title">תפריט</div>
+
+            <?php if ($currentUserId > 0): ?>
+                <a href="/mobile/?page=blocked_users">חסומים</a>
+            <?php endif; ?>
+
+            <a href="/mobile/?page=contact">צור קשר</a>
+            <a href="/mobile/?page=terms">תנאי שימוש</a>
+            <a href="/mobile/?page=privacy">פרטיות</a>
+
+            <?php if ($currentUserId > 0): ?>
+                <a href="/mobile/?page=manage_account">ניהול כרטיס</a>
+            <?php endif; ?>
         </div>
+        <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+        <main class="mobile-main">
+            <?php
+            switch ($page) {
+                case 'home':
+                    include __DIR__ . '/home.php';
+                    break;
+                case 'profile':
+                    include __DIR__ . '/profile.php';
+                    break;
+                case 'search':
+                    include __DIR__ . '/search.php';
+                    break;
+                case 'advanced_search':
+                    include __DIR__ . '/advanced_search.php';
+                    break;
+                case 'messages':
+                    include __DIR__ . '/messages.php';
+                    break;
+                case 'login':
+                    include __DIR__ . '/login.php';
+                    break;
+                case 'register':
+                    include __DIR__ . '/register.php';
+                    break;
+                case 'verify_notice':
+                    include __DIR__ . '/verify_notice.php';
+                    break;
+                case 'manage_account':
+                    require __DIR__ . '/manage_account.php';
+                    break;
+                case 'views':
+                    include __DIR__ . '/views.php';
+                    break;
+
+                case 'blocked':
+                    include file_exists(__DIR__ . '/blocked.php') ? __DIR__ . '/blocked.php' : __DIR__ . '/home.php';
+                    break;
+                case 'contact':
+                    include file_exists(__DIR__ . '/contact.php') ? __DIR__ . '/contact.php' : __DIR__ . '/home.php';
+                    break;
+                case 'terms':
+                    include file_exists(__DIR__ . '/terms.php') ? __DIR__ . '/terms.php' : __DIR__ . '/home.php';
+                    break;
+                case 'privacy':
+                    include file_exists(__DIR__ . '/privacy.php') ? __DIR__ . '/privacy.php' : __DIR__ . '/home.php';
+                    break;
+                case 'settings':
+                    include file_exists(__DIR__ . '/settings.php') ? __DIR__ . '/settings.php' : __DIR__ . '/home.php';
+                    break;
+                case 'blocked_users':
+                    include __DIR__ . '/blocked_users.php';
+                    break;
+
+                default:
+                    include __DIR__ . '/home.php';
+            }
+
+            ?>
+        </main>
+
+        <footer class="mobile-footer">LoveMatch</footer>
+
+        <nav class="mobile-bottom-nav">
+            <a href="/mobile/?page=home" class="<?= m_is_active('home', $page) ?>">
+                <span>🏠</span><small>בית</small>
+            </a>
+
+            <?php if ($currentUserId > 0): ?>
+                <a href="/mobile/?page=search" class="<?= m_is_active('search', $page) ?>">
+                    <span>🔎</span><small>חיפוש</small>
+                </a>
+
+                <a href="/mobile/?page=advanced_search" class="<?= m_is_active('advanced_search', $page) ?>">
+                    <span>✨</span><small>התאמות</small>
+                </a>
+
+                <a href="/mobile/?page=messages">
+                    <span class="mobile-nav-icon-wrap">
+                        <span>💬</span>
+                        <em id="messages-badge" class="mobile-nav-badge"></em>
+                    </span>
+                    <small>הודעות</small>
+                </a>
+
+                <a href="/mobile/?page=views" class="<?= m_is_active('views', $page) ?>">
+                    <span class="mobile-nav-icon-wrap">
+                        <span class="eye-icon">👁️</span>
+                        <em id="views-badge" class="mobile-nav-badge"></em>
+                    </span>
+                    <small>צפיות</small>
+                </a>
+            <?php else: ?>
+                <a href="/mobile/?page=login"><span>🔐</span><small>כניסה</small></a>
+                <a href="/mobile/?page=register"><span>📝</span><small>הרשמה</small></a>
+            <?php endif; ?>
+        </nav>
 
     </div>
 
-</div>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('mobileSidebar');
+            const overlay = document.getElementById('sidebarOverlay');
 
-<script>
-    let inboxCurrentUserId = <?= $selectedUserId ?>;
-    let inboxCurrentName = '';
-    let inboxTypingStopTimer = null;
-    let inboxTypingPollTimer = null;
-    let inboxTypingActive = false;
+            if (sidebar) {
+                sidebar.classList.toggle('open');
+            }
 
-    function lmGetEnterSendEnabled() {
-        return localStorage.getItem('lm_send_on_enter') === '1';
-    }
-
-    function lmSetEnterSendEnabled(enabled) {
-        localStorage.setItem('lm_send_on_enter', enabled ? '1' : '0');
-    }
-
-    function inboxEscapeHtml(str) {
-        return String(str ?? '').replace(/[&<>"']/g, function(m) {
-            return ({
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            })[m];
-        });
-    }
-
-    function inboxSetActiveConversation(userId) {
-        document.querySelectorAll('.inbox-conversation-item').forEach(el => {
-            const itemUserId = parseInt(el.getAttribute('data-user-id') || '0', 10);
-            el.classList.toggle('active', itemUserId === parseInt(userId || 0, 10));
-        });
-    }
-
-    function inboxBindConversationClicks() {
-        document.querySelectorAll('.inbox-conversation-item').forEach(item => {
-            if (item.dataset.bound === '1') return;
-            item.dataset.bound = '1';
-
-            item.addEventListener('click', function(e) {
-
-                // 🔥 אם לחצו על התמונה → אל תפתח שיחה
-                if (e.target.closest('a')) {
-                    return;
-                }
-
-                const userId = parseInt(this.getAttribute('data-user-id') || '0', 10);
-                const name =
-                    this.getAttribute('data-name') ||
-                    (this.querySelector('.inbox-conversation-name') ?
-                        this.querySelector('.inbox-conversation-name').textContent.trim() :
-                        '');
-
-                inboxOpenConversation(userId, name);
-            });
-        });
-    }
-
-    function inboxLoadConversations() {
-        fetch('/mobile/inbox_get_conversations.php')
-            .then(r => r.text())
-            .then(html => {
-                document.getElementById('inboxConversationsList').innerHTML = html;
-                inboxBindConversationClicks();
-                inboxSetActiveConversation(inboxCurrentUserId);
-            });
-    }
-
-    function inboxLoadMessages() {
-        if (!inboxCurrentUserId) return;
-
-        fetch('/inbox_get_messages.php?user_id=' + inboxCurrentUserId)
-            .then(r => r.text())
-            .then(html => {
-                let box = document.getElementById('inboxMessages');
-                box.innerHTML = html;
-                box.scrollTop = box.scrollHeight;
-            });
-    }
-
-    function inboxMarkRead() {
-        if (!inboxCurrentUserId) return;
-
-        fetch('/inbox_mark_read.php?user_id=' + inboxCurrentUserId)
-            .then(() => {
-                if (typeof updateHeaderBadges === 'function') {
-                    updateHeaderBadges();
-                }
-            })
-            .catch(() => {});
-    }
-
-    function inboxSetTyping(isTyping) {
-        if (!inboxCurrentUserId) return;
-
-        fetch('/inbox_set_typing.php', {
-            method: 'POST',
-            body: new URLSearchParams({
-                to_user_id: inboxCurrentUserId,
-                is_typing: isTyping ? 1 : 0
-            })
-        }).catch(() => {});
-    }
-
-    function inboxPollTyping() {
-        if (!inboxCurrentUserId) return;
-
-        fetch('/inbox_get_typing.php?user_id=' + inboxCurrentUserId)
-            .then(r => r.json())
-            .then(data => {
-                const el = document.getElementById('inboxTypingIndicator');
-                if (!el) return;
-
-                if (data && data.typing) {
-                    el.style.display = 'block';
-                } else {
-                    el.style.display = 'none';
-                }
-            })
-            .catch(() => {});
-    }
-
-    function inboxOpenConversation(userId, name = '') {
-        inboxCurrentUserId = parseInt(userId || 0, 10);
-        inboxCurrentName = name || '';
-
-        document.getElementById('inboxChatHeader').innerHTML = inboxCurrentName ?
-            ('שיחה עם ' + inboxEscapeHtml(inboxCurrentName)) :
-            'בחר שיחה';
-
-        const typingEl = document.getElementById('inboxTypingIndicator');
-        if (typingEl) {
-            typingEl.style.display = 'none';
+            if (overlay) {
+                overlay.classList.toggle('show');
+            }
         }
 
-        if (inboxTypingPollTimer) {
-            clearInterval(inboxTypingPollTimer);
+        function updateMobileBadges() {
+            fetch('/get_header_counts.php', {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    cache: 'no-store'
+                })
+                .then(r => r.json())
+                .then(d => {
+
+                    // 🔥 הודעות
+                    const msgBadge = document.getElementById('messages-badge');
+                    if (msgBadge) {
+                        if (Number(d.messages || 0) > 0) {
+                            msgBadge.textContent = Number(d.messages) > 99 ? '99+' : d.messages;
+                            msgBadge.style.display = 'inline-block';
+                        } else {
+                            msgBadge.style.display = 'none';
+                        }
+                    }
+
+                    // 🔥 צפיות
+                    const viewsBadge = document.getElementById('views-badge');
+                    if (viewsBadge) {
+                        if (Number(d.views || 0) > 0) {
+                            viewsBadge.textContent = Number(d.views) > 99 ? '99+' : d.views;
+                            viewsBadge.style.display = 'inline-block';
+                        } else {
+                            viewsBadge.style.display = 'none';
+                        }
+                    }
+
+                })
+                .catch(err => console.log('badge error:', err));
         }
 
-        inboxTypingPollTimer = setInterval(inboxPollTyping, 2000);
+        // טעינה ראשונית + רענון
+        document.addEventListener('DOMContentLoaded', function() {
+            updateMobileBadges();
+            setInterval(updateMobileBadges, 3000);
+        });
+    </script>
 
-        inboxSetActiveConversation(inboxCurrentUserId);
+    <script>
+        document.addEventListener('click', function(e) {
 
-        inboxMarkRead();
-        inboxLoadMessages();
-        inboxLoadConversations();
-    }
+            const openLink = e.target.closest('#mobileAccountManageLink');
+            if (!openLink) return;
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const inboxSendForm = document.getElementById('inboxSendForm');
-        const inboxMessageInput = document.getElementById('inboxMessageInput');
-        const inboxEnterToggle = document.getElementById('inboxEnterToggle');
-
-        if (inboxEnterToggle) {
-            inboxEnterToggle.checked = lmGetEnterSendEnabled();
-
-            inboxEnterToggle.addEventListener('change', function() {
-                lmSetEnterSendEnabled(this.checked);
-            });
-        }
-
-        inboxSendForm.addEventListener('submit', function(e) {
             e.preventDefault();
 
-            let input = document.getElementById('inboxMessageInput');
-            let text = input.value.trim();
+            // סוגר סיידבר
+            document.getElementById('mobileSidebar')?.classList.remove('open');
+            document.getElementById('sidebarOverlay')?.classList.remove('show');
 
-            if (!text || !inboxCurrentUserId) return;
+            // פותח את הפופאפ של הפוטר
+            const popup = document.getElementById('accountManagePopupOverlay');
 
-            fetch('/inbox_send_message.php', {
-                method: 'POST',
-                body: new URLSearchParams({
-                    to_user_id: inboxCurrentUserId,
-                    message: text
-                })
-            }).then(() => {
-                input.value = '';
-
-                inboxTypingActive = false;
-                inboxSetTyping(false);
-
-                inboxLoadMessages();
-                inboxLoadConversations();
-
-                if (typeof updateHeaderBadges === 'function') {
-                    updateHeaderBadges();
-                }
-            });
-        });
-
-        inboxMessageInput.addEventListener('focus', function() {
-            if (!inboxCurrentUserId) return;
-            inboxMarkRead();
-            inboxLoadConversations();
-        });
-
-        inboxMessageInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && lmGetEnterSendEnabled()) {
-                e.preventDefault();
-                inboxSendForm.dispatchEvent(new Event('submit'));
-            }
-        });
-
-        inboxMessageInput.addEventListener('input', function() {
-            if (!inboxCurrentUserId) return;
-
-            if (!inboxTypingActive) {
-                inboxTypingActive = true;
-                inboxSetTyping(true);
+            if (popup) {
+                popup.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            } else {
+                console.log('אין popup accountManagePopupOverlay');
             }
 
-            if (inboxTypingStopTimer) {
-                clearTimeout(inboxTypingStopTimer);
-            }
-
-            inboxTypingStopTimer = setTimeout(() => {
-                inboxTypingActive = false;
-                inboxSetTyping(false);
-            }, 1500);
         });
+    </script>
 
-        inboxLoadConversations();
 
-        if (inboxCurrentUserId) {
-            inboxLoadMessages();
-            inboxTypingPollTimer = setInterval(inboxPollTyping, 2000);
-        }
+</body>
 
-        setInterval(inboxLoadConversations, 8000);
-
-        setInterval(() => {
-            if (inboxCurrentUserId) {
-                inboxMarkRead();
-                inboxLoadMessages();
-            }
-        }, 4000);
-    });
-</script>
+</html>
 
 <style>
-    /* ===== CONTAINER ===== */
-    .inbox-page {
-        display: flex;
-        width: 100%;
-        max-width: 1200px;
-        height: 78vh;
-        margin: 20px auto;
-        border: 1px solid #d8dadd;
-        border-radius: 22px;
-        overflow: hidden;
-        background: #f4f5f7;
-        box-sizing: border-box;
+    .eye-icon {
+        font-size: 30px;
     }
 
-    /* ===== LEFT - CONVERSATIONS ===== */
-    .inbox-conversations {
-        width: 150px;
-        min-width: 150px;
-        max-width: 180px;
-        border-left: 1px solid #d9dde3;
-        background: #fff;
+    .mobile-nav-icon-wrap {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        overflow: visible;
+    }
+
+    .mobile-nav-badge {
+        position: absolute;
+        top: -6px;
+        right: -10px;
+        min-width: 16px;
+        height: 16px;
+        padding: 0 4px;
+        border-radius: 999px;
+        background: #e11d48;
+        color: #fff;
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 16px;
+        text-align: center;
+        display: none;
+        z-index: 10;
+    }
+
+    .mobile-site {
+        min-height: 100vh;
         display: flex;
         flex-direction: column;
+    }
+
+    .mobile-main {
+        flex: 1;
+    }
+
+    .mobile-header {
+        background: #fff;
+        border-bottom: 1px solid #f0f0f0;
+        padding: 12px 14px 10px;
+    }
+
+    .mobile-header-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+
+    .mobile-logo {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        font-size: 18px;
+        font-weight: 800;
+        color: #d81b60;
+        white-space: nowrap;
+        order: 1;
+        /* שמאל */
+    }
+
+    /* חשוב מאוד למנוע שבירה */
+    .mobile-header-top>* {
         flex-shrink: 0;
     }
 
-    .inbox-conversations-header {
-        padding: 16px;
-        font-weight: 700;
-        font-size: 20px;
-        text-align: center;
-        border-bottom: 1px solid #e5e7eb;
+    .mobile-logo span:first-child {
+        font-size: 18px;
+        line-height: 1;
     }
 
-    #inboxConversationsList {
-        flex: 1;
-        overflow-y: auto;
-    }
-
-    /* ===== CONVERSATION ITEM ===== */
-    .inbox-conversation-item {
-        padding: 12px;
-        border-bottom: 1px solid #edf0f3;
-        cursor: pointer;
-        transition: 0.2s;
-    }
-
-    .inbox-conversation-item:hover {
-        background: #f1f3f5;
-    }
-
-    .inbox-conversation-item.active {
-        background: #e7eaee;
-    }
-
-    .inbox-conversation-main {
+    .mobile-auth {
         display: flex;
-        gap: 8px;
         align-items: center;
+        justify-content: space-between;
+        gap: 12px;
     }
 
-    .inbox-conversation-avatar {
+    .mobile-user-box {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    .mobile-user-avatar-link {
+        display: inline-flex;
+        text-decoration: none;
+        flex: 0 0 auto;
+    }
+
+    .mobile-user-avatar {
         width: 42px;
         height: 42px;
-        border-radius: 10px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 2px solid #f2f2f2;
+        background: #fff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .mobile-user-avatar img {
+        width: 100%;
+        height: 100%;
         object-fit: cover;
+        display: block;
     }
 
-    .inbox-conversation-content {
-        flex: 1;
+    .mobile-user-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        line-height: 1.15;
         min-width: 0;
-        text-align: right;
     }
 
-    .inbox-conversation-name {
+    .mobile-user-hello {
+        font-size: 11px;
+        color: #777;
+    }
+
+    .mobile-user-name {
         font-size: 14px;
-        font-weight: 700;
-    }
-
-    .inbox-conversation-preview {
-        font-size: 12px;
-        color: #6b7280;
+        font-weight: 800;
+        color: #d81b60;
+        max-width: 130px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
-    /* ===== RIGHT - CHAT ===== */
-    .inbox-chat {
-        flex: 1;
+    .mobile-auth-actions {
         display: flex;
-        flex-direction: column;
-        background: #f7f8fa;
-    }
-
-    .inbox-chat-header {
-        padding: 16px;
-        font-size: 18px;
-        font-weight: 700;
-        text-align: center;
-        border-bottom: 1px solid #e2e5e9;
-    }
-
-    /* ===== MESSAGES ===== */
-    .inbox-messages {
-        flex: 1;
-        overflow-y: auto;
-        padding: 16px;
-        background: #f3f4f6;
-        direction: rtl;
-    }
-
-    .inbox-message-row {
-        display: flex;
-        margin-bottom: 10px;
-    }
-
-    .inbox-message-row-me {
-        justify-content: flex-start;
-    }
-
-    .inbox-message-row-other {
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
         justify-content: flex-end;
     }
 
-    /* 🔥 הרחבנו בועות */
-    .inbox-message {
-        max-width: 82%;
-        padding: 10px 12px;
-        border-radius: 14px;
-    }
-
-    .inbox-message-me {
-        background: #dfeadf;
-    }
-
-    .inbox-message-other {
-        background: #fff;
-    }
-
-    .inbox-message-text {
-        font-size: 14px;
-    }
-
-    /* ===== TYPING ===== */
-    .inbox-typing-indicator {
-        padding: 6px 12px;
-        font-size: 13px;
-        color: #6b7280;
-        background: #fff;
-    }
-
-    /* ===== SEND BOX ===== */
-    .inbox-send-box {
-        padding: 10px;
-        background: #fff;
-        border-top: 1px solid #dfe3e8;
-    }
-
-    .inbox-send-box form {
-        display: flex;
-        gap: 6px;
-    }
-
-    .inbox-send-box input {
-        flex: 1;
-        height: 40px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        padding: 0 10px;
-    }
-
-    .inbox-send-box button {
-        background: #e86a7a;
-        color: #fff;
-        border: none;
+    .mobile-auth-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 36px;
         padding: 0 14px;
-        border-radius: 8px;
-    }
-
-    /* ===== MOBILE ===== */
-    @media (max-width: 900px) {
-
-        /* ❗ שומרים על שני טורים */
-        .inbox-page {
-            flex-direction: row;
-            height: calc(100vh - 160px);
-            margin: 10px;
-        }
-
-        .inbox-conversations {
-            width: 38%;
-            min-width: 140px;
-            max-width: 180px;
-        }
-
-        .inbox-chat {
-            flex: 1;
-        }
-
-        .inbox-message {
-            max-width: 88%;
-        }
-    }
-
-    .inbox-unread-count {
-        color: #e11d48;
+        border-radius: 12px;
+        text-decoration: none;
+        font-size: 13px;
         font-weight: 700;
+        white-space: nowrap;
+        background: #f3f3f3;
+        color: #333;
+    }
+
+    .mobile-auth-btn-profile {
+        background: #d81b60;
+        color: #fff;
+    }
+
+    .mobile-auth-btn-logout {
+        background: #7a7a7a;
+        color: #fff;
+    }
+
+    .mobile-footer {
+        text-align: center;
+        color: #888;
+        font-size: 12px;
+        padding: 14px 10px 84px;
+    }
+
+    .mobile-bottom-nav a {
+        position: relative;
+    }
+
+
+    /* ===== MOBILE SIDEBAR ===== */
+    .hamburger-btn {
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: transparent;
+        color: #333;
+        font-size: 24px;
+        line-height: 1;
+        cursor: pointer;
+        padding: 0;
+        flex: 0 0 auto;
+    }
+
+    .mobile-sidebar {
+        position: fixed;
+        top: 0;
+        right: -270px;
+        width: 270px;
+        max-width: 82vw;
+        height: 100vh;
+        background: #fff;
+        z-index: 100000;
+        transition: right 0.25s ease;
+        padding: 18px 0 24px;
+        box-shadow: -6px 0 22px rgba(0, 0, 0, 0.18);
+        direction: rtl;
+    }
+
+    .mobile-sidebar.open {
+        right: 0;
+    }
+
+    .mobile-sidebar-title {
+        padding: 0 18px 14px;
+        font-size: 18px;
+        font-weight: 800;
+        color: #d81b60;
+        border-bottom: 1px solid #f0f0f0;
+        margin-bottom: 6px;
+    }
+
+    .mobile-sidebar a {
+        display: block;
+        padding: 14px 18px;
+        color: #222;
+        text-decoration: none;
+        font-size: 15px;
+        font-weight: 700;
+        border-bottom: 1px solid #f3f3f3;
+    }
+
+    .mobile-sidebar a:active {
+        background: #f7f7f7;
+    }
+
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        z-index: 99999;
+    }
+
+    .sidebar-overlay.show {
+        display: block;
+    }
+
+    @media (max-width: 520px) {
+
+        .mobile-header-top,
+        .mobile-auth {
+            gap: 8px;
+        }
+
+        .mobile-user-name {
+            max-width: 90px;
+            font-size: 13px;
+        }
+
+        .mobile-auth-btn {
+            min-height: 34px;
+            padding: 0 12px;
+            font-size: 12px;
+        }
+
+        .mobile-user-avatar {
+            width: 38px;
+            height: 38px;
+        }
     }
 </style>

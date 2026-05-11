@@ -78,9 +78,29 @@ try {
         $rawText = (string)($msg['Msg_Txt'] ?? '');
         $text = nl2br(h($rawText));
 
-        $image = !empty($msg['profile_image'])
-            ? '/uploads/' . $msg['profile_image']
-            : '/images/default.png';
+     $genderStmt = $pdo->prepare("
+    SELECT Gender_Id
+    FROM users_profile
+    WHERE Id = :id
+    LIMIT 1
+");
+
+$genderStmt->execute([
+    ':id' => (int)$msg['ById']
+]);
+
+$gender = (int)$genderStmt->fetchColumn();
+
+if (!empty($msg['profile_image'])) {
+
+    $image = '/uploads/' . ltrim((string)$msg['profile_image'], '/');
+
+} else {
+
+    $image = ($gender === 1)
+        ? '/images/default_male.svg'
+        : '/images/default_female.svg';
+}
 
         $dateSent = (string)($msg['Date_Sent'] ?? '');
         $ts = $dateSent !== '' ? strtotime($dateSent) : false;

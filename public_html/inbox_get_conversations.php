@@ -139,19 +139,33 @@ try {
         $lastMsg = h($lastMsgShort);
 
         $timeText = '';
+
         if (!empty($row['last_date'])) {
+
             $ts = strtotime((string)$row['last_date']);
+
             if ($ts) {
+
                 $today = date('Y-m-d');
                 $msgDay = date('Y-m-d', $ts);
 
+                /* היום = שעה */
                 if ($msgDay === $today) {
+
                     $timeText = date('H:i', $ts);
+
+                    /* אתמול/ישן = תאריך */
                 } else {
+
                     $timeText = date('d/m', $ts);
                 }
             }
         }
+
+        $dateHtml = '
+<div class="inbox-conversation-time-wrap">
+    <div class="inbox-conversation-time">' . h($timeText) . '</div>
+</div>';
 
         $dateHtml = h($timeText);
 
