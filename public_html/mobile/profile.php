@@ -6,16 +6,27 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+if (!function_exists('h')) {
+    function h(mixed $v): string
+    {
+        return htmlspecialchars((string) ($v ?? ''), ENT_QUOTES, 'UTF-8');
+    }
+}
 
+if (!function_exists('e')) {
+    function e(mixed $v): string
+    {
+        return h($v);
+    }
+}
 
-function murl(string $page, string $params = ''): string
-{
+function murl(string $page, string $params = ''): string {
     return '/mobile/?page=' . urlencode($page) . ($params !== '' ? '&' . $params : '');
 }
 
 /* ========= הגדרת משתנים ========= */
-$id = (int) ($_GET['id'] ?? 0);
-$viewerId = (int) ($_SESSION['user_id'] ?? 0);
+$id = (int)($_GET['id'] ?? 0);
+$viewerId = (int)($_SESSION['user_id'] ?? 0);
 
 if ($id <= 0) {
     $id = $viewerId;
@@ -37,7 +48,7 @@ $stmt = $pdo->prepare("
 
 $stmt->execute([
     ':profile' => $id,
-    ':viewer' => $viewerId
+    ':viewer'  => $viewerId
 ]);
 
 if ($stmt->fetch()) {
@@ -67,7 +78,7 @@ if (!$user) {
     exit;
 }
 
-if ((int) ($user['Is_Frozen'] ?? 0) === 1 && $viewerId !== (int) $user['Id']) {
+if ((int)($user['Is_Frozen'] ?? 0) === 1 && $viewerId !== (int)$user['Id']) {
     echo '
     <div class="blocked-profile-box">
         <div class="blocked-profile-icon">❄</div>
@@ -79,8 +90,8 @@ if ((int) ($user['Is_Frozen'] ?? 0) === 1 && $viewerId !== (int) $user['Id']) {
     exit;
 }
 
-$isOwner = ($viewerId === (int) $user['Id']);
-$isOnlineProfile = is_user_online($pdo, (int) $user['Id']);
+$isOwner = ($viewerId === (int)$user['Id']);
+$isOnlineProfile = is_user_online($pdo, (int)$user['Id']);
 
 /* ========= אייקונים כמו בכרטיסים ========= */
 $hasViewIn = false;
@@ -99,10 +110,10 @@ if ($viewerId > 0 && !$isOwner) {
             LIMIT 1
         ");
         $stmt->execute([
-            ':viewer' => $viewerId,
+            ':viewer'  => $viewerId,
             ':profile' => $id
         ]);
-        $hasViewIn = (bool) $stmt->fetchColumn();
+        $hasViewIn = (bool)$stmt->fetchColumn();
 
         $stmt = $pdo->prepare("
             SELECT 1
@@ -114,9 +125,9 @@ if ($viewerId > 0 && !$isOwner) {
         ");
         $stmt->execute([
             ':profile' => $id,
-            ':viewer' => $viewerId
+            ':viewer'  => $viewerId
         ]);
-        $hasViewOut = (bool) $stmt->fetchColumn();
+        $hasViewOut = (bool)$stmt->fetchColumn();
 
         $stmt = $pdo->prepare("
             SELECT 1
@@ -127,10 +138,10 @@ if ($viewerId > 0 && !$isOwner) {
             LIMIT 1
         ");
         $stmt->execute([
-            ':viewer' => $viewerId,
+            ':viewer'  => $viewerId,
             ':profile' => $id
         ]);
-        $hasMsgIn = (bool) $stmt->fetchColumn();
+        $hasMsgIn = (bool)$stmt->fetchColumn();
 
         $stmt = $pdo->prepare("
             SELECT 1
@@ -142,9 +153,9 @@ if ($viewerId > 0 && !$isOwner) {
         ");
         $stmt->execute([
             ':profile' => $id,
-            ':viewer' => $viewerId
+            ':viewer'  => $viewerId
         ]);
-        $hasMsgOut = (bool) $stmt->fetchColumn();
+        $hasMsgOut = (bool)$stmt->fetchColumn();
     } catch (Throwable $e) {
         $hasViewIn = false;
         $hasViewOut = false;
@@ -175,7 +186,7 @@ if ($viewerId > 0 && !$isOwner) {
     ");
     $stmt->execute([
         ':profile_id' => $id,
-        ':viewer_id' => $viewerId
+        ':viewer_id'  => $viewerId
     ]);
     $existingView = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -194,13 +205,13 @@ if ($viewerId > 0 && !$isOwner) {
         ");
         $stmt->execute([
             ':profile_id' => $id,
-            ':viewer_id' => $viewerId
+            ':viewer_id'  => $viewerId
         ]);
     }
 }
 
 /* תמונה ראשית */
-$genderValue = trim((string) ($user['Gender_Str'] ?? ''));
+$genderValue = trim((string)($user['Gender_Str'] ?? ''));
 $isFemale = ($genderValue === 'אישה');
 
 $defaultProfileImage = $isFemale
@@ -232,7 +243,7 @@ if (!$pic) {
 }
 
 if ($pic) {
-    $profileImage = '/uploads/' . ltrim((string) $pic, '/');
+    $profileImage = '/uploads/' . ltrim((string)$pic, '/');
 }
 
 /* גלריה */
@@ -293,7 +304,7 @@ foreach ($right as $field => $cfg) {
 
         if (!empty($cfg['zero_as_none'])) {
             $options = array_map(function ($v) {
-                return trim((string) $v) === '0' ? 'ללא' : $v;
+                return trim((string)$v) === '0' ? 'ללא' : $v;
             }, $options);
         }
 
@@ -320,8 +331,8 @@ try {
     $searchPrefs = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($searchPrefs) {
-        $searchPrefMinAge = trim((string) ($searchPrefs['age_min'] ?? ''));
-        $searchPrefMaxAge = trim((string) ($searchPrefs['age_max'] ?? ''));
+        $searchPrefMinAge = trim((string)($searchPrefs['age_min'] ?? ''));
+        $searchPrefMaxAge = trim((string)($searchPrefs['age_max'] ?? ''));
     }
 } catch (Throwable $e) {
     $searchPrefMinAge = '';
@@ -378,8 +389,12 @@ try {
                 <?php endif; ?>
 
                 <div class="profile-main-image-wrap">
-                    <button type="button" id="profileMainImageLink" class="profile-main-image-link js-open-gallery"
-                        data-src="<?= e($profileImage) ?>" onclick="return openMobileGalleryFromButton(this, event);">
+                    <button
+                        type="button"
+                        id="profileMainImageLink"
+                        class="profile-main-image-link js-open-gallery"
+                        data-src="<?= e($profileImage) ?>"
+                        onclick="return openMobileGalleryFromButton(this, event);">
 
                         <img src="<?= e($profileImage) ?>" class="profile-main-image" id="profileMainImage" alt="">
 
@@ -399,7 +414,7 @@ try {
                 </h2>
 
                 <?php if (!$isOwner && $viewerId > 0): ?>
-                    <a href="#" class="open-chat-btn profile-main-btn" data-user-id="<?= (int) $user['Id'] ?>">
+                    <a href="#" class="open-chat-btn profile-main-btn" data-user-id="<?= (int)$user['Id'] ?>">
                         ✉ שלח הודעה
                     </a>
                 <?php endif; ?>
@@ -414,9 +429,9 @@ try {
                     <?php foreach ($right as $field => $cfg): ?>
                         <?php
                         if (($cfg['type'] ?? '') === 'computed' && $field === 'Age_Computed') {
-                            $val = $age !== null ? (string) $age : '';
+                            $val = $age !== null ? (string)$age : '';
                         } else {
-                            $val = trim((string) ($user[$field] ?? ''));
+                            $val = trim((string)($user[$field] ?? ''));
                             if (!empty($cfg['zero_as_none']) && $val === '0') {
                                 $val = 'ללא';
                             }
@@ -432,7 +447,7 @@ try {
                 <?php if (!$isOwner && $viewerId > 0): ?>
                     <div class="profile-actions-bottom-right">
                         <a href="#" class="profile-block-link"
-                            onclick='openBlockModal(<?= (int) $user["Id"] ?>, <?= json_encode($user["Name"] ?? "", JSON_UNESCAPED_UNICODE) ?>); return false;'>
+                            onclick='openBlockModal(<?= (int)$user["Id"] ?>, <?= json_encode($user["Name"] ?? "", JSON_UNESCAPED_UNICODE) ?>); return false;'>
                             חסימה
                         </a>
                     </div>
@@ -444,7 +459,7 @@ try {
 
             <?php foreach ($left as $field => $cfg): ?>
                 <?php
-                $rawVal = trim((string) ($user[$field] ?? ''));
+                $rawVal = trim((string)($user[$field] ?? ''));
                 $val = $rawVal;
                 $displayVal = $val;
                 $cardTitle = e($cfg['label']);
@@ -494,8 +509,7 @@ try {
                         <?php endif; ?>
                     </div>
 
-                    <div class="profile-left-view<?= $displayVal === '' ? ' is-empty' : '' ?>"
-                        data-field="<?= e($field) ?>">
+                    <div class="profile-left-view<?= $displayVal === '' ? ' is-empty' : '' ?>" data-field="<?= e($field) ?>">
                         <?= $displayVal !== '' ? nl2br(e($displayVal)) : 'לא מולא' ?>
                     </div>
                 </div>
@@ -506,8 +520,7 @@ try {
                     <div class="profile-gallery-grid">
 
                         <?php if ($isOwner): ?>
-                            <form action="<?= APP_URL ?>/mobile/upload_photo.php" method="POST"
-                                enctype="multipart/form-data" class="profile-upload-form">
+                            <form action="<?= APP_URL ?>/mobile/upload_photo.php" method="POST" enctype="multipart/form-data" class="profile-upload-form">
                                 <label class="profile-gallery-upload-btn">
                                     <span class="profile-gallery-upload-btn-icon">＋</span>
                                     <span class="profile-gallery-upload-btn-text">הוסף תמונה</span>
@@ -518,15 +531,18 @@ try {
 
                         <?php foreach ($pics as $index => $pic): ?>
                             <?php
-                            $picNum = (int) $pic['Pic_Num'];
-                            $picUrl = '/uploads/' . ltrim((string) $pic['Pic_Name'], '/');
+                            $picNum = (int)$pic['Pic_Num'];
+                            $picUrl = '/uploads/' . ltrim((string)$pic['Pic_Name'], '/');
                             $isMainPic = !empty($pic['Main_Pic']);
                             $imgNo = $index + 1;
                             ?>
 
                             <div class="profile-gallery-item">
-                                <button type="button" class="profile-gallery-link js-open-gallery"
-                                    data-src="<?= e($picUrl) ?>" onclick="return openMobileGalleryFromButton(this, event);">
+                                <button
+                                    type="button"
+                                    class="profile-gallery-link js-open-gallery"
+                                    data-src="<?= e($picUrl) ?>"
+                                    onclick="return openMobileGalleryFromButton(this, event);">
                                     <img src="<?= e($picUrl) ?>" alt="תמונה <?= $imgNo ?>" class="profile-gallery-thumb">
                                 </button>
 
@@ -536,26 +552,26 @@ try {
 
                                 <?php if ($isOwner): ?>
                                     <div class="profile-gallery-actions">
-                                        <button type="button" class="profile-photo-number-btn"
-                                            onclick="togglePhotoMenu(<?= $picNum ?>)" aria-label="אפשרויות תמונה <?= $imgNo ?>">
+                                        <button
+                                            type="button"
+                                            class="profile-photo-number-btn"
+                                            onclick="togglePhotoMenu(<?= $picNum ?>)"
+                                            aria-label="אפשרויות תמונה <?= $imgNo ?>">
                                             <?= $imgNo ?>
                                         </button>
 
                                         <div class="profile-photo-menu" id="photo-menu-<?= $picNum ?>">
 
                                             <?php if (!$isMainPic): ?>
-                                                <form action="<?= APP_URL ?>/mobile/set_main_photo.php" method="POST"
-                                                    class="profile-photo-menu-form">
+                                                <form action="<?= APP_URL ?>/mobile/set_main_photo.php" method="POST" class="profile-photo-menu-form">
                                                     <input type="hidden" name="pic_num" value="<?= $picNum ?>">
                                                     <button type="submit" class="profile-photo-menu-btn">קבע כראשית</button>
                                                 </form>
                                             <?php endif; ?>
 
-                                            <form action="<?= APP_URL ?>/mobile/delete_photo.php" method="POST"
-                                                class="profile-photo-menu-form" onsubmit="return confirm('למחוק את התמונה?');">
+                                            <form action="<?= APP_URL ?>/mobile/delete_photo.php" method="POST" class="profile-photo-menu-form" onsubmit="return confirm('למחוק את התמונה?');">
                                                 <input type="hidden" name="pic_num" value="<?= $picNum ?>">
-                                                <button type="submit"
-                                                    class="profile-photo-menu-btn profile-photo-menu-btn-delete">מחק</button>
+                                                <button type="submit" class="profile-photo-menu-btn profile-photo-menu-btn-delete">מחק</button>
                                             </form>
 
                                         </div>
@@ -576,11 +592,9 @@ try {
 <!-- MOBILE INTERNAL GALLERY -->
 <div id="mobileGalleryOverlay" class="mobile-gallery-overlay" aria-hidden="true">
     <button type="button" id="mobileGalleryClose" class="mobile-gallery-close" aria-label="סגור">×</button>
-    <button type="button" id="mobileGalleryPrev" class="mobile-gallery-arrow mobile-gallery-prev"
-        aria-label="תמונה קודמת">‹</button>
+    <button type="button" id="mobileGalleryPrev" class="mobile-gallery-arrow mobile-gallery-prev" aria-label="תמונה קודמת">‹</button>
     <img id="mobileGalleryImg" src="" alt="">
-    <button type="button" id="mobileGalleryNext" class="mobile-gallery-arrow mobile-gallery-next"
-        aria-label="תמונה הבאה">›</button>
+    <button type="button" id="mobileGalleryNext" class="mobile-gallery-arrow mobile-gallery-next" aria-label="תמונה הבאה">›</button>
 </div>
 
 <style>
@@ -871,7 +885,7 @@ try {
 
     function collectMobileGalleryImages() {
         mobileGalleryImages = [];
-        document.querySelectorAll('.js-open-gallery').forEach(function (btn) {
+        document.querySelectorAll('.js-open-gallery').forEach(function(btn) {
             var src = getGallerySrc(btn);
             if (src && mobileGalleryImages.indexOf(src) === -1) {
                 mobileGalleryImages.push(src);
@@ -887,11 +901,11 @@ try {
         if (index >= mobileGalleryImages.length) index = 0;
         mobileGalleryIndex = index;
         var src = mobileGalleryImages[mobileGalleryIndex];
-        img.onload = function () {
+        img.onload = function() {
             img.style.display = 'block';
             img.style.opacity = '1';
         };
-        img.onerror = function () {
+        img.onerror = function() {
             console.log('gallery image failed:', src);
             img.removeAttribute('src');
         };
@@ -964,7 +978,7 @@ try {
         return false;
     }
 
-    document.addEventListener('click', function (e) {
+    document.addEventListener('click', function(e) {
         var galleryBtn = e.target.closest('.js-open-gallery');
         if (galleryBtn) {
             e.preventDefault();
@@ -981,7 +995,7 @@ try {
         }
     }, true);
 
-    document.addEventListener('keydown', function (e) {
+    document.addEventListener('keydown', function(e) {
         var overlay = document.getElementById('mobileGalleryOverlay');
         var isOpen = overlay && overlay.classList.contains('is-open');
         if (e.key === 'Escape') closeMobileGallery();
@@ -1021,7 +1035,7 @@ try {
 
 
 <script>
-    const PROFILE_ID = <?= (int) $id ?>;
+    const PROFILE_ID = <?= (int)$id ?>;
 </script>
 
 <script>
@@ -1046,7 +1060,7 @@ try {
             let html = `<select class="profile-right-select js-right-input" data-field="${escapeHtml(field)}">`;
             html += `<option value="">בחר</option>`;
 
-            options.forEach(function (opt) {
+            options.forEach(function(opt) {
                 const selected = String(opt) === String(value) ? ' selected' : '';
                 html += `<option value="${escapeHtml(opt)}"${selected}>${escapeHtml(opt)}</option>`;
             });
@@ -1061,7 +1075,7 @@ try {
     function restoreRightFields() {
         const rows = document.querySelectorAll('#profileRightFacts .profile-right-row');
 
-        rows.forEach(function (row) {
+        rows.forEach(function(row) {
             const field = row.getAttribute('data-field');
             const label = row.getAttribute('data-label') || '';
             const value = rightOriginalValues[field] || '';
@@ -1108,7 +1122,7 @@ try {
         rightOriginalValues = {};
         rightEditMode = true;
 
-        rows.forEach(function (row) {
+        rows.forEach(function(row) {
             const field = row.getAttribute('data-field');
             const label = row.getAttribute('data-label') || '';
             const valueEl = row.querySelector('.profile-right-value');
@@ -1137,7 +1151,7 @@ try {
     }
 
     function togglePhotoMenu(picNum) {
-        document.querySelectorAll('.profile-photo-menu').forEach(function (menu) {
+        document.querySelectorAll('.profile-photo-menu').forEach(function(menu) {
             if (menu.id !== 'photo-menu-' + picNum) {
                 menu.style.display = 'none';
             }
@@ -1153,7 +1167,7 @@ try {
         if (profileButtonsBound) return;
         profileButtonsBound = true;
 
-        document.addEventListener('click', function (e) {
+        document.addEventListener('click', function(e) {
             const editBtn = e.target.closest('.edit-btn');
             if (editBtn) {
                 e.preventDefault();
@@ -1199,15 +1213,15 @@ try {
                 const newValue = textarea.value.trim();
 
                 fetch('/save_profile_field.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: 'id=' + encodeURIComponent(PROFILE_ID) +
-                        '&field=' + encodeURIComponent(field) +
-                        '&value=' + encodeURIComponent(newValue)
-                })
-                    .then(function () {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: 'id=' + encodeURIComponent(PROFILE_ID) +
+                            '&field=' + encodeURIComponent(field) +
+                            '&value=' + encodeURIComponent(newValue)
+                    })
+                    .then(function() {
                         view.dataset.editing = '0';
 
                         if (newValue === '') {
@@ -1218,7 +1232,7 @@ try {
                             view.innerHTML = escapeHtml(newValue).replace(/\n/g, '<br>');
                         }
                     })
-                    .catch(function () {
+                    .catch(function() {
                         alert('שגיאה בשמירה');
                     });
                 return;
@@ -1245,7 +1259,7 @@ try {
                 const inputs = document.querySelectorAll('.js-right-input');
                 const requests = [];
 
-                inputs.forEach(function (input) {
+                inputs.forEach(function(input) {
                     const field = input.getAttribute('data-field');
                     const value = input.value.trim();
 
@@ -1258,8 +1272,8 @@ try {
                             body: 'id=' + encodeURIComponent(PROFILE_ID) +
                                 '&field=' + encodeURIComponent(field) +
                                 '&value=' + encodeURIComponent(value)
-                        }).then(function (res) {
-                            return res.text().then(function (text) {
+                        }).then(function(res) {
+                            return res.text().then(function(text) {
                                 return {
                                     ok: res.ok,
                                     text: text,
@@ -1272,8 +1286,8 @@ try {
                 });
 
                 Promise.all(requests)
-                    .then(function (results) {
-                        const failed = results.filter(function (r) {
+                    .then(function(results) {
+                        const failed = results.filter(function(r) {
                             return !r.ok || /error|fatal|warning/i.test(r.text);
                         });
 
@@ -1283,14 +1297,14 @@ try {
                             return;
                         }
 
-                        inputs.forEach(function (input) {
+                        inputs.forEach(function(input) {
                             const field = input.getAttribute('data-field');
                             rightOriginalValues[field] = input.value.trim();
                         });
 
                         restoreRightFields();
                     })
-                    .catch(function (err) {
+                    .catch(function(err) {
                         console.log(err);
                         alert('שגיאה בשמירה');
                     });
@@ -1312,14 +1326,14 @@ try {
 
             if (!e.target.closest('.profile-photo-number-btn') &&
                 !e.target.closest('.profile-photo-menu')) {
-                document.querySelectorAll('.profile-photo-menu').forEach(function (menu) {
+                document.querySelectorAll('.profile-photo-menu').forEach(function(menu) {
                     menu.style.display = 'none';
                 });
             }
         });
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
         bindProfileButtons();
     });
 </script>
@@ -1344,7 +1358,7 @@ try {
             text.textContent = 'לאחר החסימה, לא תופיעו זה לזה באתר ולא תוכלו ליצור קשר זה עם זה.';
         }
 
-        btn.onclick = function () {
+        btn.onclick = function() {
             confirmBlockUser();
         };
 
@@ -1373,13 +1387,13 @@ try {
         formData.append('user_id', currentBlockedUserId);
 
         fetch('/block_user.php', {
-            method: 'POST',
-            body: formData
-        })
-            .then(function (r) {
+                method: 'POST',
+                body: formData
+            })
+            .then(function(r) {
                 return r.text();
             })
-            .then(function (text) {
+            .then(function(text) {
                 let data = null;
 
                 try {
@@ -1400,14 +1414,14 @@ try {
 
                 window.location.href = '/mobile/?page=search';
             })
-            .catch(function (err) {
+            .catch(function(err) {
                 console.error(err);
                 closeBlockModal();
                 alert('שגיאת רשת');
             });
     }
 
-    document.addEventListener('click', function (e) {
+    document.addEventListener('click', function(e) {
         const overlay = document.getElementById('blockModal');
         if (!overlay) return;
 
@@ -1416,7 +1430,7 @@ try {
         }
     });
 
-    document.addEventListener('keydown', function (e) {
+    document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeBlockModal();
         }

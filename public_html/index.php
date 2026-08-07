@@ -2,12 +2,14 @@
 // ================================
 // INDEX DESKTOP (רגיל)
 // ================================
-
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
+error_reporting(E_ALL);
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-
+date_default_timezone_set('Asia/Jerusalem');
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -165,8 +167,9 @@ if (in_array($page, $protectedPages, true) && empty($_SESSION['user_id'])) {
     <link rel="icon" href="/images/favicon.ico?v=2">
     <link rel="shortcut icon" href="/images/favicon.ico?v=2">
 
-    <link rel="stylesheet" href="/css/style.css">
+   <link rel="stylesheet" href="/css/style.css?v=<?= filemtime(__DIR__ . '/css/style.css') ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.5/css/lightbox.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.5/js/lightbox.min.js"></script>
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=AW-1039498648"></script>

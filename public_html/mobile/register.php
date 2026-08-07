@@ -342,7 +342,9 @@ $success = $_GET['success'] ?? '';
             <input type="checkbox" id="termsAgree" name="terms_agree" value="1" required>
             <span>
                 אני מאשר/ת שקראתי ואני מסכים/ה ל
-                <button type="button" id="registerTermsLink" class="inline-terms-link">תנאי השימוש</button>
+            <a href="?page=terms" class="inline-terms-link">
+    תנאי השימוש
+</a>
                 של האתר.
             </span>
         </label>
@@ -566,3 +568,4 @@ $success = $_GET['success'] ?? '';
         });
     }
 </script>
+

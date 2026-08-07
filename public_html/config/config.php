@@ -10,7 +10,9 @@ $config = [
     'db_pass'    => '!Y+c|!rxZ-3x%T:E',
     'db_charset' => 'utf8mb4',
     'app_url'    => 'https://lovematch.co.il',
+     'admin_password'=> 'Admin123!'
 ];
+date_default_timezone_set('Asia/Jerusalem');
 
 /*
 |--------------------------------------------------------------------------
@@ -49,6 +51,7 @@ define('DB_USER', $config['db_user']);
 define('DB_PASS', $config['db_pass']);
 define('DB_CHARSET', $config['db_charset']);
 define('APP_URL', rtrim($config['app_url'], '/'));
+define('ADMIN_PASSWORD', $config['admin_password']);
 
 /*
 |--------------------------------------------------------------------------
@@ -62,8 +65,10 @@ $options = [
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
 ];
 
+
 try {
     $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
 } catch (PDOException $e) {
     die("חיבור למסד נכשל: " . $e->getMessage());
 }
+$pdo->exec("SET time_zone = '+03:00'");

@@ -59,7 +59,10 @@ img {
 
 .site-header {
     width: 100%;
+    height: 76px;
     min-height: 76px;
+    max-height: 76px;
+
     padding: 14px 28px;
 
     display: flex;
@@ -69,34 +72,38 @@ img {
 
     background: #DA0C0C;
     border-bottom: 1px solid #E5E7EB;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .04);
 
     position: relative;
     z-index: 10;
 }
-
 /* LOGO */
+
+.hero-mini-logo {
+    width: 190px;
+    height: auto;
+    display: block;
+    margin: 0 auto 18px;
+    object-fit: contain;
+}
 
 .site-logo-text {
     display: flex;
     align-items: center;
-    gap: 4px;
-
-    font-size: 26px;
-    font-weight: 800;
-    color: #FFFFFF;
+    justify-content: center;
     text-decoration: none;
     white-space: nowrap;
 }
 
-.logo-heart {
-    color: #FFFFFF;
-    font-size: 20px;
+.site-logo-img {
+    height: 95px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+    transform: translateX(-80px);
 }
 
-.logo-text {
-    letter-spacing: 0.3px;
-}
+
 
 /* MENU */
 
@@ -178,7 +185,7 @@ img {
     align-items: center;
     justify-content: flex-end;
     gap: 10px;
-
+    transform: translateX(95px);
     white-space: nowrap;
 }
 
@@ -197,7 +204,7 @@ img {
     display: flex;
     align-items: center;
     justify-content: center;
-
+margin-right: 25px;
     border-radius: 50%;
     overflow: hidden;
 
@@ -211,6 +218,7 @@ img {
     height: 100%;
     object-fit: cover;
     border-radius: 50%;
+    
 }
 
 .header-avatar-default {
@@ -508,7 +516,7 @@ main.page-shell {
         0 2px 10px rgba(15, 23, 42, .04);
 
     transition: .22s;
-    min-height: 330px;
+    min-height: 200px;
 }
 
 .view-card:hover {
@@ -522,8 +530,8 @@ main.page-shell {
 }
 
 .view-card-image {
-    width: 260px;
-    height: 320px;
+    width: 200px;
+    height: 240px;
     border-radius: 22px;
     object-fit: cover;
     display: block;

@@ -51,6 +51,7 @@ function h(mixed $v): string {
     return htmlspecialchars((string)($v ?? ''), ENT_QUOTES, 'UTF-8');
 }
 
+
 $mobileHeaderAvatar = '/images/default_male.svg';
 
 if ($currentUserId > 0) {
@@ -104,9 +105,9 @@ if ($currentUserId > 0) {
 
         <header class="mobile-header">
             <div class="mobile-header-top">
-                <a href="/mobile/?page=home" class="mobile-logo">
-                    <span>❤</span><span>LoveMatch</span>
-                </a>
+               <a href="/mobile/?page=home" class="mobile-logo">
+    <img src="/images/logonew.jpeg?v=3" alt="LoveMatch">
+</a>
 
                 <button type="button" class="hamburger-btn" onclick="toggleSidebar()" aria-label="פתח תפריט">☰</button>
             </div>
@@ -618,4 +619,24 @@ if ($currentUserId > 0) {
             height: 38px;
         }
     }
+
+    .mobile-header-top{
+    position:relative;
+    justify-content:flex-end !important;
+}
+
+.mobile-logo{
+    position:absolute;
+    left:50%;
+    transform:translateX(-50%);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.mobile-logo img{
+    height:122px;
+    width:auto;
+    display:block;
+}
 </style>

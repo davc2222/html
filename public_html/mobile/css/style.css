@@ -644,19 +644,9 @@ button {
     margin-bottom: 12px;
 }
 
-.profile-main-image-link {
-    position: relative;
-    display: inline-block;
-}
 
-.profile-main-image {
-    width: 160px;
-    height: 160px;
-    object-fit: cover;
-    border-radius: 20px;
-    margin: 0 auto;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
-}
+
+
 
 .profile-online-badge {
     right: 8px;
@@ -799,7 +789,15 @@ button {
 .profile-left-view.is-empty {
     color: #888;
 }
-
+.profile-main-image {
+    width: 160px;
+    height: 160px;
+    max-width: 160px;
+    min-width: 160px;
+    object-fit: cover;
+    border-radius: 20px;
+    margin: 0 auto;
+}
 /* ===== עריכה ===== */
 .profile-edit-input,
 .profile-edit-textarea,
@@ -1084,10 +1082,7 @@ button {
         font-size: 14px;
     }
 
-    .profile-main-image {
-        width: 145px;
-        height: 145px;
-    }
+   
 
     .profile-main-title {
         font-size: 22px;
@@ -1237,4 +1232,112 @@ select {
 .mobile-footer {
     font-size: 0 !important;
     color: transparent !important;
+}
+
+.mobile-user-avatar {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    max-width: 42px !important;
+    border-radius: 50% !important;
+    overflow: hidden !important;
+}
+
+.mobile-user-avatar img {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    max-width: 42px !important;
+    object-fit: cover !important;
+    border-radius: 50% !important;
+}
+
+.mobile-auth {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    flex-wrap: nowrap !important;
+}
+
+.mobile-user-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mobile-user-avatar {
+    width: 42px !important;
+    height: 42px !important;
+    flex: 0 0 42px;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.mobile-user-avatar img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.mobile-user-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+.mobile-user-name {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.mobile-auth-btn-logout {
+    margin-right: auto;
+}
+
+
+.mobile-header {
+    padding-top: 18px !important;
+
+    min-height: 50px;
+}
+
+.mobile-header {
+    padding: 6px 14px 4px !important;
+    min-height: auto !important;
+}
+
+
+.mobile-header-top {
+    min-height: auto !important;
+}
+.mobile-logo {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.mobile-logo img {
+    height: 120px;
+    width: auto;
+    display: block;
+}
+
+.mobile-header-top {
+
+    min-height: 60px;
+}
+
+.mobile-logo {
+    position: relative;
+    top: -2px;
+}
+
+/* ===== תמונת כרטיס גבוהה יותר ===== */
+
+.view-card-image {
+    width: 100%;
+    height: 340px !important;
+    object-fit: cover;
 }

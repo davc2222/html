@@ -145,7 +145,7 @@
 <main class="home-page-shell">
     <div class="home-demo-wrap">
         <section class="home-demo-hero">
-            <h1>LoveMatch – אתר הכרויות למציאת זוגיות אמיתית ❤️</h1>
+            <h1>LoveMatch – אתר הכרויות למציאת זוגיות אמיתית <img src="/images/logonew.jpeg" class="hero-mini-logo" alt="LoveMatch"></h1>
             <p>מצא את ההתאמה המושלמת עבורך במהירות ובקלות.</p>
             <p>קהילה איכותית, התאמות חכמות וחוויית שימוש נעימה ופשוטה.</p>
 

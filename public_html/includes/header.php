@@ -90,11 +90,17 @@ $menu = [
 
 <header class="site-header">
 
-    <a href="?page=home" class="site-logo-text">
+<a href="?page=home" class="site-logo-text">
+    <img
+        src="/images/logonew.jpeg"
+        alt="LoveMatch"
+        class="site-logo-img">
+</a>
+    <!--<a href="?page=home" class="site-logo-text">
         <span class="logo-heart left">❤ </span>
         <span class="logo-text">LoveMatch</span>
         <span class="logo-heart right">&nbsp❤</span>
-    </a>
+    </a>-->
 
     <nav class="links">
         <?php foreach ($menu as $p => $item): ?>
