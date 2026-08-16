@@ -5,7 +5,7 @@
 
 // הגדרות חיבור למסד הנתונים
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'dating');
+define('DB_NAME', 'dating1');
 define('DB_USER', 'lovematch');
 define('DB_PASS', 'MyPass123');
 define('DB_CHARSET', 'utf8mb4');

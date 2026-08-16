@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/includes/profile_helpers.php';
+require_once __DIR__ . '/includes/functions.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -9,6 +10,11 @@ if (session_status() === PHP_SESSION_NONE) {
 /* ========= הגדרת משתנים ========= */
 $id = (int)($_GET['id'] ?? 0);
 $viewerId = (int)($_SESSION['user_id'] ?? 0);
+
+$hasPremium = false;
+if ($viewerId > 0) {
+    $hasPremium = hasActiveSubscription($pdo, $viewerId);
+}
 
 if ($id <= 0) {
     $id = $viewerId;
@@ -1041,6 +1047,11 @@ if (uploadDropZone && uploadPhotoInput) {
             if (chatBtn) {
                 e.preventDefault();
 
+              if (!HAS_PREMIUM) {
+    showSubscriptionPopup();
+    return;
+}
+
                 const userId = Number(chatBtn.getAttribute('data-user-id'));
                 if (!userId) return;
 
@@ -1081,6 +1092,10 @@ if (uploadDropZone && uploadPhotoInput) {
     document.addEventListener('DOMContentLoaded', function() {
         bindProfileButtons();
     });
+</script>
+
+<script>
+const HAS_PREMIUM = <?= $hasPremium ? 'true' : 'false' ?>;
 </script>
 
 <script>

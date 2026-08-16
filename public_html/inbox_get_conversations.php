@@ -7,6 +7,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/config/config.php';
+require_once __DIR__ . '/includes/functions.php';
 
 header('Content-Type: text/html; charset=UTF-8');
 
@@ -22,6 +23,7 @@ try {
     }
 
     $me = (int)$_SESSION['user_id'];
+  $hasPremium = hasMessagingAccess($pdo, $me);
 
     $sql = "
         SELECT
@@ -132,9 +134,16 @@ try {
         $displayName = h($displayNameRaw);
 
         $lastMsgRaw = trim((string)($row['last_msg'] ?? ''));
-        $lastMsgShort = $lastMsgRaw !== ''
-            ? mb_strimwidth($lastMsgRaw, 0, 34, '...', 'UTF-8')
-            : 'אין הודעה אחרונה';
+
+        if ($hasPremium) {
+            $lastMsgShort = $lastMsgRaw !== ''
+                ? mb_strimwidth($lastMsgRaw, 0, 34, '...', 'UTF-8')
+                : 'אין הודעה אחרונה';
+        } else {
+            $lastMsgShort = $lastMsgRaw !== ''
+                ? mb_substr($lastMsgRaw, 0, 5, 'UTF-8') . '...'
+                : 'אין הודעה';
+        }
 
         $lastMsg = h($lastMsgShort);
 

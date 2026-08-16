@@ -6,12 +6,19 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/functions.php';
 
 $page = $_GET['page'] ?? 'home';
 
 $sessionUserId   = (int)($_SESSION['user_id'] ?? 0);
 $sessionUserName = trim((string)($_SESSION['user_name'] ?? ($_SESSION['username'] ?? '')));
+$headerHasPremium = false;
 
+if ($sessionUserId > 0) {
+    $headerHasPremium = hasActiveSubscription($pdo, $sessionUserId);
+}
+
+$headerReturnUrl = $_SERVER['REQUEST_URI'] ?? '/';
 $headerAvatar = '/images/default_male.svg';
 
 /* =========================
@@ -129,6 +136,24 @@ $menu = [
     <div class="auth">
         <?php if ($sessionUserId > 0): ?>
 
+            <?php if (!$headerHasPremium): ?>
+                <a
+                    href="/subscription.php?return=<?= urlencode($headerReturnUrl) ?>"
+                    class="header-subscription-btn"
+                    onclick="
+                        if (typeof showSubscriptionPopup === 'function') {
+                            showSubscriptionPopup();
+                            return false;
+                        }
+                        if (typeof openSubscriptionPopup === 'function') {
+                            openSubscriptionPopup();
+                            return false;
+                        }
+                    ">
+                    💎 רכישת מנוי
+                </a>
+            <?php endif; ?>
+
             <span class="welcome-user">
                 שלום <?= htmlspecialchars($sessionUserName ?: 'משתמש', ENT_QUOTES, 'UTF-8') ?>
             </span>
@@ -151,6 +176,19 @@ $menu = [
     </div>
 
 </header>
+
+<div class="new-site-banner">
+    💙 <strong>חדש ב-LoveMatch</strong> — קהילת ההכרויות שלנו רק מתחילה, וזה הזמן להצטרף ולהכיר.
+</div>
+<div class="new-site-banner">
+    💙 <strong>חדש ב-LoveMatch</strong> — קהילת ההכרויות שלנו רק מתחילה, וזה הזמן להצטרף ולהכיר.
+</div>
+<?php
+if ($sessionUserId > 0 && !$headerHasPremium) {
+    require_once __DIR__ . '/../subscription_popup.php';
+}
+?>
+
 
 <script>
     /* ===== TITLE BLINK FALLBACK =====
@@ -285,3 +323,30 @@ $menu = [
         setInterval(updatePresence, 60000);
     })();
 </script>
+
+<style>
+.new-site-banner {
+    width: 100%;
+    box-sizing: border-box;
+    background: #eef6ff;
+    color: #1e3a5f;
+    border-bottom: 1px solid #dbeafe;
+    padding: 7px 10px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.new-site-banner strong {
+    color: #2563eb;
+    font-weight: 800;
+}
+
+@media (max-width: 380px) {
+    .new-site-banner {
+        font-size: 11px;
+        padding: 6px 8px;
+    }
+}
+</style>

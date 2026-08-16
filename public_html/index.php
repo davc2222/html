@@ -268,7 +268,7 @@ if (in_array($page, $protectedPages, true) && empty($_SESSION['user_id'])) {
     </div>
 
     <?php include __DIR__ . '/popups.php'; ?>
-
+    <?php include __DIR__ . '/subscription_popup.php'; ?>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.5/js/lightbox.min.js"></script>
 

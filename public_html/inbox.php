@@ -1,5 +1,6 @@
 <?php
 
+require_once __DIR__ . '/includes/functions.php';
 /**
  * inbox.php
  * דף תיבת הדואר הראשי - עיצוב אפליקציה כחול
@@ -14,7 +15,16 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-$selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
+if (!isset($_SESSION['user_id'])) {
+    header('Location: /login.php');
+    exit;
+}
+
+$hasPremium = hasActiveSubscription($pdo, (int)$_SESSION['user_id']);
+
+$selectedUserId = $hasPremium && isset($_GET['user_id'])
+    ? (int)$_GET['user_id']
+    : 0;
 ?>
 
 <div class="inbox-page">
@@ -70,6 +80,25 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
 
 </div>
 
+
+<div id="subscriptionPopup" class="subscription-popup-overlay" style="display:none;">
+    <div class="subscription-popup-card">
+        <button type="button" class="subscription-popup-close" onclick="closeSubscriptionPopup()">×</button>
+        <div class="subscription-popup-icon">💎</div>
+        <h2>פתיחת הודעות זמינה למנויי Premium</h2>
+        <p>לקריאה ושליחה של הודעות יש צורך במנוי פעיל.</p>
+        <div class="subscription-popup-price">39.90 ₪</div>
+        <div class="subscription-popup-period">לחודש אחד בלבד</div>
+        <div class="subscription-popup-trust">
+            <span>🔒 תשלום מאובטח</span>
+            <span>✓ ללא חידוש אוטומטי</span>
+            <span>✓ חיוב חד-פעמי</span>
+        </div>
+        <a href="/subscription.php?return=<?= urlencode('/?page=inbox') ?>" class="subscription-popup-buy">רכישת מנוי Premium</a>
+        <button type="button" class="subscription-popup-secondary" onclick="closeSubscriptionPopup()">אולי אחר כך</button>
+    </div>
+</div>
+
 <script>
     let inboxCurrentUserId = <?= $selectedUserId ?>;
     let inboxCurrentName = '';
@@ -77,6 +106,22 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
     let inboxTypingPollTimer = null;
     let inboxTypingActive = false;
     let inboxLastHtml = '';
+    const HAS_PREMIUM = <?= $hasPremium ? 'true' : 'false' ?>;
+
+
+    function showSubscriptionPopup() {
+        const popup = document.getElementById('subscriptionPopup');
+        if (!popup) return;
+        popup.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeSubscriptionPopup() {
+        const popup = document.getElementById('subscriptionPopup');
+        if (!popup) return;
+        popup.style.display = 'none';
+        document.body.style.overflow = '';
+    }
 
     function lmGetEnterSendEnabled() {
         return localStorage.getItem('lm_send_on_enter') === '1';
@@ -159,6 +204,7 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
     }
 
     function inboxLoadMessages(forceScroll = false) {
+        if (!HAS_PREMIUM) return;
         if (!inboxCurrentUserId) return;
 
         const box = document.getElementById('inboxMessages');
@@ -182,6 +228,7 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
     }
 
     function inboxMarkRead() {
+        if (!HAS_PREMIUM) return;
         if (!inboxCurrentUserId) return;
 
         fetch('/inbox_mark_read.php?user_id=' + inboxCurrentUserId)
@@ -194,6 +241,7 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
     }
 
     function inboxSetTyping(isTyping) {
+        if (!HAS_PREMIUM) return;
         if (!inboxCurrentUserId) return;
 
         fetch('/inbox_set_typing.php', {
@@ -206,6 +254,7 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
     }
 
     function inboxPollTyping() {
+        if (!HAS_PREMIUM) return;
         if (!inboxCurrentUserId) return;
 
         fetch('/inbox_get_typing.php?user_id=' + inboxCurrentUserId)
@@ -220,6 +269,11 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
     }
 
     function inboxOpenConversation(userId, name = '') {
+        if (!HAS_PREMIUM) {
+            showSubscriptionPopup();
+            return;
+        }
+
         inboxCurrentUserId = parseInt(userId || 0, 10);
         inboxCurrentName = name || '';
         inboxLastHtml = '';
@@ -251,6 +305,19 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
         const inboxMessageInput = document.getElementById('inboxMessageInput');
         const inboxEnterToggle = document.getElementById('inboxEnterToggle');
         const inboxConversationSearch = document.getElementById('inboxConversationSearch');
+
+        if (!HAS_PREMIUM) {
+            if (inboxMessageInput) {
+                inboxMessageInput.disabled = true;
+                inboxMessageInput.placeholder = 'נדרש מנוי Premium לשליחת הודעות';
+            }
+
+            const sendBtn = inboxSendForm ? inboxSendForm.querySelector('button[type="submit"]') : null;
+            if (sendBtn) sendBtn.disabled = true;
+
+            const enterRow = document.querySelector('.inbox-enter-row');
+            if (enterRow) enterRow.style.display = 'none';
+        }
 
         if (inboxEnterToggle) {
             inboxEnterToggle.checked = lmGetEnterSendEnabled();
@@ -786,6 +853,76 @@ $selectedUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
         text-align: center;
         color: #8a94a3;
         font-size: 18px;
+    }
+
+
+    .subscription-popup-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        background: rgba(15,23,42,.58);
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        box-sizing: border-box;
+        direction: rtl;
+    }
+    .subscription-popup-card {
+        position: relative;
+        width: min(440px,100%);
+        background: #fff;
+        border-radius: 20px;
+        padding: 32px 28px 26px;
+        text-align: center;
+        box-shadow: 0 24px 70px rgba(15,23,42,.28);
+    }
+    .subscription-popup-close {
+        position: absolute;
+        top: 12px;
+        left: 14px;
+        width: 34px;
+        height: 34px;
+        border: 0;
+        border-radius: 50%;
+        background: #f1f5f9;
+        color: #475569;
+        font-size: 24px;
+        cursor: pointer;
+    }
+    .subscription-popup-icon { font-size: 42px; margin-bottom: 10px; }
+    .subscription-popup-card h2 { margin: 0 0 12px; font-size: 23px; color: #0f172a; }
+    .subscription-popup-card p { color: #64748b; line-height: 1.6; }
+    .subscription-popup-price { font-size: 36px; font-weight: 900; color: #2563eb; }
+    .subscription-popup-period { margin-top: 5px; font-weight: 800; color: #334155; }
+    .subscription-popup-trust {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        margin: 20px 0;
+        color: #475569;
+        font-size: 14px;
+    }
+    .subscription-popup-buy {
+        display: block;
+        padding: 13px 18px;
+        border-radius: 11px;
+        background: #2563eb;
+        color: #fff;
+        text-decoration: none;
+        font-size: 17px;
+        font-weight: 900;
+    }
+    .subscription-popup-secondary {
+        margin-top: 10px;
+        border: 0;
+        background: transparent;
+        color: #64748b;
+        cursor: pointer;
+    }
+    .inbox-send-box input:disabled,
+    .inbox-send-box button:disabled {
+        opacity: .58;
+        cursor: not-allowed;
     }
 
     @media (max-width: 900px) {

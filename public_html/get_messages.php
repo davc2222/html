@@ -8,18 +8,41 @@ if (session_status() === PHP_SESSION_NONE) {
 header('Content-Type: application/json; charset=UTF-8');
 
 require_once __DIR__ . '/config/config.php';
+require_once __DIR__ . '/includes/functions.php';
+
+
 
 $me = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
 $other = isset($_GET['user_id']) ? (int)$_GET['user_id'] : 0;
 $lastId = isset($_GET['last_id']) ? (int)$_GET['last_id'] : 0;
 
+$me = (int)($_SESSION['user_id'] ?? 0);
+
 if ($me <= 0) {
+    http_response_code(401);
+
     echo json_encode([
         'ok' => false,
-        'message' => 'לא מחובר'
+        'message' => 'המשתמש לא מחובר'
     ]);
+
     exit;
 }
+
+if (!hasActiveSubscription($pdo, $me)) {
+    http_response_code(403);
+
+    echo json_encode([
+        'ok' => false,
+        'premium_required' => true,
+        'redirect' => '/subscription.php?return=' . urlencode('/?page=inbox')
+    ]);
+
+    exit;
+}
+
+
+
 
 if ($other <= 0) {
     echo json_encode([

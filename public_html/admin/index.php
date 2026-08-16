@@ -200,6 +200,11 @@ if (adminTableExists($pdo, 'users_profile')) {
             הודעות
         </a>
 
+        <a href="/admin/subscriptions.php">
+    <span>💎</span>
+    מנויים
+</a>
+
         <a href="/admin/reports.php">
             <span>⚑</span>
             דיווחים

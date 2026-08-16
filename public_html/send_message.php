@@ -6,7 +6,7 @@ ini_set('display_errors', 1);
 
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/vendor/autoload.php';
-
+require_once __DIR__ . '/includes/functions.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -17,9 +17,26 @@ if (session_status() === PHP_SESSION_NONE) {
 
 header('Content-Type: application/json; charset=UTF-8');
 
+
+
+
 $me   = (int)($_SESSION['user_id'] ?? 0);
 $to   = (int)($_POST['to'] ?? 0);
 $text = trim((string)($_POST['text'] ?? ''));
+
+if (!hasActiveSubscription($pdo, $me)) {
+    http_response_code(403);
+
+    echo json_encode([
+        'ok' => false,
+        'premium' => true,
+        'redirect' => '/subscription.php?return=' . urlencode('/?page=messages'),
+        'message' => 'נדרש מנוי Premium כדי לשלוח הודעות.'
+    ]);
+
+    exit;
+}
+
 
 if ($me <= 0) {
     echo json_encode(['ok' => false, 'message' => 'המשתמש לא מחובר']);

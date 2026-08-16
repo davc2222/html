@@ -3,6 +3,7 @@
 
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/includes/profile_helpers.php';
+require_once __DIR__ . '/includes/functions.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -29,6 +30,9 @@ if (empty($_SESSION['user_id'])) {
 
 $me = (int)$_SESSION['user_id'];
 $session_user_id = $me;
+
+// ===== בדיקת מנוי =====
+$hasPremium = hasActiveSubscription($pdo, $me);
 
 function h($v) {
     return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
@@ -114,12 +118,28 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     $cardSubline = '';
                     $cardShowOnline = true;
 
-                    $cardActionsHtml =
-                        '<a href="#" class="view-card-profile-link" onclick="openMessageModal(' . $otherUserId . ', \''
-                        . h($name) . '\', \''
-                        . h($img) . '\'); return false;">פתח צ\'אט</a>
-                         <span>|</span>
-                         <a href="/?page=profile&id=' . $otherUserId . '" class="view-card-profile-link">פתח פרופיל</a>';
+                    if ($hasPremium) {
+                        $cardActionsHtml =
+                            '<a href="#" class="view-card-profile-link" onclick="openMessageModal(' . $otherUserId . ', \''
+                            . h($name) . '\', \''
+                            . h($img) . '\'); return false;">פתח צ\'אט</a>
+                             <span>|</span>
+                             <a href="/?page=profile&id=' . $otherUserId . '" class="view-card-profile-link">פתח פרופיל</a>';
+                    } else {
+                        $cardActionsHtml =
+                            '<a href="#" class="view-card-profile-link" onclick="
+                                if (typeof showSubscriptionPopup === \'function\') {
+                                    showSubscriptionPopup();
+                                } else if (typeof openSubscriptionPopup === \'function\') {
+                                    openSubscriptionPopup();
+                                } else {
+                                    window.location.href = \'/subscription.php?return=\' + encodeURIComponent(window.location.pathname + window.location.search);
+                                }
+                                return false;
+                            ">פתח צ\'אט</a>
+                             <span>|</span>
+                             <a href="/?page=profile&id=' . $otherUserId . '" class="view-card-profile-link">פתח פרופיל</a>';
+                    }
 
                     $user['Image'] = $img;
                     $user['is_online'] = is_user_online($pdo, $otherUserId);

@@ -162,6 +162,8 @@ $menu = [
     </div>
 
 </header>
+
+
 <script>
     /* ===== TITLE BLINK FALLBACK =====
        אם index.php כבר הגדיר את startTitleBlink/stopTitleBlink - זה לא ידרוס.
