@@ -533,10 +533,12 @@ try {
         }
 
         .advanced-search-modal {
-            width: 100%;
-            max-height: calc(100vh - 24px);
-            padding: 16px;
-            border-radius: 16px;
+           width: 100%;
+    max-height: calc(100dvh - 90px);
+    padding: 16px 16px 90px;
+    border-radius: 16px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
         }
 
         .advanced-search-grid {
@@ -550,10 +552,79 @@ try {
         .advanced-search-results {
             grid-template-columns: 1fr;
         }
+       
     }
+@media (max-width: 640px) {
+
+    /* כותרת טבלת התאמות - צרה וממורכזת */
+    .advanced-search-toggle-wrap {
+        position: relative !important;
+        height: 34px !important;
+        margin: 0 0 6px !important;
+        padding: 0 !important;
+    }
+
+    .advanced-search-toggle-btn {
+    position: absolute !important;
+    top: -14px !important;
+    right: 50% !important;
+    left: auto !important;
+
+    width: 68% !important;
+    max-width: 280px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+
+    margin: 0 !important;
+    padding: 0 12px !important;
+
+    font-size: 13px !important;
+    line-height: 1 !important;
+    border-radius: 10px !important;
+
+    transform: translate(50%, -20px) !important;
+}
+
+    /* מוריד את ה-DIV הלבן של הדף עצמו */
+    main.page-shell.advanced-search-page-shell {
+        margin-top: 38px !important;
+    }
+
+    /* מבטל הזזות קודמות של אזור התוצאות */
+    .advanced-search-page-shell .results {
+        position: static !important;
+        top: auto !important;
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+        transform: none !important;
+    }
+
+    /* המסגרת של כרטיס הפרופיל נשארת במקום */
+    .advanced-search-page-shell .results .view-card,
+    .advanced-search-page-shell .results .view-card:hover {
+        position: relative !important;
+        top: 0 !important;
+        margin-top: 0 !important;
+        padding-top: 34px !important;
+        transform: none !important;
+    }
+
+    /* התוכן בתוך הכרטיס עולה */
+    .advanced-search-page-shell .results .view-card-media,
+    .advanced-search-page-shell .results .view-card-content {
+        position: relative !important;
+        top: -28px !important;
+    }
+}
+
 </style>
 
-<main class="page-shell">
+<main class="page-shell advanced-search-page-shell">
     <section class="search-container">
 
         <div class="advanced-search-toggle-wrap">

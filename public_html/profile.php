@@ -281,12 +281,17 @@ if ($pic) {
     $profileImage = '/uploads/' . ltrim((string)$pic, '/');
 }
 
-/* גלריה */
+/* גלריה - סדר ידני */
 $stmt = $pdo->prepare("
-    SELECT Pic_Num, Pic_Name, Main_Pic
+    SELECT Pic_Num, Pic_Name, Main_Pic, Sort_Order
     FROM user_pics
     WHERE Id = :id
-    ORDER BY Main_Pic DESC, Pic_Num
+    ORDER BY
+        CASE
+            WHEN Sort_Order IS NOT NULL AND Sort_Order > 0 THEN Sort_Order
+            ELSE 1000000 + Pic_Num
+        END ASC,
+        Pic_Num ASC
 ");
 $stmt->execute([':id' => $id]);
 $pics = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -430,9 +435,9 @@ try {
                     <a
                         href="<?= e($profileImage) ?>"
                         id="profileMainImageLink"
-                        class="profile-main-image-link"
-                        data-lightbox="profile-gallery"
-                        data-title="תמונה ראשית">
+                        class="profile-main-image-link js-gallery-link"
+                        data-full="<?= e($profileImage) ?>"
+                        data-gallery-title="תמונה ראשית">
 
                         <img src="<?= e($profileImage) ?>" class="profile-main-image" id="profileMainImage" alt="">
 
@@ -589,8 +594,7 @@ try {
                             <div class="profile-gallery-item">
                                 <a
                                     href="<?= e($picUrl) ?>"
-                                    data-lightbox="profile-gallery"
-                                    data-title="תמונה <?= $imgNo ?>"
+                                    data-gallery-title="תמונה <?= $imgNo ?>"
                                     class="profile-gallery-link js-gallery-link"
                                     data-full="<?= e($picUrl) ?>">
                                     <img src="<?= e($picUrl) ?>" alt="תמונה <?= $imgNo ?>" class="profile-gallery-thumb">
@@ -615,13 +619,55 @@ try {
                                             <?php if (!$isMainPic): ?>
                                                 <form action="/set_main_photo.php" method="POST" class="profile-photo-menu-form">
                                                     <input type="hidden" name="pic_num" value="<?= $picNum ?>">
-                                                    <button type="submit" class="profile-photo-menu-btn">קבע כראשית</button>
+                                                    <button type="submit" class="profile-photo-menu-btn">
+                                                        <span class="profile-photo-menu-icon">★</span>
+                                                        <span>קבע כתמונה ראשית</span>
+                                                    </button>
                                                 </form>
                                             <?php endif; ?>
 
+                                            <form action="/reorder_photo.php" method="POST" class="profile-photo-menu-form">
+                                                <input type="hidden" name="pic_num" value="<?= $picNum ?>">
+                                                <input type="hidden" name="action" value="first">
+                                                <button type="submit" class="profile-photo-menu-btn">
+                                                    <span class="profile-photo-menu-icon">⇈</span>
+                                                    <span>העבר להתחלה</span>
+                                                </button>
+                                            </form>
+
+                                            <form action="/reorder_photo.php" method="POST" class="profile-photo-menu-form">
+                                                <input type="hidden" name="pic_num" value="<?= $picNum ?>">
+                                                <input type="hidden" name="action" value="up">
+                                                <button type="submit" class="profile-photo-menu-btn">
+                                                    <span class="profile-photo-menu-icon">↑</span>
+                                                    <span>הזז קדימה</span>
+                                                </button>
+                                            </form>
+
+                                            <form action="/reorder_photo.php" method="POST" class="profile-photo-menu-form">
+                                                <input type="hidden" name="pic_num" value="<?= $picNum ?>">
+                                                <input type="hidden" name="action" value="down">
+                                                <button type="submit" class="profile-photo-menu-btn">
+                                                    <span class="profile-photo-menu-icon">↓</span>
+                                                    <span>הזז אחורה</span>
+                                                </button>
+                                            </form>
+
+                                            <form action="/reorder_photo.php" method="POST" class="profile-photo-menu-form">
+                                                <input type="hidden" name="pic_num" value="<?= $picNum ?>">
+                                                <input type="hidden" name="action" value="last">
+                                                <button type="submit" class="profile-photo-menu-btn">
+                                                    <span class="profile-photo-menu-icon">⇊</span>
+                                                    <span>העבר לסוף</span>
+                                                </button>
+                                            </form>
+
                                             <form action="/delete_photo.php" method="POST" class="profile-photo-menu-form" onsubmit="return confirm('למחוק את התמונה?');">
                                                 <input type="hidden" name="pic_num" value="<?= $picNum ?>">
-                                                <button type="submit" class="profile-photo-menu-btn profile-photo-menu-btn-delete">מחק</button>
+                                                <button type="submit" class="profile-photo-menu-btn profile-photo-menu-btn-delete">
+                                                    <span class="profile-photo-menu-icon">🗑</span>
+                                                    <span>מחק</span>
+                                                </button>
                                             </form>
 
                                         </div>
@@ -637,6 +683,34 @@ try {
         </div>
 
     </div>
+</div>
+
+
+<!-- ===== CUSTOM PROFILE GALLERY ===== -->
+<div id="profileGalleryModal" class="profile-gallery-modal" aria-hidden="true">
+    <button type="button"
+            class="profile-gallery-modal-close"
+            id="profileGalleryClose"
+            aria-label="סגור גלריה">×</button>
+
+    <button type="button"
+            class="profile-gallery-modal-nav profile-gallery-modal-prev"
+            id="profileGalleryPrev"
+            aria-label="תמונה קודמת">‹</button>
+
+    <div class="profile-gallery-modal-stage">
+        <img id="profileGalleryModalImage"
+             class="profile-gallery-modal-image"
+             src=""
+             alt="">
+        <div id="profileGalleryModalCaption"
+             class="profile-gallery-modal-caption"></div>
+    </div>
+
+    <button type="button"
+            class="profile-gallery-modal-nav profile-gallery-modal-next"
+            id="profileGalleryNext"
+            aria-label="תמונה הבאה">›</button>
 </div>
 
 <div id="blockModal" class="lm-modal-overlay" style="display:none;">
@@ -682,16 +756,34 @@ try {
 
 <div class="upload-photo-methods">
 
-    <form action="/upload_photo.php" method="POST" enctype="multipart/form-data" class="upload-photo-method">
-        <label class="upload-method-card">
+    <form action="/upload_photo.php" method="POST" enctype="multipart/form-data" class="upload-photo-method upload-photo-gallery-method">
+        <label class="upload-method-card upload-method-select">
             <span class="upload-method-icon">🌄</span>
-            <strong>בחר מתוך המחשב</strong>
-            <small>העלה תמונה מהמחשב שלך</small>
+            <strong class="upload-desktop-text">בחר מתוך המחשב</strong>
+            <strong class="upload-mobile-text">בחר מהגלריה</strong>
+            <small class="upload-desktop-text">העלה תמונה מהמחשב שלך</small>
+            <small class="upload-mobile-text">בחר תמונה קיימת מהטלפון</small>
 
             <input
                 type="file"
                 name="photo"
                 accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                onchange="uploadPhotoAjax(this.form)"
+                hidden>
+        </label>
+    </form>
+
+    <form action="/upload_photo.php" method="POST" enctype="multipart/form-data" class="upload-photo-method upload-photo-camera-method">
+        <label class="upload-method-card upload-method-camera">
+            <span class="upload-method-icon">📷</span>
+            <strong>צלם תמונה</strong>
+            <small>פתח את המצלמה וצלם עכשיו</small>
+
+            <input
+                type="file"
+                name="photo"
+                accept="image/*"
+                capture="environment"
                 onchange="uploadPhotoAjax(this.form)"
                 hidden>
         </label>
@@ -1055,6 +1147,16 @@ if (uploadDropZone && uploadPhotoInput) {
                 const userId = Number(chatBtn.getAttribute('data-user-id'));
                 if (!userId) return;
 
+                /*
+                 * Unified responsive site:
+                 * mobile opens the conversation inside messages.php;
+                 * desktop keeps the existing popup.
+                 */
+                if (window.matchMedia('(max-width: 640px)').matches) {
+                    window.location.href = '/?page=messages&mobile_chat=1&user_id=' + encodeURIComponent(userId);
+                    return;
+                }
+
                 const nameEl = document.querySelector('.profile-main-title');
                 const imgEl = document.querySelector('.profile-main-image');
 
@@ -1062,7 +1164,7 @@ if (uploadDropZone && uploadPhotoInput) {
                 const userImage = imgEl ? imgEl.getAttribute('src') : '/images/no_photo.jpg';
 
                 if (typeof openMessageModal !== 'function') {
-                    window.location.href = '/?page=messages&id=' + userId;
+                    window.location.href = '/?page=messages&user_id=' + encodeURIComponent(userId);
                     return;
                 }
 
@@ -1243,4 +1345,130 @@ function uploadPhotoAjax(form) {
             'שגיאה בשליחת הקובץ';
     });
 }
+</script>
+
+<script>
+(function () {
+    const modal = document.getElementById('profileGalleryModal');
+    const image = document.getElementById('profileGalleryModalImage');
+    const caption = document.getElementById('profileGalleryModalCaption');
+    const closeBtn = document.getElementById('profileGalleryClose');
+    const prevBtn = document.getElementById('profileGalleryPrev');
+    const nextBtn = document.getElementById('profileGalleryNext');
+
+    if (!modal || !image || !closeBtn || !prevBtn || !nextBtn) {
+        return;
+    }
+
+    let items = [];
+    let currentIndex = 0;
+
+    function refreshItems() {
+        items = Array.from(document.querySelectorAll('.js-gallery-link')).map(function (link) {
+            return {
+                url: link.getAttribute('data-full') || link.getAttribute('href') || '',
+                title: link.getAttribute('data-gallery-title') || ''
+            };
+        }).filter(function (item) {
+            return item.url !== '';
+        });
+    }
+
+    function showItem(index) {
+        if (!items.length) return;
+
+        currentIndex = (index + items.length) % items.length;
+        image.src = items[currentIndex].url;
+        image.alt = items[currentIndex].title || 'תמונת פרופיל';
+
+        if (caption) {
+            caption.textContent = items[currentIndex].title || '';
+        }
+
+        const showArrows = items.length > 1;
+        prevBtn.style.display = showArrows ? 'flex' : 'none';
+        nextBtn.style.display = showArrows ? 'flex' : 'none';
+    }
+
+    function openGallery(index) {
+        refreshItems();
+        if (!items.length) return;
+
+        showItem(index);
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('profile-gallery-open');
+    }
+
+    function closeGallery() {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('profile-gallery-open');
+        image.src = '';
+    }
+
+    document.addEventListener('click', function (e) {
+        const link = e.target.closest('.js-gallery-link');
+
+        if (link) {
+            e.preventDefault();
+            refreshItems();
+
+            const links = Array.from(document.querySelectorAll('.js-gallery-link'));
+            const index = links.indexOf(link);
+            openGallery(index >= 0 ? index : 0);
+            return;
+        }
+
+        if (e.target === modal) {
+            closeGallery();
+        }
+    });
+
+    closeBtn.addEventListener('click', closeGallery);
+
+    prevBtn.addEventListener('click', function () {
+        showItem(currentIndex - 1);
+    });
+
+    nextBtn.addEventListener('click', function () {
+        showItem(currentIndex + 1);
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (!modal.classList.contains('is-open')) return;
+
+        if (e.key === 'Escape') {
+            closeGallery();
+        } else if (e.key === 'ArrowLeft') {
+            showItem(currentIndex - 1);
+        } else if (e.key === 'ArrowRight') {
+            showItem(currentIndex + 1);
+        }
+    });
+
+    /* Swipe on mobile */
+    let touchStartX = null;
+
+    modal.addEventListener('touchstart', function (e) {
+        if (e.touches.length === 1) {
+            touchStartX = e.touches[0].clientX;
+        }
+    }, { passive: true });
+
+    modal.addEventListener('touchend', function (e) {
+        if (touchStartX === null || !e.changedTouches.length) return;
+
+        const delta = e.changedTouches[0].clientX - touchStartX;
+        touchStartX = null;
+
+        if (Math.abs(delta) < 45) return;
+
+        if (delta > 0) {
+            showItem(currentIndex - 1);
+        } else {
+            showItem(currentIndex + 1);
+        }
+    }, { passive: true });
+})();
 </script>

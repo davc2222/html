@@ -82,46 +82,10 @@ if (isset($_GET['desktop']) && $_GET['desktop'] === '1') {
     $_SESSION['force_desktop'] = true;
 }
 
-/*
-|------------------------------------------------------------
-| מעבר ידני למובייל
-|------------------------------------------------------------
-| מאפשר מעבר רק כאשר יש לחיצה אמיתית באתר.
-*/
-if (
-    isset($_GET['mobile']) &&
-    $_GET['mobile'] === '1' &&
-    strpos($requestUri, '/mobile') !== 0 &&
-    !empty($_SERVER['HTTP_REFERER']) &&
-    strpos($_SERVER['HTTP_REFERER'], '/mobile') === false
-) {
-    unset($_SESSION['force_desktop']);
 
-    header('Location: /mobile/');
-    exit;
-}
 
-/*
-|------------------------------------------------------------
-| מעבר אוטומטי למובייל
-|------------------------------------------------------------
-| עובד רק אם:
-| - זה לא לוקאל
-| - זה באמת נייד
-| - לא נמצאים כבר במובייל
-| - לא הופעל force_desktop
-*/
-if (
-    !$isGooglebot &&
-    !$forceDesktop &&
-    empty($_COOKIE['force_desktop_after_logout']) &&
-    !$isLocalhost &&
-    $isMobile &&
-    strpos($requestUri, '/mobile') !== 0
-) {
-    header('Location: /mobile/');
-    exit;
-}
+
+
 
 //*----------------------------------------------------------------------------------------------------------------------*?/
 
@@ -151,7 +115,7 @@ if (in_array($page, $protectedPages, true) && empty($_SESSION['user_id'])) {
     <meta name="robots" content="index, follow">
 
     <link rel="canonical" href="https://lovematch.co.il/">
-    <link rel="alternate" media="only screen and (max-width: 640px)" href="https://lovematch.co.il/mobile/">
+   
 
     <meta property="og:title" content="LoveMatch - אתר הכרויות">
     <meta property="og:description" content="מצא אהבה אמיתית ב-LoveMatch">

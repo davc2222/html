@@ -140,6 +140,117 @@
         background: #fff !important;
         color: #d91f4f !important;
     }
+
+    /* =========================
+   MOBILE
+   ========================= */
+@media (max-width: 640px) {
+
+    .home-page-shell {
+        width: 100%;
+        min-width: 0;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+    }
+
+    .home-demo-wrap {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px 10px 30px;
+        min-height: 0;
+    }
+
+    .home-demo-hero {
+        width: 100%;
+        max-width: none;
+        box-sizing: border-box;
+        margin: 0 0 12px;
+        padding: 20px 14px 18px;
+        border-radius: 18px;
+    }
+
+    .home-demo-hero h1 {
+        font-size: 27px;
+        line-height: 1.3;
+        margin: 0 0 14px;
+        overflow-wrap: anywhere;
+    }
+
+    .home-demo-hero p {
+        font-size: 15px;
+        line-height: 1.6;
+        margin: 0 0 8px;
+    }
+
+    .hero-mini-logo {
+        display: block;
+        width: 80px;
+        max-width: 80px;
+        height: auto;
+        margin: 12px auto 0;
+    }
+
+    .home-demo-actions {
+        width: 100%;
+        margin-top: 18px;
+        gap: 10px;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .home-demo-btn {
+        width: 100%;
+        box-sizing: border-box;
+        min-height: 46px;
+        padding: 0 14px;
+        font-size: 15px;
+    }
+
+    .quick-register,
+    .home-logged-in {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .home-logged-in h2 {
+        font-size: 20px;
+        margin: 8px 0 0;
+    }
+
+    .home-demo-features {
+        width: 100%;
+        max-width: none;
+        box-sizing: border-box;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin: 0;
+    }
+
+    .home-demo-card {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 20px 16px;
+        border-radius: 18px;
+    }
+
+    .home-demo-icon {
+        width: 50px;
+        height: 50px;
+        margin-bottom: 10px;
+        font-size: 24px;
+    }
+
+    .home-demo-card h3 {
+        font-size: 21px;
+        margin: 0 0 8px;
+    }
+
+    .home-demo-card p {
+        font-size: 15px;
+        line-height: 1.6;
+    }
+}
 </style>
 
 <main class="home-page-shell">

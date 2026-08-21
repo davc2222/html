@@ -163,7 +163,9 @@ $menu = [
 
 </header>
 
-
+<div class="new-site-banner">
+    💙 <strong>חדש ב-LoveMatch</strong> — קהילת ההכרויות שלנו רק מתחילה, וזה הזמן להצטרף ולהכיר.
+</div>
 <script>
     /* ===== TITLE BLINK FALLBACK =====
        אם index.php כבר הגדיר את startTitleBlink/stopTitleBlink - זה לא ידרוס.

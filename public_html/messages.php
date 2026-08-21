@@ -34,6 +34,103 @@ $session_user_id = $me;
 // ===== בדיקת מנוי =====
 $hasPremium = hasActiveSubscription($pdo, $me);
 
+
+/* ===== Mobile inline chat ===== */
+$inlineChatUserId = (int)($_GET['user_id'] ?? 0);
+$isInlineMobileChat = (($_GET['mobile_chat'] ?? '') === '1');
+
+if ($isInlineMobileChat && $inlineChatUserId > 0 && $inlineChatUserId !== $me && $hasPremium) {
+    ob_start();
+    include __DIR__ . '/mobile/messages.php';
+    $mobileChatHtml = ob_get_clean();
+
+    // Keep /mobile/messages.php untouched; change only the rendered profile URL.
+    $mobileChatHtml = str_replace(
+        '/mobile/?page=profile&id=',
+        '/?page=profile&id=',
+        $mobileChatHtml
+    );
+
+    echo '
+<style>
+@media (max-width: 640px) {
+    .chat-page {
+        height: calc(100dvh - 230px) !important;
+        min-height: calc(100dvh - 230px) !important;
+        max-height: calc(100dvh - 230px) !important;
+        margin-top: 0 !important;
+        margin-bottom: 0 !important;
+        overflow: hidden !important;
+    }
+
+    .chat-title-bar {
+        flex: 0 0 auto !important;
+        position: relative !important;
+        top: 0 !important;
+        margin-top: 0 !important;
+        z-index: 5 !important;
+    }
+
+    .chat-messages {
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        padding-bottom: 14px !important;
+    }
+
+    .chat-typing {
+        flex: 0 0 auto !important;
+    }
+
+    .chat-send {
+        flex: 0 0 auto !important;
+        position: relative !important;
+        bottom: 0 !important;
+        z-index: 30 !important;
+        margin-bottom: 0 !important;
+    }
+}
+</style>
+';
+
+    echo '
+<script>
+(function () {
+    function forcePageTop() {
+        if ("scrollRestoration" in history) {
+            history.scrollRestoration = "manual";
+        }
+
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+
+        requestAnimationFrame(function () {
+            window.scrollTo(0, 0);
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+        });
+
+        setTimeout(function () {
+            window.scrollTo(0, 0);
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+        }, 80);
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", forcePageTop, { once: true });
+    } else {
+        forcePageTop();
+    }
+})();
+</script>
+';
+
+    echo $mobileChatHtml;
+    return;
+}
+
 function h($v) {
     return htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8');
 }
@@ -43,6 +140,7 @@ $stmt = $pdo->prepare("
     SELECT 
         up.*,
         MAX(m.Date_Sent) AS last_msg_date,
+        COUNT(*) AS total_count,
         SUM(
             CASE 
                 WHEN m.Id = :me 
@@ -91,7 +189,57 @@ $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div class="no-results">אין הודעות</div>
         <?php else: ?>
 
-            <div class="results">
+
+            <style>
+            .mobile-message-results{display:none}
+            @media(max-width:640px){
+              .desktop-message-results{display:none!important}
+              .mobile-message-results{display:flex!important;flex-direction:column;gap:12px;width:100%}
+              .mobile-message-card{background:#fff;border:1px solid #eee;border-radius:16px;box-shadow:0 4px 14px rgba(0,0,0,.05);overflow:hidden}
+              .mobile-message-card-link{display:flex;align-items:center;gap:12px;width:100%;padding:12px;box-sizing:border-box;text-decoration:none;color:inherit;direction:rtl}
+              .mobile-message-card-img{width:74px;height:74px;flex:0 0 74px;border-radius:14px;object-fit:cover;background:#f5f5f5}
+              .mobile-message-card-info{min-width:0;flex:1 1 auto;display:flex;flex-direction:column;gap:6px}
+              .mobile-message-card-name{font-size:17px;font-weight:700;color:#222;line-height:1.3}
+              .mobile-message-card-date{font-size:13px;color:#777}
+              .mobile-message-card-side{position:relative;flex:0 0 52px;min-width:52px;display:flex;align-items:center;justify-content:center}
+              .mobile-message-total{width:38px;height:38px;border-radius:999px;background:#f3f3f3;border:1px solid #e8e8e8;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:800}
+              .mobile-message-new{position:absolute;top:-17px;right:-4px;background:#e11d48;color:#fff;border-radius:999px;padding:3px 7px;font-size:10px;font-weight:800;white-space:nowrap}
+            }
+            </style>
+
+            <div class="mobile-message-results">
+            <?php foreach ($results as $mrow): ?>
+              <?php
+                $mid=(int)($mrow['other_user_id']??0);
+                $mage='';
+                if(!empty($mrow['DOB'])){try{$mage=date_diff(date_create((string)$mrow['DOB']),date_create('today'))->y;}catch(Throwable $e){}}
+                $mimg=getMainProfileImage($pdo,$mid);
+                $mlast='';
+                if(!empty($mrow['last_msg_date'])){try{$mlast=(new DateTime((string)$mrow['last_msg_date']))->format('d/m/Y H:i');}catch(Throwable $e){}}
+                $mtotal=(int)($mrow['total_count']??0);
+                $munread=(int)($mrow['unread_count']??0);
+              ?>
+              <div class="mobile-message-card">
+                <?php if($hasPremium): ?>
+                  <a class="mobile-message-card-link" href="/?page=messages&mobile_chat=1&user_id=<?= $mid ?>">
+                <?php else: ?>
+                  <a class="mobile-message-card-link" href="#" onclick="if(typeof showSubscriptionPopup==='function'){showSubscriptionPopup();}else if(typeof openSubscriptionPopup==='function'){openSubscriptionPopup();}return false;">
+                <?php endif; ?>
+                  <img src="<?= h($mimg) ?>" class="mobile-message-card-img" onerror="this.onerror=null;this.src='/images/default_male.svg';" alt="">
+                  <div class="mobile-message-card-info">
+                    <div class="mobile-message-card-name"><?= h($mrow['Name']??'משתמש') ?><?= $mage!==''?', '.(int)$mage:'' ?></div>
+                    <?php if($mlast!==''): ?><div class="mobile-message-card-date">הודעה אחרונה: <?= h($mlast) ?></div><?php endif; ?>
+                  </div>
+                  <div class="mobile-message-card-side">
+                    <div class="mobile-message-total"><?= $mtotal ?></div>
+                    <?php if($munread>0): ?><div class="mobile-message-new">הודעה חדשה</div><?php endif; ?>
+                  </div>
+                </a>
+              </div>
+            <?php endforeach; ?>
+            </div>
+
+            <div class="results desktop-message-results">
 
                 <?php foreach ($results as $row): ?>
                     <?php

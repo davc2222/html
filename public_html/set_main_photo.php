@@ -6,15 +6,22 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: ' . APP_URL . '/mobile/');
+    header('Location: /');
     exit;
 }
 
 $userId = (int)($_SESSION['user_id'] ?? 0);
 $picNum = (int)($_POST['pic_num'] ?? 0);
 
-if ($userId <= 0 || $picNum <= 0) {
-    header('Location: ' . APP_URL . '/mobile/?page=login');
+if ($userId <= 0) {
+    header('Location: /?page=login');
+    exit;
+}
+
+$profileUrl = '/?page=profile&id=' . $userId . '&edit=1';
+
+if ($picNum <= 0) {
+    header('Location: ' . $profileUrl);
     exit;
 }
 
@@ -31,7 +38,7 @@ $stmt->execute([
 ]);
 
 if (!$stmt->fetch()) {
-    header('Location: ' . APP_URL . '/mobile/?page=profile&id=' . $userId);
+    header('Location: ' . $profileUrl);
     exit;
 }
 
@@ -58,5 +65,5 @@ $stmt->execute([
     ':id'      => $userId
 ]);
 
-header('Location: ' . APP_URL . '/mobile/?page=profile&id=' . $userId);
+header('Location: ' . $profileUrl);
 exit;
